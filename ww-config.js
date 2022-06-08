@@ -20,14 +20,14 @@ export default {
         // },
     },
     actions: [
-        {
-            name: 'Supabase Request',
-            code: 'request',
-            parameters: [],
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Request.vue'),
-            /* wwEditor:end */
-        },
+        // {
+        //     name: 'Supabase Request',
+        //     code: 'request',
+        //     parameters: [],
+        //     isAsync: true,
+        //     /* wwEditor:start */
+        //     edit: () => import('./src/components/Request.vue'),
+        //     /* wwEditor:end */
+        // },
     ],
 };
