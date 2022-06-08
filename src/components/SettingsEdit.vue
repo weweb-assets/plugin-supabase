@@ -27,7 +27,7 @@
     </wwEditorFormRow>
     <div class="flex items-center">
         <wwEditorInputSwitch v-model="isKeyVisible" />
-        <span class="ml-2">Show api key</span>
+        <span class="ml-2">Show private API key</span>
     </div>
 </template>
 

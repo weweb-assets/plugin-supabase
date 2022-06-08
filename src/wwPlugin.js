@@ -13,7 +13,7 @@ export default {
         Plugin API
     \================================================================================================*/
     async onLoad(settings) {
-        await this.load((settings.publicData.projectUrl, settings.publicData.publicApiKey));
+        await this.load(settings.publicData.projectUrl, settings.publicData.publicApiKey);
     },
     async load(projectUrl, publicApiKey) {
         this.instance = createClient(projectUrl, publicApiKey);

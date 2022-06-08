@@ -1,11 +1,11 @@
 <template>
-    <div class="flex items-center caption-m text-ellipsis">
-        <wwEditorIcon name="link" class="mr-2"></wwEditorIcon>
-        {{ settings.publicData.projectUrl }}
+    <div class="flex items-center body-2 mb-2">
+        <wwEditorIcon name="link" class="mr-2" />
+        <div class="text-ellipsis">{{ settings.publicData.projectUrl }}</div>
     </div>
-    <div class="flex items-center caption-m text-ellipsis">
-        <wwEditorIcon name="key" class="mr-2"></wwEditorIcon>
-        {{ settings.publicData.publicApiKey }}
+    <div class="flex items-center body-2">
+        <wwEditorIcon name="key" class="mr-2" />
+        <div class="text-ellipsis">{{ settings.publicData.publicApiKey }}</div>
     </div>
 </template>
 
