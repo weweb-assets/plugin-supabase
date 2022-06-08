@@ -3,7 +3,7 @@
         label="Project URL"
         required
         type="query"
-        placeholder="https://********.supabase.co"
+        placeholder="https://your-project.supabase.co"
         :model-value="settings.publicData.projectUrl"
         @update:modelValue="changeProjectUrl"
     />
