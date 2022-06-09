@@ -22,8 +22,8 @@ export default {
     async fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
-                const { data } = await this.request(collection.config);
-                return { data, error: null };
+                const { data, error } = await this.request(collection.config);
+                return { data, error };
             } catch (err) {
                 return {
                     error: Object.getOwnPropertyNames(err).reduce((obj, key) => ({ ...obj, [key]: err[key] }), {}),
@@ -47,7 +47,7 @@ export default {
         if (wwUtils) {
             wwUtils.log({ label: 'Request table', preview: table });
         }
-        return this.instance.from(table);
+        return this.instance.from(table).select();
     },
 };
 

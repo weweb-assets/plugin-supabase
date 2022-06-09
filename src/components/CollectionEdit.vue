@@ -37,7 +37,10 @@ export default {
             };
         },
         tablesOptions() {
-            return this.plugin.doc.tables || [];
+            return Object.keys(this.plugin.doc.definitions || {}).map(tableName => ({
+                label: tableName,
+                value: tableName,
+            }));
         },
     },
     methods: {
