@@ -9,14 +9,12 @@ import { createClient } from '@supabase/supabase-js';
 
 export default {
     instance: null,
+    doc: null,
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
     async onLoad(settings) {
-        await this.load(settings.publicData.projectUrl, settings.publicData.publicApiKey);
-    },
-    async load(projectUrl, publicApiKey) {
-        this.instance = createClient(projectUrl, publicApiKey);
+        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
     },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
@@ -38,5 +36,17 @@ export default {
     /*=============================================m_ÔÔ_m=============================================\
         Supabase API
     \================================================================================================*/
+    async load(projectUrl, apiKey) {
+        this.instance = createClient(projectUrl, apiKey);
+        this.fetchDoc(projectUrl, apiKey);
+    },
+    async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
+        this.doc = await getDoc(projectUrl, apiKey);
+    },
     async request({}, wwUtils) {},
+};
+
+const getDoc = async (url, apiKey) => {
+    const { data } = await axios.get(`${url}/rest/v1/?apikey=${apiKey}`);
+    return data;
 };

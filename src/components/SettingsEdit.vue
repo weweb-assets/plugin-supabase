@@ -12,23 +12,9 @@
         required
         type="query"
         placeholder="ey********"
-        :model-value="settings.publicData.publicApiKey"
-        @update:modelValue="changePublicApiKey"
+        :model-value="settings.publicData.apiKey"
+        @update:modelValue="changeApiKey"
     />
-    <wwEditorFormRow required label="Private API key">
-        <wwEditorInputText
-            type="text"
-            placeholder="ey********"
-            :model-value="settings.privateData.privateApiKey"
-            :style="{ '-webkit-text-security': isKeyVisible ? 'none' : 'disc' }"
-            large
-            @update:modelValue="changePrivateApiKey"
-        />
-    </wwEditorFormRow>
-    <div class="flex items-center">
-        <wwEditorInputSwitch v-model="isKeyVisible" />
-        <span class="ml-2">Show private API key</span>
-    </div>
 </template>
 
 <script>
@@ -51,23 +37,16 @@ export default {
             });
             this.loadInstance();
         },
-        changePublicApiKey(publicApiKey) {
+        changeapiKey(apiKey) {
             this.$emit('update:settings', {
                 ...this.settings,
-                publicData: { ...this.settings.publicData, publicApiKey },
-            });
-            this.loadInstance();
-        },
-        changePrivateApiKey(privateApiKey) {
-            this.$emit('update:settings', {
-                ...this.settings,
-                privateData: { ...this.settings.privateData, privateApiKey },
+                publicData: { ...this.settings.publicData, apiKey },
             });
             this.loadInstance();
         },
         loadInstance() {
-            if (!this.settings.publicData.projectUrl || !this.settings.publicData.publicApiKey) return;
-            this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.publicApiKey);
+            if (!this.settings.publicData.projectUrl || !this.settings.publicData.apiKey) return;
+            this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
     },
 };

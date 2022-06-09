@@ -4,11 +4,7 @@ export default {
             edit: () => import('./src/components/SettingsEdit.vue'),
             summary: () => import('./src/components/SettingsSummary.vue'),
             getIsValid(settings) {
-                return (
-                    !!settings.publicData.projectUrl &&
-                    !!settings.publicData.publicApiKey &&
-                    !!settings.privateData.privateApiKey
-                );
+                return !!settings.publicData.projectUrl && !!settings.publicData.apiKey;
             },
         },
         // collection: {

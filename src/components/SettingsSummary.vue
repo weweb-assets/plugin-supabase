@@ -3,13 +3,9 @@
         <wwEditorIcon name="link" class="mr-2" />
         <div class="text-ellipsis">{{ settings.publicData.projectUrl }}</div>
     </div>
-    <div class="flex items-center body-2 mb-2">
-        <wwEditorIcon name="key" class="mr-2" />
-        <div class="text-ellipsis">{{ settings.publicData.publicApiKey }}</div>
-    </div>
     <div class="flex items-center body-2">
         <wwEditorIcon name="key" class="mr-2" />
-        <div class="text-ellipsis">{{ settings.privateData.privateApiKey.replace(/./g, '*') }}</div>
+        <div class="text-ellipsis">{{ settings.publicData.apiKey }}</div>
     </div>
 </template>
 
