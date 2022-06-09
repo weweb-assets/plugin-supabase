@@ -8,7 +8,7 @@
                 required
                 :model-value="table"
                 :options="tablesOptions"
-                @update:modelValue="setProp('table', $event)"
+                @update:modelValue="setTable"
             />
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
@@ -44,6 +44,9 @@ export default {
         this.definitions = this.plugin.doc.definitions || {};
     },
     methods: {
+        setTable(table) {
+            this.$emit('update:args', { ...this.args, table });
+        },
         async fetchTables() {
             try {
                 this.isLoading = true;
