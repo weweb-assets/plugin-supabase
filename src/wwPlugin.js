@@ -3,7 +3,11 @@ import './components/SettingsEdit.vue';
 import './components/SettingsSummary.vue';
 import './components/CollectionEdit.vue';
 import './components/CollectionSummary.vue';
-// import './components/Request.vue';
+import './components/Select.vue';
+import './components/Insert.vue';
+import './components/Update.vue';
+import './components/Upsert.vue';
+import './components/Delete.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
 
@@ -24,7 +28,7 @@ export default {
     async fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
-                const { data, error } = await this.request(collection.config);
+                const { data, error } = await this.instance.from(collection.config.table).select();
                 return { data, error };
             } catch (err) {
                 return {
@@ -49,11 +53,20 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async request({ table }, wwUtils) {
-        if (wwUtils) {
-            wwUtils.log({ label: 'Request table', preview: table });
-        }
+    async select({ table }, wwUtils) {
         return this.instance.from(table).select();
+    },
+    async insert({ table }, wwUtils) {
+        return this.instance.from(table).insert();
+    },
+    async update({ table }, wwUtils) {
+        return this.instance.from(table).update();
+    },
+    async upsert({ table }, wwUtils) {
+        return this.instance.from(table).upsert();
+    },
+    async delete({ table }, wwUtils) {
+        return this.instance.from(table).delete();
     },
 };
 

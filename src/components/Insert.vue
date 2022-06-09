@@ -6,7 +6,7 @@
                 type="select"
                 placeholder="Select a table"
                 required
-                :model-value="database.table"
+                :model-value="table"
                 :options="tablesOptions"
                 @update:modelValue="setProp('table', $event)"
             />
@@ -20,22 +20,18 @@
 export default {
     props: {
         plugin: { type: Object, required: true },
-        collection: { type: Object, required: true },
-        config: { type: Object, required: true },
+        args: { type: Object, default: () => {} },
     },
-    emits: ['update:config'],
+    emits: ['update:args'],
     data() {
         return {
-            isLoading: false,
             definitions: {},
+            isLoading: false,
         };
     },
     computed: {
-        database() {
-            return {
-                table: null,
-                ...this.config,
-            };
+        table() {
+            return this.args.table;
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
@@ -58,9 +54,6 @@ export default {
             } finally {
                 this.isLoading = false;
             }
-        },
-        setProp(key, value) {
-            this.$emit('update:config', { ...this.api, [key]: value });
         },
     },
 };

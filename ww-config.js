@@ -16,14 +16,50 @@ export default {
         },
     },
     actions: [
-        // {
-        //     name: 'Supabase Request',
-        //     code: 'request',
-        //     parameters: [],
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Request.vue'),
-        //     /* wwEditor:end */
-        // },
+        {
+            name: 'Select',
+            code: 'select',
+            parameters: [],
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Select.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Insert',
+            code: 'insert',
+            parameters: [],
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Insert.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Update',
+            code: 'update',
+            parameters: [],
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Update.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Upsert',
+            code: 'upsert',
+            parameters: [],
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Upsert.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Delete',
+            code: 'delete',
+            parameters: [],
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Delete.vue'),
+            /* wwEditor:end */
+        },
     ],
 };
