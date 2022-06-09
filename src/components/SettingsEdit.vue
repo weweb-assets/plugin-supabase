@@ -24,11 +24,6 @@ export default {
         settings: { type: Object, required: true },
     },
     emits: ['update:settings'],
-    data() {
-        return {
-            isKeyVisible: false,
-        };
-    },
     methods: {
         changeProjectUrl(projectUrl) {
             this.$emit('update:settings', {
@@ -37,7 +32,7 @@ export default {
             });
             this.loadInstance();
         },
-        changeapiKey(apiKey) {
+        changeApiKey(apiKey) {
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, apiKey },
@@ -51,21 +46,3 @@ export default {
     },
 };
 </script>
-
-<style lang="scss" scoped>
-.airtable-settings-edit {
-    display: flex;
-    flex-direction: column;
-    &__link {
-        color: var(--ww-color-blue-500);
-        margin-left: var(--ww-spacing-02);
-    }
-    &__row {
-        display: flex;
-        align-items: center;
-    }
-    &__radio-label {
-        margin-left: var(--ww-spacing-02);
-    }
-}
-</style>
