@@ -1,8 +1,8 @@
 /* wwEditor:start */
 import './components/SettingsEdit.vue';
 import './components/SettingsSummary.vue';
-// import './components/CollectionEdit.vue';
-// import './components/CollectionSummary.vue';
+import './components/CollectionEdit.vue';
+import './components/CollectionSummary.vue';
 // import './components/Request.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
@@ -43,7 +43,12 @@ export default {
     async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
         this.doc = await getDoc(projectUrl, apiKey);
     },
-    async request({}, wwUtils) {},
+    async request({ table }, wwUtils) {
+        if (wwUtils) {
+            wwUtils.log({ label: 'Request table', preview: table });
+        }
+        return this.instance.from(table);
+    },
 };
 
 const getDoc = async (url, apiKey) => {

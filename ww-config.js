@@ -7,13 +7,13 @@ export default {
                 return !!settings.publicData.projectUrl && !!settings.publicData.apiKey;
             },
         },
-        // collection: {
-        //     edit: () => import('./src/components/CollectionEdit.vue'),
-        //     summary: () => import('./src/components/CollectionSummary.vue'),
-        //     getIsValid({}) {
-        //         return true;
-        //     },
-        // },
+        collection: {
+            edit: () => import('./src/components/CollectionEdit.vue'),
+            summary: () => import('./src/components/CollectionSummary.vue'),
+            getIsValid({ table }) {
+                return !!table;
+            },
+        },
     },
     actions: [
         // {
