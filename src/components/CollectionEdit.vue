@@ -27,6 +27,7 @@ export default {
     data() {
         return {
             isLoading: false,
+            definitions: {},
         };
     },
     computed: {
@@ -37,7 +38,7 @@ export default {
             };
         },
         tablesOptions() {
-            return Object.keys(this.plugin.doc.definitions || {}).map(tableName => ({
+            return Object.keys(this.definitions).map(tableName => ({
                 label: tableName,
                 value: tableName,
             }));
@@ -48,6 +49,7 @@ export default {
             try {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
+                this.definitions = this.plugin.doc.definitions || {};
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {

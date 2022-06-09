@@ -9,7 +9,9 @@ import { createClient } from '@supabase/supabase-js';
 
 export default {
     instance: null,
+    /* wwEditor:start */
     doc: null,
+    /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
@@ -38,11 +40,15 @@ export default {
     \================================================================================================*/
     async load(projectUrl, apiKey) {
         this.instance = createClient(projectUrl, apiKey);
-        this.fetchDoc(projectUrl, apiKey);
+        /* wwEditor:start */
+        await this.fetchDoc(projectUrl, apiKey);
+        /* wwEditor:end */
     },
+    /* wwEditor:start */
     async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
         this.doc = await getDoc(projectUrl, apiKey);
     },
+    /* wwEditor:end */
     async request({ table }, wwUtils) {
         if (wwUtils) {
             wwUtils.log({ label: 'Request table', preview: table });
@@ -51,7 +57,9 @@ export default {
     },
 };
 
+/* wwEditor:start */
 const getDoc = async (url, apiKey) => {
     const { data } = await axios.get(`${url}/rest/v1/?apikey=${apiKey}`);
     return data;
 };
+/* wwEditor:end */
