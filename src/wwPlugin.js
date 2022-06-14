@@ -122,7 +122,7 @@ export default {
         return this.instance.from(table).delete().match({ id });
     },
     onSubscribe(payload) {
-        const collections = wwLib.$store.getters['data/getCollections'].filter(
+        const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
             collection =>
                 collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
                 collection.config.table === payload.table
@@ -131,6 +131,12 @@ export default {
         switch (payload.eventType) {
             case 'INSERT':
                 console.log(payload.eventType, payload.new, collections);
+                for (const collection of collections)
+                    wwLib.$store.dispatch('data/setCollection', {
+                        ...collection,
+                        total: collection.total + 1,
+                        data: [...collection.data, payload.new],
+                    });
             case 'UPDATE':
                 console.log(payload.eventType, payload.new, collections);
             case 'UPSERT':
