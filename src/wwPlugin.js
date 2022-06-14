@@ -81,7 +81,7 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).select();
     },
-    async insert({ table, data }, wwUtils) {
+    async insert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
@@ -91,7 +91,7 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).insert([data]);
     },
-    async update({ table, id, data }, wwUtils) {
+    async update({ table, id, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
@@ -101,7 +101,7 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).update(data).match({ id });
     },
-    async upsert({ table, data }, wwUtils) {
+    async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
