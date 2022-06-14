@@ -1,18 +1,32 @@
 export default {
     editor: {
-        settings: {
-            edit: () => import('./src/components/SettingsEdit.vue'),
-            summary: () => import('./src/components/SettingsSummary.vue'),
-            getIsValid(settings) {
-                return !!settings.publicData.projectUrl && !!settings.publicData.apiKey;
+        settings: [
+            {
+                label: 'Configuration',
+                icon: 'advanced',
+                edit: () => import('./src/components/SettingsEdit.vue'),
+                summary: () => import('./src/components/SettingsSummary.vue'),
+                getIsValid(settings) {
+                    return !!settings.publicData.projectUrl && !!settings.publicData.apiKey;
+                },
             },
-        },
+            {
+                label: 'Realtime tables',
+                icon: 'data',
+                edit: () => import('./src/components/RealtimeEdit.vue'),
+                summary: () => import('./src/components/RealtimeSummary.vue'),
+                getIsValid(settings) {
+                    return !!settings.publicData.realtimeTables;
+                },
+            },
+        ],
         collection: {
             edit: () => import('./src/components/CollectionEdit.vue'),
             summary: () => import('./src/components/CollectionSummary.vue'),
             getIsValid({ table }) {
                 return !!table;
             },
+            modes: ['dynamic'],
         },
     },
     actions: [

@@ -1,6 +1,8 @@
 /* wwEditor:start */
 import './components/SettingsEdit.vue';
 import './components/SettingsSummary.vue';
+import './components/RealtimeEdit.vue';
+import './components/RealtimeSummary.vue';
 import './components/CollectionEdit.vue';
 import './components/CollectionSummary.vue';
 import './components/Select.vue';
@@ -21,6 +23,7 @@ export default {
     \================================================================================================*/
     async onLoad(settings) {
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
@@ -42,11 +45,29 @@ export default {
     /*=============================================m_ÔÔ_m=============================================\
         Supabase API
     \================================================================================================*/
+    subscribeTables(realtimeTables) {
+        if (!this.instance) return;
+        this.instance.removeAllSubscriptions();
+        for (const tableName of Object.keys(realtimeTables)) {
+            if (!realtimeTables[tableName]) continue;
+            this.instance.from(tableName).on('*', this.onSubscribe).subscribe();
+        }
+    },
     async load(projectUrl, apiKey) {
-        this.instance = createClient(projectUrl, apiKey);
-        /* wwEditor:start */
-        await this.fetchDoc(projectUrl, apiKey);
-        /* wwEditor:end */
+        if (!projectUrl || !apiKey) return;
+        try {
+            this.instance = createClient(projectUrl, apiKey);
+            /* wwEditor:start */
+            await this.fetchDoc(projectUrl, apiKey);
+            /* wwEditor:end */
+        } catch (err) {
+            this.instance = null;
+            this.doc = null;
+            wwLib.wwLog.error(err);
+            /* wwEditor:start */
+            wwLib.wwNotification.open({ text: 'Invalid Supabase configuration.', color: 'red' });
+            /* wwEditor:end */
+        }
     },
     /* wwEditor:start */
     async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
@@ -54,19 +75,71 @@ export default {
     },
     /* wwEditor:end */
     async select({ table }, wwUtils) {
+        /* wwEditor:start */
+        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
+        /* wwEditor:end */
         return this.instance.from(table).select();
     },
-    async insert({ table }, wwUtils) {
-        return this.instance.from(table).insert();
+    async insert({ table, data }, wwUtils) {
+        /* wwEditor:start */
+        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (wwUtils) {
+            wwUtils.log({ label: 'Table insert', preview: table });
+            wwUtils.log({ label: 'Payload', preview: data });
+        }
+        /* wwEditor:end */
+        return this.instance.from(table).insert([data]);
     },
-    async update({ table }, wwUtils) {
-        return this.instance.from(table).update();
+    async update({ table, id, data }, wwUtils) {
+        /* wwEditor:start */
+        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (wwUtils) {
+            wwUtils.log({ label: 'Table update', preview: table });
+            wwUtils.log({ label: 'Payload', preview: data });
+        }
+        /* wwEditor:end */
+        return this.instance.from(table).update(data).match({ id });
     },
-    async upsert({ table }, wwUtils) {
-        return this.instance.from(table).upsert();
+    async upsert({ table, data }, wwUtils) {
+        /* wwEditor:start */
+        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (wwUtils) {
+            wwUtils.log({ label: 'Table upsert', preview: table });
+            wwUtils.log({ label: 'Payload', preview: data });
+        }
+        /* wwEditor:end */
+        return this.instance.from(table).upsert(data);
     },
-    async delete({ table }, wwUtils) {
-        return this.instance.from(table).delete();
+    async delete({ table, id }, wwUtils) {
+        /* wwEditor:start */
+        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (wwUtils) {
+            wwUtils.log({ label: 'Table delete', preview: table });
+            wwUtils.log({ label: 'ID', preview: id });
+        }
+        /* wwEditor:end */
+        return this.instance.from(table).delete().match({ id });
+    },
+    onSubscribe(payload) {
+        const collections = wwLib.$store.getters['data/getCollections'].filter(
+            collection =>
+                collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
+                collection.config.table === payload.table
+        );
+
+        switch (payload.eventType) {
+            case 'INSERT':
+                console.log(payload.eventType, payload.new, collections);
+            case 'UPDATE':
+                console.log(payload.eventType, payload.new, collections);
+            case 'UPSERT':
+                console.log(payload.eventType, payload.new, collections);
+            case 'DELETE':
+                console.log(payload.eventType, payload.new, collections);
+            default:
+                console.log('action not found', payload.eventType);
+        }
     },
 };
 

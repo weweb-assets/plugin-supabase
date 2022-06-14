@@ -14,7 +14,6 @@ export default {
     props: {
         settings: { type: Object, required: true },
     },
-    emits: ['update:settings'],
 };
 </script>
 
