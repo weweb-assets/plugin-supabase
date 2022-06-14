@@ -1,7 +1,7 @@
 <template>
     <div class="flex items-center body-2 mb-2" v-if="settings.publicData.realtimeTables">
         <wwEditorIcon name="data" class="mr-2" />
-        <div class="text-ellipsis">{{ realtimeTables.join(',') }}</div>
+        <div class="text-ellipsis">{{ realtimeTables.join(',') || 'None' }}</div>
     </div>
 </template>
 
