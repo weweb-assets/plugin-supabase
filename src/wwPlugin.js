@@ -76,14 +76,14 @@ export default {
     /* wwEditor:end */
     async select({ table }, wwUtils) {
         /* wwEditor:start */
-        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
         return this.instance.from(table).select();
     },
     async insert({ table, data }, wwUtils) {
         /* wwEditor:start */
-        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table insert', preview: table });
             wwUtils.log({ label: 'Payload', preview: data });
@@ -93,7 +93,7 @@ export default {
     },
     async update({ table, id, data }, wwUtils) {
         /* wwEditor:start */
-        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table update', preview: table });
             wwUtils.log({ label: 'Payload', preview: data });
@@ -103,7 +103,7 @@ export default {
     },
     async upsert({ table, data }, wwUtils) {
         /* wwEditor:start */
-        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table upsert', preview: table });
             wwUtils.log({ label: 'Payload', preview: data });
@@ -113,7 +113,7 @@ export default {
     },
     async delete({ table, id }, wwUtils) {
         /* wwEditor:start */
-        if (this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table delete', preview: table });
             wwUtils.log({ label: 'ID', preview: id });
