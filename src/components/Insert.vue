@@ -32,7 +32,7 @@
             :type="property.type"
             :required="property.required"
             :model-value="data[property.name]"
-            @update:modeValue="update"
+            @update:modeValue="setData({ ...data, [property.name]: $event })"
             bindable
         />
     </template>
