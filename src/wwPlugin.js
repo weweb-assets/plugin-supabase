@@ -130,7 +130,6 @@ export default {
 
         switch (payload.eventType) {
             case 'INSERT':
-                console.log(payload.eventType, payload.new, collections);
                 for (const collection of collections)
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
@@ -138,13 +137,26 @@ export default {
                         data: [...collection.data, payload.new],
                     });
             case 'UPDATE':
-                console.log(payload.eventType, payload.new, collections);
+                for (const collection of collections) {
+                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const data = [...collection.data];
+                    data.splice(itemIndex, 1, payload.new);
+                    wwLib.$store.dispatch('data/setCollection', { ...collection, data });
+                }
             case 'UPSERT':
-                console.log(payload.eventType, payload.new, collections);
+                for (const collection of collections) {
+                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const data = [...collection.data];
+                    itemIndex !== -1 ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
+                    wwLib.$store.dispatch('data/setCollection', { ...collection, data });
+                }
             case 'DELETE':
-                console.log(payload.eventType, payload.new, collections);
-            default:
-                console.log('action not found', payload.eventType);
+                for (const collection of collections) {
+                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const data = [...collection.data];
+                    data.splice(itemIndex, 1);
+                    wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
+                }
         }
     },
 };
