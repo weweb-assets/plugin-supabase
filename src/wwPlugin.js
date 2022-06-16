@@ -31,7 +31,11 @@ export default {
     async fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
-                const { data, error } = await this.instance.from(collection.config.table).select();
+                const fields =
+                    collection.config.fieldsMode === 'guided'
+                        ? (collection.config.dataFields || []).join(', ')
+                        : collection.config.dataFieldsAdvanced;
+                const { data, error } = await this.instance.from(collection.config.table).select(fields || undefined);
                 return { data, error };
             } catch (err) {
                 return {
@@ -80,7 +84,9 @@ export default {
         if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        return this.instance.from(table).select(fields || undefined);
+        const { data, error } = this.instance.from(table).select(fields || undefined);
+        if (error) throw error;
+        return data;
     },
     async insert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */

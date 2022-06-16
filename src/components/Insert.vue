@@ -21,7 +21,7 @@
             multiple
             :options="tablePropertiesOptions"
             :model-value="dataFields"
-            placeholder="All data fields"
+            placeholder="All fields"
             @update:modelValue="setDataFields"
         />
         <wwEditorInputRow

@@ -13,6 +13,31 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorFormRow label="Fields" required v-if="database.table">
+        <wwEditorInputRadio
+            class="mb-2"
+            :model-value="database.fieldsMode"
+            :choices="fieldsModeChoices"
+            small
+            @update:modelValue="setProp(fieldsMode, $event)"
+        />
+        <wwEditorInput
+            v-if="fieldsMode === 'guided'"
+            type="select"
+            multiple
+            :options="tablePropertiesOptions"
+            :model-value="database.dataFields"
+            placeholder="All fields"
+            @update:modelValue="setProp(dataFields, $event)"
+        />
+        <wwEditorInput
+            v-else
+            type="string"
+            :model-value="database.dataFieldsAdvanced"
+            placeholder="column, linkedColumn(column)"
+            @update:modelValue="setProp(dataFieldsAdvanced, $event)"
+        />
+    </wwEditorFormRow>
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -28,12 +53,19 @@ export default {
         return {
             isLoading: false,
             definitions: {},
+            fieldsModeChoices: [
+                { label: 'Guided', value: 'guided', default: true },
+                { label: 'Advanced', value: 'advanced' },
+            ],
         };
     },
     computed: {
         database() {
             return {
                 table: null,
+                fieldsMode: 'guided',
+                dataFields: {},
+                dataFieldsAdvanced: {},
                 ...this.config,
             };
         },
@@ -41,6 +73,23 @@ export default {
             return Object.keys(this.definitions).map(tableName => ({
                 label: tableName,
                 value: tableName,
+            }));
+        },
+        tableProperties() {
+            if (!this.definitions[this.table]) return [];
+            return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
+                name: propertyName,
+                type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                required:
+                    this.definitions[this.table].required.includes(propertyName) &&
+                    !this.definitions[this.table].properties[propertyName].default,
+                default: this.definitions[this.table].properties[propertyName].default,
+            }));
+        },
+        tablePropertiesOptions() {
+            return this.tableProperties.map(property => ({
+                label: property.name,
+                value: property.name,
             }));
         },
     },

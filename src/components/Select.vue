@@ -13,11 +13,12 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
-    <wwEditorFormRow label="Fields" required>
+    <wwEditorFormRow label="Fields" required v-if="table">
         <wwEditorInputRadio
+            class="mb-2"
             :model-value="fieldsMode"
             :choices="fieldsModeChoices"
-            :small="small"
+            small
             @update:modelValue="setFieldsMode"
         />
         <wwEditorInput
@@ -26,7 +27,7 @@
             multiple
             :options="tablePropertiesOptions"
             :model-value="dataFields"
-            placeholder="All data fields"
+            placeholder="All fields"
             @update:modelValue="setDataFields"
         />
         <wwEditorInput
@@ -44,7 +45,7 @@
 export default {
     props: {
         plugin: { type: Object, required: true },
-        args: { type: Object, default: () => {} },
+        args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
     },
     emits: ['update:args'],
     data() {
