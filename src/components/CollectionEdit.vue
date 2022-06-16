@@ -22,7 +22,7 @@
             @update:modelValue="setProp('fieldsMode', $event)"
         />
         <wwEditorInput
-            v-if="fieldsMode === 'guided'"
+            v-if="database.fieldsMode === 'guided'"
             type="select"
             multiple
             :options="tablePropertiesOptions"
