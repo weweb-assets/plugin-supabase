@@ -75,11 +75,11 @@ export default {
         },
         setData(data) {
             for (const dataKey in data) {
-                if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
+                if (!this.tableProperties.find(field => field.name === dataKey)) {
                     delete data[dataKey];
                 }
             }
-            for (const field of this.tablePropertiesFiltered) {
+            for (const field of this.tableProperties) {
                 data[field.name] = data[field.name] || null;
             }
             this.$emit('update:args', { ...this.args, data });
