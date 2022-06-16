@@ -13,6 +13,30 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorFormRow label="Fields" required>
+        <wwEditorInputRadio
+            :model-value="fieldsMode"
+            :choices="fieldsModeChoices"
+            :small="small"
+            @update:modelValue="setFieldsMode"
+        />
+        <wwEditorInput
+            v-if="fieldsMode === 'guided'"
+            type="select"
+            multiple
+            :options="tablePropertiesOptions"
+            :model-value="dataFields"
+            placeholder="All data fields"
+            @update:modelValue="setDataFields"
+        />
+        <wwEditorInput
+            v-else
+            type="string"
+            :model-value="dataFieldsAdvanced"
+            placeholder="column, linkedColumn(column)"
+            @update:modelValue="setDataFieldsAdvanced"
+        />
+    </wwEditorFormRow>
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -27,16 +51,46 @@ export default {
         return {
             definitions: {},
             isLoading: false,
+            fieldsModeChoices: [
+                { label: 'Guided', value: 'guided', default: true },
+                { label: 'Advanced', value: 'advanced' },
+            ],
         };
     },
     computed: {
         table() {
             return this.args.table;
         },
+        fieldsMode() {
+            return this.args.fieldsMode;
+        },
+        dataFields() {
+            return this.args.dataFields;
+        },
+        dataFieldsAdvanced() {
+            return this.args.dataFieldsAdvanced;
+        },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
                 label: tableName,
                 value: tableName,
+            }));
+        },
+        tableProperties() {
+            if (!this.definitions[this.table]) return [];
+            return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
+                name: propertyName,
+                type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                required:
+                    this.definitions[this.table].required.includes(propertyName) &&
+                    !this.definitions[this.table].properties[propertyName].default,
+                default: this.definitions[this.table].properties[propertyName].default,
+            }));
+        },
+        tablePropertiesOptions() {
+            return this.tableProperties.map(property => ({
+                label: property.name,
+                value: property.name,
             }));
         },
     },
@@ -46,6 +100,15 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table });
+        },
+        setFieldsMode(fieldsMode) {
+            this.$emit('update:args', { ...this.args, fieldsMode });
+        },
+        setDataFields(dataFields) {
+            this.$emit('update:args', { ...this.args, dataFields });
+        },
+        setDataFieldsAdvanced(dataFieldsAdvanced) {
+            this.$emit('update:args', { ...this.args, dataFieldsAdvanced });
         },
         async fetchTables() {
             try {

@@ -74,12 +74,13 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async select({ table }, wwUtils) {
+    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
-        return this.instance.from(table).select();
+        const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
+        return this.instance.from(table).select(fields || undefined);
     },
     async insert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
