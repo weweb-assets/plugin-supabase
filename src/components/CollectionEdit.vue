@@ -64,8 +64,8 @@ export default {
             return {
                 table: null,
                 fieldsMode: 'guided',
-                dataFields: {},
-                dataFieldsAdvanced: {},
+                dataFields: [],
+                dataFieldsAdvanced: '',
                 ...this.config,
             };
         },
