@@ -42,7 +42,7 @@ export default {
         {
             name: 'Insert',
             code: 'insert',
-            parameters: [],
+            parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Insert.vue'),
@@ -51,7 +51,10 @@ export default {
         {
             name: 'Update',
             code: 'update',
-            parameters: [],
+            parameters: [
+                { name: 'primaryData', type: 'object' },
+                { name: 'data', type: 'object' },
+            ],
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Update.vue'),
@@ -60,7 +63,7 @@ export default {
         {
             name: 'Upsert',
             code: 'upsert',
-            parameters: [],
+            parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Upsert.vue'),
@@ -69,7 +72,7 @@ export default {
         {
             name: 'Delete',
             code: 'delete',
-            parameters: [],
+            parameters: [{ name: 'primaryData', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Delete.vue'),

@@ -91,15 +91,16 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).insert([data]);
     },
-    async update({ table, id, data = {} }, wwUtils) {
+    async update({ table, id, data = {}, dataMatch = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!Object.keys(dataMatch).length) throw new Error('No primary key defined.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table update', preview: table });
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        return this.instance.from(table).update(data).match({ id });
+        return this.instance.from(table).update(data).match(dataMatch);
     },
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -111,15 +112,16 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).upsert(data);
     },
-    async delete({ table, data }, wwUtils) {
+    async delete({ table, primaryData = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table delete', preview: table });
             wwUtils.log({ label: 'ID', preview: id });
         }
         /* wwEditor:end */
-        return this.instance.from(table).delete().match(data);
+        return this.instance.from(table).delete().match(primaryData);
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
