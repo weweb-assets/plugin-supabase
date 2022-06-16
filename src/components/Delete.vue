@@ -13,6 +13,17 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorInputRow
+        v-if="idProperty"
+        label="id"
+        placeholder="Enter an ID"
+        :type="idType"
+        required
+        :model-value="id"
+        @update:modelValue="setId"
+        bindable
+    />
+    <div v-else>Table must have a column "id".</div>
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -33,11 +44,25 @@ export default {
         table() {
             return this.args.table;
         },
+        id() {
+            return this.args.id;
+        },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
                 label: tableName,
                 value: tableName,
             }));
+        },
+        idProperty() {
+            return (
+                this.definitions[this.table] &&
+                this.definitions[this.table].properties &&
+                this.definitions[this.table].properties.id
+            );
+        },
+        idType() {
+            const type = this.idProperty && this.idProperty.type;
+            return type === 'string' ? 'query' : type;
         },
     },
     mounted() {
@@ -46,6 +71,9 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table });
+        },
+        setId(id) {
+            this.$emit('update:args', { ...this.args, id });
         },
         async fetchTables() {
             try {
