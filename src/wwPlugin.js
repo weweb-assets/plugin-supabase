@@ -159,6 +159,10 @@ export default {
                 }
         }
     },
+    types: {
+        integer: 'number',
+        string: 'query',
+    },
 };
 
 /* wwEditor:start */

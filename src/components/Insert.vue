@@ -72,10 +72,7 @@ export default {
             if (!this.definitions[this.table]) return [];
             return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
                 name: propertyName,
-                type:
-                    this.definitions[this.table].properties[propertyName].type === 'string'
-                        ? 'query'
-                        : this.definitions[this.table].properties[propertyName].type,
+                type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
                 required:
                     this.definitions[this.table].required.includes(propertyName) &&
                     !this.definitions[this.table].properties[propertyName].default,

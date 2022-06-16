@@ -61,14 +61,8 @@ export default {
                 )
                 .map(propertyName => ({
                     name: propertyName,
-                    type:
-                        this.definitions[this.table].properties[propertyName].type === 'string'
-                            ? 'query'
-                            : this.definitions[this.table].properties[propertyName].type,
-                    required:
-                        this.definitions[this.table].required.includes(propertyName) &&
-                        !this.definitions[this.table].properties[propertyName].default,
-                    default: this.definitions[this.table].properties[propertyName].default,
+                    type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                    required: this.definitions[this.table].required.includes(propertyName),
                 }));
         },
     },
