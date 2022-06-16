@@ -111,7 +111,7 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).upsert(data);
     },
-    async delete({ table, id }, wwUtils) {
+    async delete({ table, data }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (wwUtils) {
@@ -119,7 +119,7 @@ export default {
             wwUtils.log({ label: 'ID', preview: id });
         }
         /* wwEditor:end */
-        return this.instance.from(table).delete().match({ id });
+        return this.instance.from(table).delete().match(data);
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
