@@ -109,7 +109,7 @@ export default {
             }
         },
         setProp(key, value) {
-            this.$emit('update:config', { ...this.api, [key]: value });
+            this.$emit('update:config', { ...this.database, [key]: value });
         },
     },
 };
