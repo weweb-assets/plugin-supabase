@@ -19,7 +19,7 @@
             :model-value="database.fieldsMode"
             :choices="fieldsModeChoices"
             small
-            @update:modelValue="setProp(fieldsMode, $event)"
+            @update:modelValue="setProp('fieldsMode', $event)"
         />
         <wwEditorInput
             v-if="fieldsMode === 'guided'"
@@ -28,14 +28,14 @@
             :options="tablePropertiesOptions"
             :model-value="database.dataFields"
             placeholder="All fields"
-            @update:modelValue="setProp(dataFields, $event)"
+            @update:modelValue="setProp('dataFields', $event)"
         />
         <wwEditorInput
             v-else
             type="string"
             :model-value="database.dataFieldsAdvanced"
             placeholder="column, linkedColumn(column)"
-            @update:modelValue="setProp(dataFieldsAdvanced, $event)"
+            @update:modelValue="setProp('dataFieldsAdvanced', $event)"
         />
     </wwEditorFormRow>
     <wwLoader :loading="isLoading" />
