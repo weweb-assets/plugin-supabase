@@ -14,16 +14,16 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <wwEditorInputRow
-        v-if="idProperty"
-        label="id"
-        placeholder="Enter an ID"
-        :type="idType"
-        required
-        :model-value="id"
-        @update:modelValue="setId"
+        v-for="property of tableProperties"
+        :key="property.name"
+        :label="property.name"
+        placeholder="Enter a value"
+        :type="property.type"
+        :required="property.required"
+        :model-value="data[property.name]"
+        @update:modelValue="setData({ ...data, [property.name]: $event })"
         bindable
     />
-    <div v-else>Table must have a column "id".</div>
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -44,8 +44,8 @@ export default {
         table() {
             return this.args.table;
         },
-        id() {
-            return this.args.id;
+        data() {
+            return this.args.data || {};
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
@@ -53,16 +53,23 @@ export default {
                 value: tableName,
             }));
         },
-        idProperty() {
-            return (
-                this.definitions[this.table] &&
-                this.definitions[this.table].properties &&
-                this.definitions[this.table].properties.id
-            );
-        },
-        idType() {
-            const type = this.idProperty && this.idProperty.type;
-            return type === 'string' ? 'query' : type;
+        tableProperties() {
+            if (!this.definitions[this.table]) return [];
+            return Object.keys(this.definitions[this.table].properties)
+                .filter(propertyName =>
+                    (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>')
+                )
+                .map(propertyName => ({
+                    name: propertyName,
+                    type:
+                        this.definitions[this.table].properties[propertyName].type === 'string'
+                            ? 'query'
+                            : this.definitions[this.table].properties[propertyName].type,
+                    required:
+                        this.definitions[this.table].required.includes(propertyName) &&
+                        !this.definitions[this.table].properties[propertyName].default,
+                    default: this.definitions[this.table].properties[propertyName].default,
+                }));
         },
     },
     mounted() {
@@ -72,8 +79,16 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table });
         },
-        setId(id) {
-            this.$emit('update:args', { ...this.args, id });
+        setData(data) {
+            for (const dataKey in data) {
+                if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
+                    delete data[dataKey];
+                }
+            }
+            for (const field of this.tablePropertiesFiltered) {
+                data[field.name] = data[field.name] || null;
+            }
+            this.$emit('update:args', { ...this.args, data });
         },
         async fetchTables() {
             try {
