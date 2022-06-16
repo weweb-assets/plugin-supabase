@@ -91,16 +91,17 @@ export default {
         /* wwEditor:end */
         return this.instance.from(table).insert([data]);
     },
-    async update({ table, id, data = {}, dataMatch = {} }, wwUtils) {
+    async update({ table, primaryData = {}, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (!Object.keys(dataMatch).length) throw new Error('No primary key defined.');
+        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table update', preview: table });
+            wwUtils.log({ label: 'Primary key', preview: primaryData });
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        return this.instance.from(table).update(data).match(dataMatch);
+        return this.instance.from(table).update(data).match(primaryData);
     },
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -118,7 +119,7 @@ export default {
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         if (wwUtils) {
             wwUtils.log({ label: 'Table delete', preview: table });
-            wwUtils.log({ label: 'ID', preview: id });
+            wwUtils.log({ label: 'Primary key', preview: primaryData });
         }
         /* wwEditor:end */
         return this.instance.from(table).delete().match(primaryData);
@@ -130,6 +131,7 @@ export default {
                 collection.config.table === payload.table
         );
 
+        console.log('onSubscribe', payload);
         switch (payload.eventType) {
             case 'INSERT':
                 for (const collection of collections)
