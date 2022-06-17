@@ -150,7 +150,11 @@ export default {
         switch (payload.eventType) {
             case 'INSERT':
                 for (const collection of collections) {
-                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
+                    const itemIndex = findIndexFromPrimaryData(
+                        collection.data,
+                        payload.new,
+                        collection.config.primaryData
+                    );
                     if (itemIndex !== -1) continue;
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
@@ -160,21 +164,33 @@ export default {
                 }
             case 'UPDATE':
                 for (const collection of collections) {
-                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
+                    const itemIndex = findIndexFromPrimaryData(
+                        collection.data,
+                        payload.new,
+                        collection.config.primaryData
+                    );
                     const data = [...collection.data];
                     data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
             case 'UPSERT':
                 for (const collection of collections) {
-                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
+                    const itemIndex = findIndexFromPrimaryData(
+                        collection.data,
+                        payload.new,
+                        collection.config.primaryData
+                    );
                     const data = [...collection.data];
                     itemIndex !== -1 ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
             case 'DELETE':
                 for (const collection of collections) {
-                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.old, collection.primaryData);
+                    const itemIndex = findIndexFromPrimaryData(
+                        collection.data,
+                        payload.old,
+                        collection.config.primaryData
+                    );
                     const data = [...collection.data];
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
