@@ -75,6 +75,18 @@ export default {
                 value: tableName,
             }));
         },
+        primaryProperties() {
+            if (!this.definitions[this.table]) return [];
+            return Object.keys(this.definitions[this.table].properties)
+                .filter(propertyName =>
+                    (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>')
+                )
+                .map(propertyName => ({
+                    name: propertyName,
+                    type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                    required: this.definitions[this.table].required.includes(propertyName),
+                }));
+        },
         tableProperties() {
             if (!this.definitions[this.table]) return [];
             return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
@@ -91,6 +103,17 @@ export default {
                 label: property.name,
                 value: property.name,
             }));
+        },
+    },
+    watch: {
+        definitions: {
+            immediate: true,
+            handler() {
+                this.setProp(
+                    'primaryData',
+                    this.primaryProperties.map(primaryProperty => primaryProperty.name)
+                );
+            },
         },
     },
     mounted() {

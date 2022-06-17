@@ -96,7 +96,9 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        return this.instance.from(table).insert([data]);
+        const result = await this.instance.from(table).insert([data]);
+        if (!settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'INSERT' });
+        return result;
     },
     async update({ table, primaryData = {}, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -108,7 +110,9 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        return this.instance.from(table).update(data).match(primaryData);
+        const result = await this.instance.from(table).update(data).match(primaryData);
+        if (!settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPDATE' });
+        return result;
     },
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -118,7 +122,9 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        return this.instance.from(table).upsert(data);
+        const result = await this.instance.from(table).upsert(data);
+        if (!settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPSERT' });
+        return result;
     },
     async delete({ table, primaryData = {} }, wwUtils) {
         /* wwEditor:start */
@@ -129,7 +135,9 @@ export default {
             wwUtils.log({ label: 'Primary key', preview: primaryData });
         }
         /* wwEditor:end */
-        return this.instance.from(table).delete().match(primaryData);
+        const result = await this.instance.from(table).delete().match(primaryData);
+        if (!settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'DELETE' });
+        return result;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
@@ -141,29 +149,32 @@ export default {
         console.log('onSubscribe', payload);
         switch (payload.eventType) {
             case 'INSERT':
-                for (const collection of collections)
+                for (const collection of collections) {
+                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
+                    if (itemIndex !== -1) continue;
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
                         total: collection.total + 1,
                         data: [...collection.data, payload.new],
                     });
+                }
             case 'UPDATE':
                 for (const collection of collections) {
-                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
                     const data = [...collection.data];
                     data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
             case 'UPSERT':
                 for (const collection of collections) {
-                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.new, collection.primaryData);
                     const data = [...collection.data];
                     itemIndex !== -1 ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
             case 'DELETE':
                 for (const collection of collections) {
-                    const itemIndex = collection.data.findIndex(item => item.id === payload.old.id);
+                    const itemIndex = findIndexFromPrimaryData(collection.data, payload.old, collection.primaryData);
                     const data = [...collection.data];
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
@@ -174,6 +185,12 @@ export default {
         integer: 'number',
         string: 'query',
     },
+};
+
+const findIndexFromPrimaryData = (data, obj, primaryData) => {
+    return data.findIndex(item => {
+        primaryData.every(key => item[key] === obj[key]);
+    });
 };
 
 /* wwEditor:start */
