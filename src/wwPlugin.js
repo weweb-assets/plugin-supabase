@@ -162,6 +162,7 @@ export default {
                         data: [...collection.data, payload.new],
                     });
                 }
+                return;
             case 'UPDATE':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
@@ -174,6 +175,7 @@ export default {
                     data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
+                return;
             case 'UPSERT':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
@@ -185,6 +187,7 @@ export default {
                     itemIndex !== -1 ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
+                return;
             case 'DELETE':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
@@ -197,6 +200,7 @@ export default {
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
                 }
+                return;
         }
     },
     types: {
