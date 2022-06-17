@@ -84,7 +84,7 @@ export default {
         if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        const { data, error } = this.instance.from(table).select(fields || undefined);
+        const { data, error } = await this.instance.from(table).select(fields || undefined);
         if (error) throw error;
         return data;
     },
