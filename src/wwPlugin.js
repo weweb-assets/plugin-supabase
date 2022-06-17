@@ -155,7 +155,7 @@ export default {
                         payload.new,
                         collection.config.primaryData
                     );
-                    if (itemIndex !== -1) continue;
+                    if (itemIndex !== -1) return;
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
                         total: collection.total + 1,
@@ -169,6 +169,7 @@ export default {
                         payload.new,
                         collection.config.primaryData
                     );
+                    if (itemIndex !== -1) return;
                     const data = [...collection.data];
                     data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
@@ -191,6 +192,7 @@ export default {
                         payload.old,
                         collection.config.primaryData
                     );
+                    if (itemIndex !== -1) return;
                     const data = [...collection.data];
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
@@ -204,9 +206,7 @@ export default {
 };
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {
-    return data.findIndex(item => {
-        primaryData.every(key => item[key] === obj[key]);
-    });
+    return data.findIndex(item => primaryData.every(key => item[key] === obj[key]));
 };
 
 /* wwEditor:start */
