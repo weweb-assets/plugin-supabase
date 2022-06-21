@@ -34,6 +34,14 @@ export default {
         if (!isSettingsValid && isOtherPluginSettingsValid) {
             this.changeProjectUrl(wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl);
             this.changeApiKey(wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey);
+            this.$emit('update:settings', {
+                ...this.settings,
+                publicData: {
+                    ...this.settings.publicData,
+                    apiKey: wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey,
+                    projectUrl: wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl,
+                },
+            });
         }
     },
     methods: {
