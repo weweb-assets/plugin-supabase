@@ -1,9 +1,12 @@
 <template>
     <wwEditorFormRow label="Enable realtime table">
         <template #append-label>
+            <a class="ww-editor-link ml-2" href="https://supabase.com/docs/guides/api#realtime-api-1" target="_blank">
+                Find it here
+            </a>
             <button type="button" class="ww-editor-button -primary -small ml-auto" @click="fetchTables">refresh</button>
         </template>
-        <div v-for="table in tablesOptions" :key="table.value" class="flex items-center">
+        <div v-for="table in tablesOptions" :key="table.value" class="flex items-center mb-2">
             <wwEditorInputSwitch
                 :modelValue="realtimeTables[table.value]"
                 @update:modelValue="updateReatimeTable(table.value, $event)"
