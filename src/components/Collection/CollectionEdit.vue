@@ -34,7 +34,9 @@
             v-else
             type="string"
             :model-value="database.dataFieldsAdvanced"
-            placeholder="column, linkedColumn(column)"
+            placeholder="id,
+supplier:supplier_id ( name ),
+purchaser:purchaser_id ( name )"
             @update:modelValue="setProp('dataFieldsAdvanced', $event)"
         />
     </wwEditorFormRow>
