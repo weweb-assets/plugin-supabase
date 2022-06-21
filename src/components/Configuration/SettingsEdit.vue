@@ -24,6 +24,18 @@ export default {
         settings: { type: Object, required: true },
     },
     emits: ['update:settings'],
+    mounted() {
+        const isSettingsValid = this.settings.publicData.projectUrl && this.settings.publicData.apiKey;
+        const isOtherPluginSettingsValid =
+            wwLib.wwPlugins.supabaseAuth &&
+            wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl &&
+            wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey &&
+            wwLib.wwPlugins.supabaseAuth.settings.privateData.apiKey;
+        if (!isSettingsValid && isOtherPluginSettingsValid) {
+            this.changeProjectUrl(wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl);
+            this.changeApiKey(wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey);
+        }
+    },
     methods: {
         changeProjectUrl(projectUrl) {
             this.$emit('update:settings', {
