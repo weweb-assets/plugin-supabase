@@ -97,9 +97,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const result = await this.instance.from(table).insert([data]);
+        const { data, error } = await this.instance.from(table).insert([data]);
+        if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'INSERT' });
-        return result;
+        return data;
     },
     async update({ table, primaryData = {}, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -111,9 +112,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const result = await this.instance.from(table).update(data).match(primaryData);
+        const { data, error } = await this.instance.from(table).update(data).match(primaryData);
+        if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPDATE' });
-        return result;
+        return data;
     },
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -123,9 +125,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const result = await this.instance.from(table).upsert(data);
+        const { data, error } = await this.instance.from(table).upsert(data);
+        if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPSERT' });
-        return result;
+        return data;
     },
     async delete({ table, primaryData = {} }, wwUtils) {
         /* wwEditor:start */
@@ -136,9 +139,10 @@ export default {
             wwUtils.log({ label: 'Primary key', preview: primaryData });
         }
         /* wwEditor:end */
-        const result = await this.instance.from(table).delete().match(primaryData);
+        const { data, error } = await this.instance.from(table).delete().match(primaryData);
+        if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'DELETE' });
-        return result;
+        return data;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
