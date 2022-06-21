@@ -1,15 +1,15 @@
 /* wwEditor:start */
-import './components/SettingsEdit.vue';
-import './components/SettingsSummary.vue';
-import './components/RealtimeEdit.vue';
-import './components/RealtimeSummary.vue';
-import './components/CollectionEdit.vue';
-import './components/CollectionSummary.vue';
-import './components/Select.vue';
-import './components/Insert.vue';
-import './components/Update.vue';
-import './components/Upsert.vue';
-import './components/Delete.vue';
+import './components/Configuration/SettingsEdit.vue';
+import './components/Configuration/SettingsSummary.vue';
+import './components/Realtime/SettingsEdit.vue';
+import './components/Realtime/SettingsSummary.vue';
+import './components/Collection/CollectionEdit.vue';
+import './components/Collection/CollectionSummary.vue';
+import './components/Functions/Select.vue';
+import './components/Functions/Insert.vue';
+import './components/Functions/Update.vue';
+import './components/Functions/Upsert.vue';
+import './components/Functions/Delete.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
 
@@ -61,6 +61,7 @@ export default {
         if (!projectUrl || !apiKey) return;
         try {
             this.instance = createClient(projectUrl, apiKey);
+            if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
             await this.fetchDoc(projectUrl, apiKey);
             /* wwEditor:end */

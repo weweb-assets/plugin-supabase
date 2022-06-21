@@ -40,7 +40,6 @@ export default {
             this.loadInstance();
         },
         loadInstance() {
-            if (!this.settings.publicData.projectUrl || !this.settings.publicData.apiKey) return;
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
     },
