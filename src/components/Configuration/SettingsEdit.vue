@@ -30,14 +30,14 @@ export default {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, projectUrl },
             });
-            this.loadInstance();
+            this.$nextTick(this.loadInstance);
         },
         changeApiKey(apiKey) {
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, apiKey },
             });
-            this.loadInstance();
+            this.$nextTick(this.loadInstance);
         },
         loadInstance() {
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
