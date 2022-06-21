@@ -85,9 +85,9 @@ export default {
         if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        const { data, error } = await this.instance.from(table).select(fields || undefined);
+        const { data: result, error } = await this.instance.from(table).select(fields || undefined);
         if (error) throw error;
-        return data;
+        return result;
     },
     async insert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -97,10 +97,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data, error } = await this.instance.from(table).insert([data]);
+        const { data: result, error } = await this.instance.from(table).insert([data]);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'INSERT' });
-        return data;
+        return result;
     },
     async update({ table, primaryData = {}, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -112,10 +112,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data, error } = await this.instance.from(table).update(data).match(primaryData);
+        const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPDATE' });
-        return data;
+        return result;
     },
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
@@ -125,10 +125,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data, error } = await this.instance.from(table).upsert(data);
+        const { data: result, error } = await this.instance.from(table).upsert(data);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPSERT' });
-        return data;
+        return result;
     },
     async delete({ table, primaryData = {} }, wwUtils) {
         /* wwEditor:start */
@@ -139,10 +139,10 @@ export default {
             wwUtils.log({ label: 'Primary key', preview: primaryData });
         }
         /* wwEditor:end */
-        const { data, error } = await this.instance.from(table).delete().match(primaryData);
+        const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'DELETE' });
-        return data;
+        return result;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
