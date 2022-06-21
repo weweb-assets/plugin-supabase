@@ -97,7 +97,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data: result, error } = await this.instance.from(table).insert([data]);
+        const {
+            data: [result],
+            error,
+        } = await this.instance.from(table).insert([data]);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'INSERT' });
         return result;
@@ -112,7 +115,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
+        const {
+            data: [result],
+            error,
+        } = await this.instance.from(table).update(data).match(primaryData);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPDATE' });
         return result;
@@ -125,7 +131,10 @@ export default {
             wwUtils.log({ label: 'Payload', preview: data });
         }
         /* wwEditor:end */
-        const { data: result, error } = await this.instance.from(table).upsert(data);
+        const {
+            data: [result],
+            error,
+        } = await this.instance.from(table).upsert(data);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'UPSERT' });
         return result;
@@ -139,7 +148,10 @@ export default {
             wwUtils.log({ label: 'Primary key', preview: primaryData });
         }
         /* wwEditor:end */
-        const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
+        const {
+            data: [result],
+            error,
+        } = await this.instance.from(table).delete().match(primaryData);
         if (error) throw error;
         if (!this.settings.publicData.realtimeTables[table]) onSubscribe({ eventType: 'DELETE' });
         return result;
