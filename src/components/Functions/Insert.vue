@@ -96,7 +96,7 @@ export default {
     },
     methods: {
         setTable(table) {
-            this.$emit('update:args', { ...this.args, table });
+            this.$emit('update:args', { ...this.args, table, dataFields: [], data: {} });
         },
         setDataFields(dataFields) {
             this.$emit('update:args', { ...this.args, dataFields });

@@ -127,7 +127,7 @@ export default {
     },
     methods: {
         setTable(table) {
-            this.$emit('update:args', { ...this.args, table });
+            this.$emit('update:args', { ...this.args, table, primaryData: {}, dataFields: [], data: {} });
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {

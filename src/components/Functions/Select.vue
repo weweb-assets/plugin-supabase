@@ -100,7 +100,7 @@ export default {
     },
     methods: {
         setTable(table) {
-            this.$emit('update:args', { ...this.args, table });
+            this.$emit('update:args', { ...this.args, table, dataFields: [], dataFieldsAdvanced: '' });
         },
         setFieldsMode(fieldsMode) {
             this.$emit('update:args', { ...this.args, fieldsMode });
