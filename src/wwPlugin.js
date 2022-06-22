@@ -151,7 +151,6 @@ export default {
                 collection.config.table === payload.table
         );
 
-        console.log('onSubscribe', payload);
         switch (payload.eventType) {
             case 'INSERT':
                 for (const collection of collections) {
