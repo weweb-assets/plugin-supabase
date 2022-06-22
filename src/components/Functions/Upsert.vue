@@ -109,7 +109,7 @@ export default {
                 }
             }
             for (const field of this.tablePropertiesFiltered) {
-                data[field.name] = data[field.name] || null;
+                if (!data[field.name]) delete data[field.name];
             }
             this.$emit('update:args', { ...this.args, data });
         },

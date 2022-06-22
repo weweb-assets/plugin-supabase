@@ -136,7 +136,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                primaryData[field.name] = primaryData[field.name] || null;
+                if (!primaryData[field.name]) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
@@ -151,7 +151,7 @@ export default {
                 }
             }
             for (const field of this.tablePropertiesFiltered) {
-                data[field.name] = data[field.name] || null;
+                if (!data[field.name]) delete data[field.name];
             }
             this.$emit('update:args', { ...this.args, data });
         },

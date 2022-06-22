@@ -82,7 +82,7 @@ export default {
                 }
             }
             for (const field of this.tableProperties) {
-                primaryData[field.name] = primaryData[field.name] || null;
+                if (!primaryData[field.name]) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
