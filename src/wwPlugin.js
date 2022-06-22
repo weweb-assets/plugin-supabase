@@ -86,7 +86,7 @@ export default {
         /* wwEditor:end */
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
         const { data: result, error } = await this.instance.from(table).select(fields || undefined);
-        if (error) throw error;
+        if (error) throw new Error(error.message, { cause: error });
         return result;
     },
     async insert({ table, data = {} }, wwUtils) {
@@ -98,7 +98,7 @@ export default {
         }
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).insert([data]);
-        if (error) throw error;
+        if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'INSERT', new: result[0] });
         return result[0];
     },
@@ -113,7 +113,7 @@ export default {
         }
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
-        if (error) throw error;
+        if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'UPDATE', new: result[0] });
         return result[0];
     },
@@ -126,7 +126,7 @@ export default {
         }
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).upsert(data);
-        if (error) throw error;
+        if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'UPSERT', new: result[0] });
         return result[0];
     },
@@ -140,7 +140,7 @@ export default {
         }
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
-        if (error) throw error;
+        if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'DELETE', old: result[0] });
         return result;
     },
