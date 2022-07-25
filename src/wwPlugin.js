@@ -13,6 +13,65 @@ import './components/Functions/Delete.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
 
+function convertCondition({field, operator, value}) {
+    // const isArray = Array.isArray(value)
+
+    switch (operator) {
+        case '$eq':
+            return [field, 'eq', value]
+        case '$ne':
+            return [field, 'neq', value]
+        case '$lt':
+            return [field, 'lt', value]
+        case '$gt':
+            return [field, 'gt', value]
+        case '$lte':
+            return [field, 'lte', value] 
+        case '$gte':
+            return [field, 'gte', value] 
+        case '$iLike:contains': // not possible on array
+            return [field, 'ilike', `%${value}%`]
+        case '$notILike:contains': // not possible on array
+            return [field, 'not.ilike', `%${value}%`]
+        case '$iLike:startsWith':
+            return [field, 'ilike', `${value}%`]
+        case '$iLike:endsWith':
+            return [field, 'ilike', `%${value}`]
+        case '$eq:null':
+            return [field, 'is', 'null']
+        case '$ne:null':
+            return [field, 'not.is', 'null']
+        case '$in':
+            return [field, 'in', `(${value})`]
+        case '$notIn':
+            return [field, 'not.in', `(${value})`]
+        case '$overlap':
+            return [field, 'ov', `{${value}}`]
+        case '$notOverlap':
+            return [field, 'not.ov', `{${value}}`]
+        case '$contains':
+            return [field, 'cs', `{${value}}`]
+        case '$has':
+            return [`${field}->${value}`, 'neq', 'null']
+        default:
+            break;
+    }
+}
+
+function generateFilter(config) {
+    if(!config) return ''
+
+    const conditions = config.conditions.map(condition => {
+        return condition.link ? generateFilter(condition) : convertCondition(condition).join('.')
+    }).filter(condition => condition)
+    
+    if(!conditions.length) return ''
+
+    const filter = `${config.link.slice(1)}(${conditions.join()})`
+
+    return filter
+}
+
 export default {
     instance: null,
     /* wwEditor:start */
@@ -35,15 +94,28 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                const { data, error } = await this.instance.from(collection.config.table).select(fields || undefined);
-                return { data, error };
+                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' })
+                const filter = generateFilter(collection.filter)
+                
+                if (filter) query.or(filter)
+
+                if (collection.limit) {
+                    query.range(collection.offset, collection.offset + collection.limit - 1)
+                }
+
+                for (const sort of collection.sort) {
+                    query.order(sort.key, { ascending: sort.direction === 'ASC' })
+                }
+
+                const { data, error, count } = await query
+                return { data, error, total: count };
             } catch (err) {
                 return {
                     error: Object.getOwnPropertyNames(err).reduce((obj, key) => ({ ...obj, [key]: err[key] }), {}),
                 };
             }
         } else {
-            return { data: null, error: null };
+            return { data: null, error: null, total: 0 };
         }
     },
     /*=============================================m_ÔÔ_m=============================================\
