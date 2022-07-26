@@ -34,8 +34,6 @@ export function convertCondition({field, operator, value}) {
             return [field, 'not.ov', `{${value}}`]
         case '$contains':
             return [field, 'cs', `{${value}}`]
-        case '$has':
-            return [`${field}->${value}`, 'neq', 'null']
         default:
             break;
     }

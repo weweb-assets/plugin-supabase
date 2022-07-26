@@ -62,8 +62,6 @@ export default {
                     { label: 'Has any of', value: '$overlap', acceptedTypes: ['array'], defaultValue: [] },
                     { label: 'Has none of', value: '$notOverlap', acceptedTypes: ['array'], defaultValue: [] },
                     { label: 'Has all of', value: '$contains', acceptedTypes: ['array'], defaultValue: [] },
-                    { label: 'Has the property', value: '$has', acceptedTypes: ['object'], defaultValue: '' },
-                    // { label: 'Has not the property', value: '$hasNot', acceptedTypes: ['object'], defaultValue: '' },
                 ],
                 typeDefaultOperator: {
                     string: '$iLike:contains',
