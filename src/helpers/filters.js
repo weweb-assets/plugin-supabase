@@ -41,6 +41,7 @@ export function convertCondition({field, operator, value}) {
 
 export function generateFilter(config) {
     if(!config) return ''
+    if(!config.link || !config.conditions) return ''
 
     const conditions = config.conditions.map(condition => {
         return condition.link ? generateFilter(condition) : convertCondition(condition).join('.')
