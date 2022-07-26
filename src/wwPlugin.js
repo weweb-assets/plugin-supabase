@@ -13,6 +13,8 @@ import './components/Functions/Delete.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
 
+import { generateFilter } from './helpers/filters'
+
 export default {
     instance: null,
     /* wwEditor:start */
@@ -35,15 +37,29 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                const { data, error } = await this.instance.from(collection.config.table).select(fields || undefined);
-                return { data, error };
+                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' })
+                const filter = generateFilter(collection.filter)
+                
+                if (filter) query.or(filter)
+
+                if (collection.limit) {
+                    query.range(collection.offset, collection.offset + collection.limit - 1)
+                }
+
+                for (const sort of collection.sort) {
+                    query.order(sort.key, { ascending: sort.direction === 'ASC' })
+                }
+
+                const { data, error, count } = await query
+                return { data, error, total: count };
             } catch (err) {
                 return {
+                    data: [],
                     error: Object.getOwnPropertyNames(err).reduce((obj, key) => ({ ...obj, [key]: err[key] }), {}),
                 };
             }
         } else {
-            return { data: null, error: null };
+            return { data: null, error: null, total: 0 };
         }
     },
     /*=============================================m_ÔÔ_m=============================================\
