@@ -115,7 +115,7 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).insert([data]);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'INSERT', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'INSERT', new: result[0] });
         return result[0];
     },
     async update({ table, primaryData = {}, data = {} }, wwUtils) {
@@ -130,7 +130,7 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'UPDATE', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'UPDATE', new: result[0] });
         return result[0];
     },
     async upsert({ table, data = {} }, wwUtils) {
@@ -143,7 +143,7 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).upsert(data);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'UPSERT', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'UPSERT', new: result[0] });
         return result[0];
     },
     async delete({ table, primaryData = {} }, wwUtils) {
@@ -157,7 +157,7 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ eventType: 'DELETE', old: result[0] });
+        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'DELETE', old: result[0] });
         return result;
     },
     onSubscribe(payload) {
@@ -204,8 +204,9 @@ export default {
                         collection.config.primaryData
                     );
                     const data = [...collection.data];
-                    itemIndex !== -1 ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, data });
+                    const isInsert = itemIndex === -1
+                    isInsert ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
+                    wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total + (isInsert ? 1 : 0), data });
                 }
                 return;
             case 'DELETE':
