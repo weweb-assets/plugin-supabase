@@ -1,4 +1,5 @@
-export function convertCondition({field, operator, value}) {
+export function convertCondition({field, operator, value, isEmptyIgnored}) {
+    if (isEmptyIgnored && !value) return []
     switch (operator) {
         case '$eq':
             return [field, 'eq', value]
@@ -41,8 +42,7 @@ export function convertCondition({field, operator, value}) {
 
 export function generateFilter(config) {
     if(!config) return ''
-    if(!config.link || !config.conditions) return ''
-
+    if(!config.link || !config.conditions || config.if === false) return ''
     const conditions = config.conditions.map(condition => {
         return condition.link ? generateFilter(condition) : convertCondition(condition).join('.')
     }).filter(condition => condition)

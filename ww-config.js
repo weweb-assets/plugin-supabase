@@ -43,13 +43,13 @@ export default {
                     {
                         label: 'Contains',
                         value: '$iLike:contains',
-                        acceptedTypes: ['string', 'number'],
+                        acceptedTypes: ['string'],
                         defaultValue: '',
                     },
                     {
                         label: 'Does not contains',
                         value: '$notILike:contains',
-                        acceptedTypes: ['string', 'number'],
+                        acceptedTypes: ['string'],
                         defaultValue: '',
                     },
                     { label: 'Starts with', value: '$iLike:startsWith', acceptedTypes: ['string'], defaultValue: 'start' },
