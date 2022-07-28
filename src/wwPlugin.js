@@ -179,7 +179,7 @@ export default {
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
                         total: collection.total + 1,
-                        data: [...(collection.data || []), payload.new],
+                        data: [...(Array.isArray(collection.data) ? collection.data : []), payload.new],
                     });
                 }
                 return;
@@ -191,7 +191,7 @@ export default {
                         collection.config.primaryData
                     );
                     if (itemIndex === -1) return;
-                    const data = [...(collection.data || [])];
+                    const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
@@ -203,7 +203,7 @@ export default {
                         payload.new,
                         collection.config.primaryData
                     );
-                    const data = [...(collection.data || [])];
+                    const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     const isInsert = itemIndex === -1
                     isInsert ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total + (isInsert ? 1 : 0), data });
@@ -217,7 +217,7 @@ export default {
                         collection.config.primaryData
                     );
                     if (itemIndex === -1) return;
-                    const data = [...(collection.data || [])];
+                    const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
                 }
