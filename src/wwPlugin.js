@@ -171,7 +171,7 @@ export default {
             case 'INSERT':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
-                        collection.data,
+                        collection.data || [],
                         payload.new,
                         collection.config.primaryData
                     );
@@ -186,7 +186,7 @@ export default {
             case 'UPDATE':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
-                        collection.data,
+                        collection.data || [],
                         payload.new,
                         collection.config.primaryData
                     );
@@ -199,7 +199,7 @@ export default {
             case 'UPSERT':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
-                        collection.data,
+                        collection.data || [],
                         payload.new,
                         collection.config.primaryData
                     );
@@ -212,7 +212,7 @@ export default {
             case 'DELETE':
                 for (const collection of collections) {
                     const itemIndex = findIndexFromPrimaryData(
-                        collection.data,
+                        collection.data || [],
                         payload.old,
                         collection.config.primaryData
                     );
