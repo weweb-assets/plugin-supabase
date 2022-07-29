@@ -98,6 +98,11 @@ export default {
             }));
         },
     },
+    watch: {
+        'database.table'() {
+            this.refreshFields();
+        },
+    },
     mounted() {
         this.definitions = this.plugin.doc.definitions || {};
     },
@@ -107,7 +112,7 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin.doc.definitions || {};
-                this.refreshFields()
+                this.refreshFields();
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
@@ -115,10 +120,12 @@ export default {
             }
         },
         refreshFields() {
-            const primaryData = this.primaryProperties.map(primaryProperty => primaryProperty.name)
+            const primaryData = this.primaryProperties.map(primaryProperty => primaryProperty.name);
             // clear removed fields
-            const dataFields = this.database.dataFields.filter(field => this.tableProperties.some(prop => prop.name === field))
-            
+            const dataFields = this.database.dataFields.filter(field =>
+                this.tableProperties.some(prop => prop.name === field)
+            );
+
             this.$emit('update:config', { ...this.database, primaryData, dataFields });
         },
         setProp(key, value) {
