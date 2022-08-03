@@ -91,11 +91,20 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin.doc.definitions || {};
+                this.refreshFields();
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
                 this.isLoading = false;
             }
+        },
+        refreshFields() {
+            // clear removed fields
+            const primaryData = { ...this.args.primaryData };
+            for (const key in primaryData) {
+                if (!this.tableProperties.includes(key)) delete primaryData[key];
+            }
+            this.setPrimaryData(primaryData);
         },
     },
 };

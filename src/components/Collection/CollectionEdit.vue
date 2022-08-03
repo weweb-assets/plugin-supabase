@@ -99,14 +99,8 @@ export default {
         },
     },
     watch: {
-        definitions: {
-            immediate: true,
-            handler() {
-                this.setProp(
-                    'primaryData',
-                    this.primaryProperties.map(primaryProperty => primaryProperty.name)
-                );
-            },
+        'database.table'() {
+            this.refreshFields();
         },
     },
     mounted() {
@@ -118,11 +112,21 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin.doc.definitions || {};
+                this.refreshFields();
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
                 this.isLoading = false;
             }
+        },
+        refreshFields() {
+            const primaryData = this.primaryProperties.map(primaryProperty => primaryProperty.name);
+            // clear removed fields
+            const dataFields = this.database.dataFields.filter(field =>
+                this.tableProperties.some(prop => prop.name === field)
+            );
+
+            this.$emit('update:config', { ...this.database, primaryData, dataFields });
         },
         setProp(key, value) {
             this.$emit('update:config', { ...this.database, [key]: value });

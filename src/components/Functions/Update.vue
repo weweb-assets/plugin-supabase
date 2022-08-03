@@ -160,11 +160,18 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin.doc.definitions || {};
+                this.refreshFields();
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
                 this.isLoading = false;
             }
+        },
+        refreshFields() {
+            // clear removed fields
+            this.setDataFields(
+                this.args.dataFields.filter(field => this.tableProperties.some(prop => prop.name === field))
+            );
         },
     },
 };
