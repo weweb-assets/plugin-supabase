@@ -205,7 +205,7 @@ export default {
                     );
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     const isInsert = itemIndex === -1
-                    isInsert ? data.splice(itemIndex, 1, payload.new) : data.push(payload.new);
+                    isInsert ? data.push(payload.new) : data.splice(itemIndex, 1, payload.new);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total + (isInsert ? 1 : 0), data });
                 }
                 return;
