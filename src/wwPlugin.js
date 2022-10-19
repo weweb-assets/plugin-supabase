@@ -197,7 +197,7 @@ export default {
                     );
                     if (itemIndex === -1) return;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
-                    data.splice(itemIndex, 1, payload.new);
+                    data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
                 }
                 return;
@@ -210,7 +210,9 @@ export default {
                     );
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     const isInsert = itemIndex === -1;
-                    isInsert ? data.push(payload.new) : data.splice(itemIndex, 1, payload.new);
+                    isInsert
+                        ? data.push(payload.new)
+                        : data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
                         total: collection.total + (isInsert ? 1 : 0),

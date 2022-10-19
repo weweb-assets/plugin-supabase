@@ -39,6 +39,14 @@ supplier:supplier_id ( name ),
 purchaser:purchaser_id ( name )"
             @update:modelValue="setProp('dataFieldsAdvanced', $event)"
         />
+        <div v-if="isPrimaryRequired" class="error-message mt-2">
+            <wwEditorIcon name="warning" small />
+            You must include all primary properties when using realtime table
+        </div>
+        <div v-if="isFieldsIncorrect" class="error-message mt-2">
+            <wwEditorIcon name="warning" small />
+            You have invalid fields in your advanced selection
+        </div>
     </wwEditorFormRow>
     <wwLoader :loading="isLoading" />
 </template>
@@ -93,14 +101,37 @@ export default {
         },
         tablePropertiesOptions() {
             return this.tableProperties.map(property => ({
-                label: property.name,
+                label:
+                    property.name +
+                    (this.primaryProperties.some(prop => prop.name === property.name) ? '#primary' : ''),
                 value: property.name,
             }));
+        },
+        isRealtime() {
+            return this.plugin.settings.publicData.realtimeTables[this.database.table];
+        },
+        // empty = all
+        selectedFields() {
+            return this.database.fieldsMode === 'guided'
+                ? this.database.dataFields
+                : this.database.dataFieldsAdvanced.split(',').map(field => field.replace('\n', '').split(':')[0]);
+        },
+        isFieldsIncorrect() {
+            return this.selectedFields.some(field => !this.tableProperties.some(prop => prop.name === field));
+        },
+        isPrimaryRequired() {
+            return (
+                this.isRealtime &&
+                this.primaryProperties.some(property => !this.selectedFields.some(field => field === property.name))
+            );
         },
     },
     watch: {
         'database.table'() {
-            this.refreshFields();
+            this.refreshSchema();
+        },
+        isFieldsIncorrect(value) {
+            value && this.database.fieldsMode === 'guided' && this.refreshSchema();
         },
     },
     mounted() {
@@ -112,14 +143,14 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin.doc.definitions || {};
-                this.refreshFields();
+                this.refreshSchema();
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
                 this.isLoading = false;
             }
         },
-        refreshFields() {
+        refreshSchema() {
             const primaryData = this.primaryProperties.map(primaryProperty => primaryProperty.name);
             // clear removed fields
             const dataFields = this.database.dataFields.filter(field =>
@@ -134,3 +165,12 @@ export default {
     },
 };
 </script>
+
+<style scoped lang="scss">
+.error-message {
+    color: var(--ww-color-yellow-500);
+    > * {
+        display: inline;
+    }
+}
+</style>
