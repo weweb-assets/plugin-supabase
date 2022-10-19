@@ -13,7 +13,7 @@ import './components/Functions/Delete.vue';
 /* wwEditor:end */
 import { createClient } from '@supabase/supabase-js';
 
-import { generateFilter } from './helpers/filters'
+import { generateFilter } from './helpers/filters';
 
 export default {
     instance: null,
@@ -37,20 +37,20 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' })
-                const filter = generateFilter(collection.filter)
-                
-                if (filter) query.or(filter)
+                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' });
+                const filter = generateFilter(collection.filter);
+
+                if (filter) query.or(filter);
 
                 if (collection.limit) {
-                    query.range(collection.offset, collection.offset + collection.limit - 1)
+                    query.range(collection.offset, collection.offset + collection.limit - 1);
                 }
 
                 for (const sort of collection.sort) {
-                    query.order(sort.key, { ascending: sort.direction === 'ASC' })
+                    query.order(sort.key, { ascending: sort.direction === 'ASC' });
                 }
 
-                const { data, error, count } = await query
+                const { data, error, count } = await query;
                 return { data, error, total: count };
             } catch (err) {
                 return {
@@ -76,7 +76,8 @@ export default {
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
-            this.instance = createClient(projectUrl, apiKey);
+            // The same instance mist be shared between supabase and supabase auth
+            this.instance = wwLib.wwPlugins.supabaseAuth.instance || createClient(projectUrl, apiKey);
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
             await this.fetchDoc(projectUrl, apiKey);
@@ -115,7 +116,8 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).insert([data]);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'INSERT', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table])
+            this.onSubscribe({ table, eventType: 'INSERT', new: result[0] });
         return result[0];
     },
     async update({ table, primaryData = {}, data = {} }, wwUtils) {
@@ -130,7 +132,8 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'UPDATE', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table])
+            this.onSubscribe({ table, eventType: 'UPDATE', new: result[0] });
         return result[0];
     },
     async upsert({ table, data = {} }, wwUtils) {
@@ -143,7 +146,8 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).upsert(data);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'UPSERT', new: result[0] });
+        if (!this.settings.publicData.realtimeTables[table])
+            this.onSubscribe({ table, eventType: 'UPSERT', new: result[0] });
         return result[0];
     },
     async delete({ table, primaryData = {} }, wwUtils) {
@@ -157,7 +161,8 @@ export default {
         /* wwEditor:end */
         const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table]) this.onSubscribe({ table, eventType: 'DELETE', old: result[0] });
+        if (!this.settings.publicData.realtimeTables[table])
+            this.onSubscribe({ table, eventType: 'DELETE', old: result[0] });
         return result;
     },
     onSubscribe(payload) {
@@ -204,9 +209,13 @@ export default {
                         collection.config.primaryData
                     );
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
-                    const isInsert = itemIndex === -1
+                    const isInsert = itemIndex === -1;
                     isInsert ? data.push(payload.new) : data.splice(itemIndex, 1, payload.new);
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total + (isInsert ? 1 : 0), data });
+                    wwLib.$store.dispatch('data/setCollection', {
+                        ...collection,
+                        total: collection.total + (isInsert ? 1 : 0),
+                        data,
+                    });
                 }
                 return;
             case 'DELETE':
@@ -231,7 +240,7 @@ export default {
 };
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {
-    if (!Array.isArray(data)) return -1
+    if (!Array.isArray(data)) return -1;
     return data.findIndex(item => primaryData.every(key => item[key] === obj[key]));
 };
 
