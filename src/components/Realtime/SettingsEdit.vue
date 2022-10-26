@@ -73,11 +73,11 @@ export default {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, realtimeTables },
             });
-            this.subscribeTables();
+            this.subscribeTables(realtimeTables);
         },
-        subscribeTables() {
+        subscribeTables(realtimeTables) {
             if (!this.settings.publicData.realtimeTables) return;
-            this.plugin.subscribeTables(this.settings.publicData.realtimeTables);
+            this.plugin.subscribeTables(realtimeTables);
         },
     },
 };
