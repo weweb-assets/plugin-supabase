@@ -27,6 +27,14 @@ export default {
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
+    // Allow supabase auth to sync both instances
+    syncInstance() {
+        if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.instance) {
+            this.instance && this.instance.removeAllSubscriptions();
+            this.instance = wwLib.wwPlugins.supabaseAuth.instance;
+            this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
+        }
+    },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
     \================================================================================================*/
@@ -76,8 +84,11 @@ export default {
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
-            // The same instance mist be shared between supabase and supabase auth
-            this.instance = wwLib.wwPlugins.supabaseAuth.instance || createClient(projectUrl, apiKey);
+            this.instance =
+                wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.instance
+                    ? wwLib.wwPlugins.supabaseAuth.instance
+                    : createClient(projectUrl, apiKey);
+
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
             await this.fetchDoc(projectUrl, apiKey);
