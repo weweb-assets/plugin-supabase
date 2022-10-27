@@ -120,6 +120,7 @@ export default {
             return this.selectedFields.some(field => !this.tableProperties.some(prop => prop.name === field));
         },
         isPrimaryRequired() {
+            if (this.database.fieldsMode === 'guided' && !this.selectedFields.length) return false;
             return (
                 this.isRealtime &&
                 this.primaryProperties.some(property => !this.selectedFields.some(field => field === property.name))
