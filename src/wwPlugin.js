@@ -27,11 +27,13 @@ export default {
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
-    // Allow supabase auth to sync both instances
+    /*  Called by supabase auth plugin
+     *  Allow supabase to use the supabase auth instance when available
+     */
     syncInstance() {
-        if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.instance) {
+        if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
             this.instance && this.instance.removeAllSubscriptions();
-            this.instance = wwLib.wwPlugins.supabaseAuth.instance;
+            this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
     },
@@ -85,8 +87,8 @@ export default {
         if (!projectUrl || !apiKey) return;
         try {
             this.instance =
-                wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.instance
-                    ? wwLib.wwPlugins.supabaseAuth.instance
+                wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance
+                    ? wwLib.wwPlugins.supabaseAuth.publicInstance
                     : createClient(projectUrl, apiKey);
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
