@@ -193,7 +193,7 @@ export default {
                         payload.new,
                         collection.config.primaryData
                     );
-                    if (itemIndex !== -1) return;
+                    if (itemIndex !== -1) continue;
                     wwLib.$store.dispatch('data/setCollection', {
                         ...collection,
                         total: collection.total + 1,
@@ -208,7 +208,7 @@ export default {
                         payload.new,
                         collection.config.primaryData
                     );
-                    if (itemIndex === -1) return;
+                    if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
                     wwLib.$store.dispatch('data/setCollection', { ...collection, data });
@@ -240,7 +240,7 @@ export default {
                         payload.old,
                         collection.config.primaryData
                     );
-                    if (itemIndex === -1) return;
+                    if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1);
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
