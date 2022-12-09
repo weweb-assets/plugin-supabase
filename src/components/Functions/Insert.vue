@@ -74,6 +74,7 @@ export default {
                 name: propertyName,
                 type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
                 required:
+                    this.definitions[this.table].required &&
                     this.definitions[this.table].required.includes(propertyName) &&
                     !this.definitions[this.table].properties[propertyName].default,
                 default: this.definitions[this.table].properties[propertyName].default,
