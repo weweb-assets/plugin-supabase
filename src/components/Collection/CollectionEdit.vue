@@ -43,7 +43,11 @@ purchaser:purchaser_id ( name )"
             <wwEditorIcon name="warning" small />
             You must include all primary properties when using realtime table
         </div>
-        <div v-if="isFieldsIncorrect" class="error-message mt-2">
+        <div v-if="isAdvancedFieldsInvalid" class="error-message mt-2">
+            <wwEditorIcon name="warning" small />
+            You have an invalid comma at the end of your query
+        </div>
+        <div v-else-if="isFieldsIncorrect" class="error-message mt-2">
             <wwEditorIcon name="warning" small />
             You have invalid fields in your advanced selection
         </div>
@@ -114,10 +118,21 @@ export default {
         selectedFields() {
             return this.database.fieldsMode === 'guided'
                 ? this.database.dataFields
-                : this.database.dataFieldsAdvanced.split(',').map(field => field.replace('\n', '').split(':')[0]);
+                : this.database.dataFieldsAdvanced.split(',').map(field => {
+                      const _field = field.replace('\n', '').trim();
+                      return _field.includes(':')
+                          ? _field
+                                .match(/:[^\(]+/g)[0]
+                                .split(':')[1]
+                                .trim()
+                          : _field;
+                  });
         },
         isFieldsIncorrect() {
             return this.selectedFields.some(field => !this.tableProperties.some(prop => prop.name === field));
+        },
+        isAdvancedFieldsInvalid() {
+            return this.database.fieldsMode === 'advanced' && this.database.dataFieldsAdvanced.trim().endsWith(',');
         },
         isPrimaryRequired() {
             if (this.database.fieldsMode === 'guided' && !this.selectedFields.length) return false;
