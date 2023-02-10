@@ -256,7 +256,7 @@ export default {
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {
     if (!Array.isArray(data)) return -1;
-    return data.findIndex(item => primaryData.every(key => item[key] === obj[key]));
+    return data.findIndex(item => primaryData.every(key => item && item[key] === obj[key]));
 };
 
 /* wwEditor:start */
