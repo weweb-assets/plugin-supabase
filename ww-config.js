@@ -36,10 +36,10 @@ export default {
                     { label: 'Is not', value: '$ne', acceptedTypes: ['string', 'boolean'] },
                     { label: '=', value: '$eq', acceptedTypes: ['number'] },
                     { label: '≠', value: '$ne', acceptedTypes: ['number'] },
-                    { label: '<', value: '$lt', acceptedTypes: ['number'] },
-                    { label: '>', value: '$gt', acceptedTypes: ['number'] },
-                    { label: '≤', value: '$lte', acceptedTypes: ['number'] },
-                    { label: '≥', value: '$gte', acceptedTypes: ['number'] },
+                    { label: '<', value: '$lt', acceptedTypes: ['number', 'string'] },
+                    { label: '>', value: '$gt', acceptedTypes: ['number', 'string'] },
+                    { label: '≤', value: '$lte', acceptedTypes: ['number', 'string'] },
+                    { label: '≥', value: '$gte', acceptedTypes: ['number', 'string'] },
                     {
                         label: 'Contains',
                         value: '$iLike:contains',
@@ -52,11 +52,20 @@ export default {
                         acceptedTypes: ['string'],
                         defaultValue: '',
                     },
-                    { label: 'Starts with', value: '$iLike:startsWith', acceptedTypes: ['string'], defaultValue: 'start' },
+                    {
+                        label: 'Starts with',
+                        value: '$iLike:startsWith',
+                        acceptedTypes: ['string'],
+                        defaultValue: 'start',
+                    },
                     { label: 'Ends with', value: '$iLike:endsWith', acceptedTypes: ['string'], defaultValue: 'end' },
                     { label: 'Is exactly', value: '$eq', acceptedTypes: ['array', 'object'] },
                     { label: 'Is empty', value: '$eq:null', acceptedTypes: ['string', 'number', 'array', 'object'] },
-                    { label: 'Is not empty', value: '$ne:null', acceptedTypes: ['string', 'number', 'array', 'object'] },
+                    {
+                        label: 'Is not empty',
+                        value: '$ne:null',
+                        acceptedTypes: ['string', 'number', 'array', 'object'],
+                    },
                     { label: 'Is in', value: '$in', acceptedTypes: ['string', 'number'], defaultValue: [] },
                     { label: 'Is not in', value: '$notIn', acceptedTypes: ['string', 'number'], defaultValue: [] },
                     { label: 'Has any of', value: '$overlap', acceptedTypes: ['array'], defaultValue: [] },
@@ -69,9 +78,8 @@ export default {
                     object: '$has',
                     array: '$contains',
                     boolean: '$eq',
-                }
+                },
             },
-            
         },
     },
     actions: [
