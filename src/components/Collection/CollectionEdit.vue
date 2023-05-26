@@ -129,7 +129,10 @@ export default {
                   });
         },
         isFieldsIncorrect() {
-            return this.selectedFields.some(field => !this.tableProperties.some(prop => prop.name === field));
+            return (
+                this.tableProperties.length &&
+                this.selectedFields.some(field => !this.tableProperties.some(prop => prop.name === field))
+            );
         },
         isAdvancedFieldsInvalid() {
             return this.database.fieldsMode === 'advanced' && this.database.dataFieldsAdvanced.trim().endsWith(',');
