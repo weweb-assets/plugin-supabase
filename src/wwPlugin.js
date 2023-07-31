@@ -261,7 +261,7 @@ const findIndexFromPrimaryData = (data, obj, primaryData) => {
 
 /* wwEditor:start */
 const getDoc = async (url, apiKey) => {
-    const { data } = await axios.get(`${url}/rest/v1/?apikey=${apiKey}`);
+    const { data } = await axios.get(`${url}/rest/v1/`, { headers: { apiKey } });
     return data;
 };
 /* wwEditor:end */
