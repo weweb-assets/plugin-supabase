@@ -112,8 +112,8 @@ export default {
     async select({ table, fieldsMode, dataFields, dataFieldsAdvanced }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (wwUtils) wwUtils.log({ label: 'Table select', preview: table });
         /* wwEditor:end */
+        wwUtils?.log('info', `[Supabase] Selecting ${table}`,  { type: 'request' });
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
         const { data: result, error } = await this.instance.from(table).select(fields || undefined);
         if (error) throw new Error(error.message, { cause: error });
@@ -122,11 +122,8 @@ export default {
     async insert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (wwUtils) {
-            wwUtils.log({ label: 'Table insert', preview: table });
-            wwUtils.log({ label: 'Payload', preview: data });
-        }
         /* wwEditor:end */
+        wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: data, type: 'request' });
         const { data: result, error } = await this.instance.from(table).insert([data]);
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
@@ -137,12 +134,8 @@ export default {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
-        if (wwUtils) {
-            wwUtils.log({ label: 'Table update', preview: table });
-            wwUtils.log({ label: 'Primary key', preview: primaryData });
-            wwUtils.log({ label: 'Payload', preview: data });
-        }
         /* wwEditor:end */
+        wwUtils?.log('info', `[Supabase] Updating ${table}`, { type: 'request', preview: { primaryData, data } });
         const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
@@ -152,11 +145,8 @@ export default {
     async upsert({ table, data = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (wwUtils) {
-            wwUtils.log({ label: 'Table upsert', preview: table });
-            wwUtils.log({ label: 'Payload', preview: data });
-        }
         /* wwEditor:end */
+        wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: data });
         const { data: result, error } = await this.instance.from(table).upsert(data);
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
@@ -167,11 +157,8 @@ export default {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
-        if (wwUtils) {
-            wwUtils.log({ label: 'Table delete', preview: table });
-            wwUtils.log({ label: 'Primary key', preview: primaryData });
-        }
         /* wwEditor:end */
+        wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
         const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
