@@ -82,7 +82,7 @@ export default {
             if (!realtimeTables[tableName]) continue;
             this.instance
                 .channel('public:' + tableName)
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'user' }, this.onSubscribe)
+                .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
                 .subscribe();
         }
     },
