@@ -32,7 +32,7 @@ export default {
      */
     syncInstance() {
         if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
-            this.instance && this.instance.removeAllSubscriptions();
+            this.instance && this.instance.removeAllChannels();
             this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
@@ -77,7 +77,7 @@ export default {
     \================================================================================================*/
     subscribeTables(realtimeTables) {
         if (!this.instance) return;
-        this.instance.removeAllSubscriptions();
+        this.instance.removeAllChannels();
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
             this.instance
