@@ -16,15 +16,14 @@
     <wwEditorInputRow
         label="Count method"
         type="select"
-        required
-        :model-value="count"
+        :model-value="countMethod"
         :options="[
-            { label: '', value: null },
-            { label: 'exact', value: 'exact' },
-            { label: 'planned', value: 'planned' },
-            { label: 'estimated', value: 'estimated' },
+            { label: 'No count', value: null },
+            { label: 'Exact', value: 'exact' },
+            { label: 'Planned', value: 'planned' },
+            { label: 'Estimated', value: 'estimated' },
         ]"
-        @update:modelValue="setCount"
+        @update:modelValue="setCountMethod"
     />
     <template v-if="table">
         <wwEditorInputRow
@@ -80,8 +79,8 @@ export default {
         table() {
             return this.args.table;
         },
-        count() {
-            return this.args.count || null;
+        countMethod() {
+            return this.args.countMethod || null;
         },
         primaryData() {
             return this.args.primaryData || {};
@@ -148,8 +147,8 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, primaryData: {}, dataFields: [], data: {} });
         },
-        setCount(count) {
-            this.$emit('update:args', { ...this.args, count });
+        setCountMethod(countMethod) {
+            this.$emit('update:args', { ...this.args, countMethod });
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
@@ -173,7 +172,7 @@ export default {
                 }
             }
             for (const field of this.tablePropertiesFiltered) {
-                if (!data[field.name]) delete data[field.name];
+                if (!data[field.name] && data[field.name] !== null) delete data[field.name]; // TODO LOGIC ISSUE HERE
             }
             this.$emit('update:args', { ...this.args, data });
         },

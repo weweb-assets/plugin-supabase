@@ -16,20 +16,18 @@
     <wwEditorInputRow
         label="Count method"
         type="select"
-        required
-        :model-value="count"
+        :model-value="countMethod"
         :options="[
-            { label: '', value: null },
-            { label: 'exact', value: 'exact' },
-            { label: 'planned', value: 'planned' },
-            { label: 'estimated', value: 'estimated' },
+            { label: 'No count', value: null },
+            { label: 'Exact', value: 'exact' },
+            { label: 'Planned', value: 'planned' },
+            { label: 'Estimated', value: 'estimated' },
         ]"
-        @update:modelValue="setCount"
+        @update:modelValue="setCountMethod"
     />
     <wwEditorInputRow
         label="Default to null"
         type="onoff"
-        required
         :model-value="defaultToNull"
         @update:modelValue="setDefaultToNull"
     />
@@ -76,8 +74,8 @@ export default {
         table() {
             return this.args.table;
         },
-        count() {
-            return this.args.count || null;
+        countMethod() {
+            return this.args.countMethod || null;
         },
         defaultToNull() {
             return this.args.defaultToNull || false;
@@ -125,8 +123,8 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], data: {} });
         },
-        setCount(count) {
-            this.$emit('update:args', { ...this.args, count });
+        setCountMethod(countMethod) {
+            this.$emit('update:args', { ...this.args, countMethod });
         },
         setDefaultToNull(defaultToNull) {
             this.$emit('update:args', { ...this.args, defaultToNull });
