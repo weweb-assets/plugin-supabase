@@ -32,9 +32,8 @@ export default {
      */
     syncInstance() {
         if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
-            // this.instance && this.instance.removeAllChannels();
             this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
-            // this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
+            this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
     },
     /*=============================================m_ÔÔ_m=============================================\
@@ -152,14 +151,14 @@ export default {
             this.onSubscribe({ table, eventType: 'UPDATE', new: result[0] });
         return result[0];
     },
-    async upsert({ table, data = {}, count, defaultToNull, ignoreDuplicates, onConflict }, wwUtils) {
+    async upsert({ table, data = {}, count, defaultToNull, ignoreDuplicates, onConflict = [] }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: data });
         const { data: result, error } = await this.instance
             .from(table)
-            .upsert(data, { count, defaultToNull, ignoreDuplicates, onConflict })
+            .upsert(data, { count, defaultToNull, ignoreDuplicates, onConflict: onConflict.join(',') })
             .select();
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
@@ -172,7 +171,7 @@ export default {
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
-        const { data: result, error } = await this.instance.from(table).delete().match(primaryData).select();
+        const { data: result, error } = await this.instance.from(table).delete({ count }).match(primaryData).select();
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
             this.onSubscribe({ table, eventType: 'DELETE', old: result[0] });

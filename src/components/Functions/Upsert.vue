@@ -13,7 +13,41 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorInputRow
+        label="Count method"
+        type="select"
+        :model-value="count"
+        :options="[
+            { label: '', value: null },
+            { label: 'exact', value: 'exact' },
+            { label: 'planned', value: 'planned' },
+            { label: 'estimated', value: 'estimated' },
+        ]"
+        @update:modelValue="setCount"
+    />
+    <wwEditorInputRow
+        label="Default to null"
+        type="onoff"
+        :model-value="defaultToNull"
+        @update:modelValue="setDefaultToNull"
+    />
+    <wwEditorInputRow
+        label="Ignore duplicates"
+        type="onoff"
+        :model-value="ignoreDuplicates"
+        @update:modelValue="setIgnoreDuplicates"
+    />
     <template v-if="table">
+        <wwEditorInputRow
+            label="On conflict"
+            type="select"
+            required
+            multiple
+            :options="tablePropertiesOptions"
+            :model-value="onConflict"
+            placeholder="primary"
+            @update:modelValue="setOnConflict"
+        />
         <wwEditorInputRow
             label="Fields"
             type="select"
@@ -55,6 +89,18 @@ export default {
     computed: {
         table() {
             return this.args.table;
+        },
+        count() {
+            return this.args.count || null;
+        },
+        defaultToNull() {
+            return this.args.defaultToNull || false;
+        },
+        ignoreDuplicates() {
+            return this.args.ignoreDuplicates || false;
+        },
+        onConflict() {
+            return this.args.onConflict || [];
         },
         dataFields() {
             return this.args.dataFields || [];
@@ -98,6 +144,18 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], data: {} });
+        },
+        setCount(count) {
+            this.$emit('update:args', { ...this.args, count });
+        },
+        setDefaultToNull(defaultToNull) {
+            this.$emit('update:args', { ...this.args, defaultToNull });
+        },
+        setIgnoreDuplicates(ignoreDuplicates) {
+            this.$emit('update:args', { ...this.args, ignoreDuplicates });
+        },
+        setOnConflict(onConflict) {
+            this.$emit('update:args', { ...this.args, onConflict });
         },
         setDataFields(dataFields) {
             this.$emit('update:args', { ...this.args, dataFields });

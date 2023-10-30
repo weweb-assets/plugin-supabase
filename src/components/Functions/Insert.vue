@@ -13,6 +13,26 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorInputRow
+        label="Count method"
+        type="select"
+        required
+        :model-value="count"
+        :options="[
+            { label: '', value: null },
+            { label: 'exact', value: 'exact' },
+            { label: 'planned', value: 'planned' },
+            { label: 'estimated', value: 'estimated' },
+        ]"
+        @update:modelValue="setCount"
+    />
+    <wwEditorInputRow
+        label="Default to null"
+        type="onoff"
+        required
+        :model-value="defaultToNull"
+        @update:modelValue="setDefaultToNull"
+    />
     <template v-if="table">
         <wwEditorInputRow
             label="Fields"
@@ -56,6 +76,12 @@ export default {
         table() {
             return this.args.table;
         },
+        count() {
+            return this.args.count || null;
+        },
+        defaultToNull() {
+            return this.args.defaultToNull || false;
+        },
         dataFields() {
             return this.args.dataFields || [];
         },
@@ -98,6 +124,12 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], data: {} });
+        },
+        setCount(count) {
+            this.$emit('update:args', { ...this.args, count });
+        },
+        setDefaultToNull(defaultToNull) {
+            this.$emit('update:args', { ...this.args, defaultToNull });
         },
         setDataFields(dataFields) {
             this.$emit('update:args', { ...this.args, dataFields });

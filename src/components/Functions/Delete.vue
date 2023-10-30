@@ -13,6 +13,18 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
+    <wwEditorInputRow
+        label="Count method"
+        type="select"
+        required
+        :model-value="count"
+        :options="[
+            { label: '', value: null },
+            { label: 'exact', value: 'exact' },
+            { label: 'planned', value: 'planned' },
+            { label: 'estimated', value: 'estimated' },
+        ]"
+    />
     <template v-if="table">
         <wwEditorInputRow
             v-for="property of tableProperties"
@@ -46,6 +58,9 @@ export default {
         table() {
             return this.args.table;
         },
+        count() {
+            return this.args.count || null;
+        },
         primaryData() {
             return this.args.primaryData || {};
         },
@@ -76,6 +91,9 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, primaryData: {} });
+        },
+        setCount(count) {
+            this.$emit('update:args', { ...this.args, count });
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
