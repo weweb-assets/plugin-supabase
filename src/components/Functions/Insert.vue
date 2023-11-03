@@ -13,25 +13,6 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
-    <wwEditorInputRow
-        label="Get count"
-        type="select"
-        placeholder="None"
-        :model-value="countMode"
-        :options="[
-            { label: 'None', value: null },
-            { label: 'Exact', value: 'exact' },
-            { label: 'Planned', value: 'planned' },
-            { label: 'Estimated', value: 'estimated' },
-        ]"
-        @update:modelValue="setCountMode"
-    />
-    <wwEditorInputRow
-        label="Default to null"
-        type="onoff"
-        :model-value="defaultToNull"
-        @update:modelValue="setDefaultToNull"
-    />
     <template v-if="table">
         <wwEditorInputRow
             label="Fields"
@@ -55,11 +36,41 @@
             bindable
         />
     </template>
+    <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
+        <template #header>
+            <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
+            <div class="ml-1 label-sm">Options</div>
+        </template>
+        <template #content>
+            <div class="mt-3">
+                <wwEditorInputRow
+                    label="Get count"
+                    type="select"
+                    placeholder="None"
+                    :model-value="countMode"
+                    :options="[
+                        { label: 'None', value: null },
+                        { label: 'Exact', value: 'exact' },
+                        { label: 'Planned', value: 'planned' },
+                        { label: 'Estimated', value: 'estimated' },
+                    ]"
+                    @update:modelValue="setCountMode"
+                />
+                <div class="flex items-center mt-2">
+                    <wwEditorInputSwitch :model-value="defaultToNull" @update:modelValue="setDefaultToNull" />
+                    <div class="label-3 ml-2">Default to null</div>
+                </div>
+            </div>
+        </template>
+    </Expandable>
     <wwLoader :loading="isLoading" />
 </template>
 
 <script>
+import Expandable from '../Utils/Expandable.vue';
+
 export default {
+    components: { Expandable },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -67,6 +78,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
+            isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
         };

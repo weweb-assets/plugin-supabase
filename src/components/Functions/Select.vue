@@ -44,7 +44,7 @@
             <div class="ml-1 label-sm">Options</div>
         </template>
         <template #content>
-            <div class="ml-2">
+            <div class="mt-3">
                 <wwEditorInputRow
                     label="Get count"
                     type="select"
