@@ -14,23 +14,24 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <wwEditorInputRow
-        label="Count method"
+        label="Get count"
         type="select"
-        :model-value="countMethod"
+        placeholder="None"
+        :model-value="countMode"
         :options="[
-            { label: 'No count', value: null },
+            { label: 'None', value: null },
             { label: 'Exact', value: 'exact' },
             { label: 'Planned', value: 'planned' },
             { label: 'Estimated', value: 'estimated' },
         ]"
-        @update:modelValue="setCountMethod"
+        @update:modelValue="setCountMode"
     />
     <wwEditorInputRow
-        v-if="countMethod"
+        v-if="countMode"
         label="Count only"
         type="onoff"
-        :model-value="head"
-        @update:modelValue="setHead"
+        :model-value="countOnly"
+        @update:modelValue="setCountOnly"
     />
     <wwEditorFormRow label="Fields" required v-if="table">
         <wwEditorInputRadio
@@ -81,11 +82,11 @@ export default {
         table() {
             return this.args.table;
         },
-        countMethod() {
-            return this.args.countMethod || null;
+        countMode() {
+            return this.args.countMode || null;
         },
-        head() {
-            return this.args.head || false;
+        countOnly() {
+            return this.args.countOnly || false;
         },
         fieldsMode() {
             return this.args.fieldsMode;
@@ -129,11 +130,11 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], dataFieldsAdvanced: '' });
         },
-        setCountMethod(countMethod) {
-            this.$emit('update:args', { ...this.args, countMethod });
+        setCountMode(countMode) {
+            this.$emit('update:args', { ...this.args, countMode });
         },
-        setDefaultToNull(defaultToNull) {
-            this.$emit('update:args', { ...this.args, defaultToNull });
+        setCountOnly(countOnly) {
+            this.$emit('update:args', { ...this.args, countOnly });
         },
         setFieldsMode(fieldsMode) {
             this.$emit('update:args', { ...this.args, fieldsMode });

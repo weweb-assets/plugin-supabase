@@ -16,14 +16,15 @@
     <wwEditorInputRow
         label="Count method"
         type="select"
-        :model-value="countMethod"
+        placeholder="None"
+        :model-value="countMode"
         :options="[
-            { label: 'No count', value: null },
+            { label: 'None', value: null },
             { label: 'Exact', value: 'exact' },
             { label: 'Planned', value: 'planned' },
             { label: 'Estimated', value: 'estimated' },
         ]"
-        @update:modelValue="setCountMethod"
+        @update:modelValue="setCountMode"
     />
     <template v-if="table">
         <wwEditorInputRow
@@ -79,8 +80,8 @@ export default {
         table() {
             return this.args.table;
         },
-        countMethod() {
-            return this.args.countMethod || null;
+        countMode() {
+            return this.args.countMode || null;
         },
         primaryData() {
             return this.args.primaryData || {};
@@ -147,8 +148,8 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, primaryData: {}, dataFields: [], data: {} });
         },
-        setCountMethod(countMethod) {
-            this.$emit('update:args', { ...this.args, countMethod });
+        setCountMode(countMode) {
+            this.$emit('update:args', { ...this.args, countMode });
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
