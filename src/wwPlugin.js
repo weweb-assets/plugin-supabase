@@ -123,29 +123,32 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return countMethod ? (countOnly ? count : { data, count }) : data;
     },
-    async insert({ table, data = {}, countMethod, defaultToNull }, wwUtils) {
+    async insert({ table, data: payload = {}, countMethod, defaultToNull }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: data, type: 'request' });
+        wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
         const { data, count, error } = await this.instance
             .from(table)
-            .insert([data], { count: countMethod, defaultToNull })
+            .insert([payload], { count: countMethod, defaultToNull })
             .select();
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
             this.onSubscribe({ table, eventType: 'INSERT', new: data[0] });
         return countMethod ? { count, data: data[0] } : data[0];
     },
-    async update({ table, primaryData = {}, data = {}, countMethod }, wwUtils) {
+    async update({ table, primaryData = {}, data: payload = {}, countMethod }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Updating ${table}`, { type: 'request', preview: { primaryData, data } });
+        wwUtils?.log('info', `[Supabase] Updating ${table}`, {
+            type: 'request',
+            preview: { primaryData, data: payload },
+        });
         const { data, count, error } = await this.instance
             .from(table)
-            .update(data, { count: countMethod })
+            .update(payload, { count: countMethod })
             .match(primaryData)
             .select();
         if (error) throw new Error(error.message, { cause: error });
@@ -153,14 +156,17 @@ export default {
             this.onSubscribe({ table, eventType: 'UPDATE', new: data[0] });
         return countMethod ? { count, data: data[0] } : data[0];
     },
-    async upsert({ table, data = {}, countMethod, defaultToNull, ignoreDuplicates, onConflict = [] }, wwUtils) {
+    async upsert(
+        { table, data: payload = {}, countMethod, defaultToNull, ignoreDuplicates, onConflict = [] },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: data });
+        wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: payload });
         const { data, count, error } = await this.instance
             .from(table)
-            .upsert(data, { count: countMethod, defaultToNull, ignoreDuplicates, onConflict: onConflict.join(',') })
+            .upsert(payload, { count: countMethod, defaultToNull, ignoreDuplicates, onConflict: onConflict.join(',') })
             .select();
         if (error) throw new Error(error.message, { cause: error });
         if (!this.settings.publicData.realtimeTables[table])
