@@ -47,6 +47,10 @@
                     @update:modelValue="setCountMode"
                 />
             </div>
+            <div class="flex items-center mt-2">
+                <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setReturnData" />
+                <div class="label-3 ml-2">Return data</div>
+            </div>
         </template>
     </Expandable>
     <wwLoader :loading="isLoading" />
@@ -75,6 +79,9 @@ export default {
         },
         countMode() {
             return this.args.countMode || null;
+        },
+        returnData() {
+            return this.args.returnData || false;
         },
         primaryData() {
             return this.args.primaryData || {};
@@ -109,6 +116,9 @@ export default {
         },
         setCountMode(countMode) {
             this.$emit('update:args', { ...this.args, countMode });
+        },
+        setReturnData(returnData) {
+            this.$emit('update:args', { ...this.args, returnData });
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {

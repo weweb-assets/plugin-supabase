@@ -62,16 +62,16 @@
                     multiple
                     :options="tablePropertiesOptions"
                     :model-value="onConflict"
-                    placeholder="primary"
+                    placeholder="Unique field(s)"
                     @update:modelValue="setOnConflict"
                 />
                 <div class="flex items-center mt-2">
-                    <wwEditorInputSwitch :model-value="defaultToNull" @update:modelValue="setDefaultToNull" />
-                    <div class="label-3 ml-2">Default to Null</div>
-                </div>
-                <div class="flex items-center mt-2">
                     <wwEditorInputSwitch :model-value="ignoreDuplicates" @update:modelValue="setIgnoreDuplicates" />
                     <div class="label-3 ml-2">Ignore duplicates</div>
+                </div>
+                <div class="flex items-center mt-2">
+                    <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setReturnData" />
+                    <div class="label-3 ml-2">Return data</div>
                 </div>
             </div>
         </template>
@@ -103,8 +103,8 @@ export default {
         countMode() {
             return this.args.countMode || null;
         },
-        defaultToNull() {
-            return this.args.defaultToNull || false;
+        returnData() {
+            return this.args.returnData || false;
         },
         ignoreDuplicates() {
             return this.args.ignoreDuplicates || false;
@@ -158,8 +158,8 @@ export default {
         setCountMode(countMode) {
             this.$emit('update:args', { ...this.args, countMode });
         },
-        setDefaultToNull(defaultToNull) {
-            this.$emit('update:args', { ...this.args, defaultToNull });
+        setReturnData(returnData) {
+            this.$emit('update:args', { ...this.args, returnData });
         },
         setIgnoreDuplicates(ignoreDuplicates) {
             this.$emit('update:args', { ...this.args, ignoreDuplicates });

@@ -57,8 +57,8 @@
                     @update:modelValue="setCountMode"
                 />
                 <div class="flex items-center mt-2">
-                    <wwEditorInputSwitch :model-value="defaultToNull" @update:modelValue="setDefaultToNull" />
-                    <div class="label-3 ml-2">Default to null</div>
+                    <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setReturnData" />
+                    <div class="label-3 ml-2">Return data</div>
                 </div>
             </div>
         </template>
@@ -90,8 +90,8 @@ export default {
         countMode() {
             return this.args.countMode || null;
         },
-        defaultToNull() {
-            return this.args.defaultToNull || false;
+        returnData() {
+            return this.args.returnData || false;
         },
         dataFields() {
             return this.args.dataFields || [];
@@ -139,8 +139,8 @@ export default {
         setCountMode(countMode) {
             this.$emit('update:args', { ...this.args, countMode });
         },
-        setDefaultToNull(defaultToNull) {
-            this.$emit('update:args', { ...this.args, defaultToNull });
+        setReturnData(returnData) {
+            this.$emit('update:args', { ...this.args, returnData });
         },
         setDataFields(dataFields) {
             this.$emit('update:args', { ...this.args, dataFields });
