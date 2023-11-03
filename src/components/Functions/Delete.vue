@@ -14,7 +14,7 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <wwEditorInputRow
-        label="Count method"
+        label="Get count"
         type="select"
         placeholder="None"
         :model-value="countMode"

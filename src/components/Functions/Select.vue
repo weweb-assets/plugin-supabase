@@ -13,26 +13,6 @@
         </div>
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
-    <wwEditorInputRow
-        label="Get count"
-        type="select"
-        placeholder="None"
-        :model-value="countMode"
-        :options="[
-            { label: 'None', value: null },
-            { label: 'Exact', value: 'exact' },
-            { label: 'Planned', value: 'planned' },
-            { label: 'Estimated', value: 'estimated' },
-        ]"
-        @update:modelValue="setCountMode"
-    />
-    <wwEditorInputRow
-        v-if="countMode"
-        label="Count only"
-        type="onoff"
-        :model-value="countOnly"
-        @update:modelValue="setCountOnly"
-    />
     <wwEditorFormRow label="Fields" required v-if="table">
         <wwEditorInputRadio
             class="mb-2"
@@ -58,11 +38,41 @@
             @update:modelValue="setDataFieldsAdvanced"
         />
     </wwEditorFormRow>
+    <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
+        <template #header>
+            <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
+            <div class="ml-1 label-sm">Options</div>
+        </template>
+        <template #content>
+            <div class="ml-2">
+                <wwEditorInputRow
+                    label="Get count"
+                    type="select"
+                    placeholder="None"
+                    :model-value="countMode"
+                    :options="[
+                        { label: 'None', value: null },
+                        { label: 'Exact', value: 'exact' },
+                        { label: 'Planned', value: 'planned' },
+                        { label: 'Estimated', value: 'estimated' },
+                    ]"
+                    @update:modelValue="setCountMode"
+                />
+                <div class="flex items-center mt-2" v-if="countMode">
+                    <wwEditorInputSwitch :model-value="countOnly" @update:modelValue="setCountOnly" />
+                    <div class="label-3 ml-2">Count only</div>
+                </div>
+            </div>
+        </template>
+    </Expandable>
     <wwLoader :loading="isLoading" />
 </template>
 
 <script>
+import Expandable from '../Utils/Expandable.vue';
+
 export default {
+    components: { Expandable },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
@@ -70,6 +80,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
+            isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
             fieldsModeChoices: [
