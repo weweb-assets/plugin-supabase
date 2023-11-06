@@ -130,6 +130,7 @@ export default {
             countMode = null,
             returnData = true,
             autoSync = true,
+            returnFieldsMinimal = false,
             returnFieldsMode = 'guided',
             returnDataFields = [],
             returnDataFieldsAdvanced,
@@ -144,7 +145,13 @@ export default {
         const query = this.instance.from(table).insert([payload], { count: countMode });
         if (returnData) {
             query
-                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .select(
+                    returnFieldsMinimal
+                        ? '*'
+                        : returnFieldsMode === 'guided'
+                        ? returnDataFields.join(', ')
+                        : returnDataFieldsAdvanced
+                )
                 .maybeSingle();
         }
 
@@ -162,6 +169,7 @@ export default {
             data: payload = {},
             countMode = null,
             returnData = true,
+            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -181,7 +189,13 @@ export default {
         const query = this.instance.from(table).update(payload, { count: countMode }).match(primaryData);
         if (returnData) {
             query
-                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .select(
+                    returnFieldsMinimal
+                        ? '*'
+                        : returnFieldsMode === 'guided'
+                        ? returnDataFields.join(', ')
+                        : returnDataFieldsAdvanced
+                )
                 .maybeSingle();
         }
 
@@ -200,6 +214,7 @@ export default {
             ignoreDuplicates = false,
             onConflict = [],
             returnData = true,
+            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -217,7 +232,13 @@ export default {
             .upsert(payload, { count: countMode, ignoreDuplicates, onConflict: onConflict.join(',') });
         if (returnData) {
             query
-                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .select(
+                    returnFieldsMinimal
+                        ? '*'
+                        : returnFieldsMode === 'guided'
+                        ? returnDataFields.join(', ')
+                        : returnDataFieldsAdvanced
+                )
                 .maybeSingle();
         }
 
@@ -234,6 +255,7 @@ export default {
             primaryData = {},
             countMode = null,
             returnData = true,
+            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -250,7 +272,13 @@ export default {
         const query = this.instance.from(table).delete({ count: countMode }).match(primaryData).select();
         if (returnData) {
             query
-                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .select(
+                    returnFieldsMinimal
+                        ? '*'
+                        : returnFieldsMode === 'guided'
+                        ? returnDataFields.join(', ')
+                        : returnDataFieldsAdvanced
+                )
                 .maybeSingle();
         }
 

@@ -64,10 +64,10 @@
                 <template v-if="returnData">
                     <div class="flex items-center mb-3">
                         <wwEditorInputSwitch
-                            :model-value="autoSync"
-                            @update:modelValue="setArgs({ autoSync: $event })"
+                            :model-value="returnFieldsMinimal"
+                            @update:modelValue="setArgs({ returnFieldsMinimal: $event })"
                         />
-                        <div class="label-3 ml-2">Sync related collections</div>
+                        <div class="label-3 ml-2">Return minimal data</div>
                     </div>
                     <wwEditorFormRow label="Returned fields" required>
                         <wwEditorInputRadio
@@ -107,6 +107,13 @@
                         ]"
                         @update:modelValue="setArgs({ countMode: $event })"
                     />
+                    <div class="flex items-center mb-3">
+                        <wwEditorInputSwitch
+                            :model-value="autoSync"
+                            @update:modelValue="setArgs({ autoSync: $event })"
+                        />
+                        <div class="label-3 ml-2">Use returned data to update the related collections</div>
+                    </div>
                 </template>
             </div>
         </template>
@@ -147,6 +154,9 @@ export default {
         },
         autoSync() {
             return this.args.autoSync === undefined ? true : this.args.autoSync;
+        },
+        returnFieldsMinimal() {
+            return this.args.returnFieldsMinimal || false;
         },
         returnFieldsMode() {
             return this.args.returnFieldsMode || 'guided';
@@ -217,7 +227,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false });
+        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMinimal: true });
     },
     methods: {
         setTable(table) {

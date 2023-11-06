@@ -69,12 +69,12 @@
                 <template v-if="returnData">
                     <div class="flex items-center mb-3">
                         <wwEditorInputSwitch
-                            :model-value="autoSync"
-                            @update:modelValue="setArgs({ autoSync: $event })"
+                            :model-value="returnFieldsMinimal"
+                            @update:modelValue="setArgs({ returnFieldsMinimal: $event })"
                         />
-                        <div class="label-3 ml-2">Sync related collections</div>
+                        <div class="label-3 ml-2">Return minimal data</div>
                     </div>
-                    <wwEditorFormRow label="Returned fields" required>
+                    <wwEditorFormRow v-if="!returnFieldsMinimal" label="Returned fields" required>
                         <wwEditorInputRadio
                             class="mb-2"
                             :model-value="returnFieldsMode"
@@ -88,7 +88,7 @@
                             multiple
                             :options="tablePropertiesOptions"
                             :model-value="returnDataFields"
-                            placeholder="Minimal"
+                            placeholder="All fields"
                             @update:modelValue="setArgs({ returnDataFields: $event })"
                         />
                         <wwEditorInput
@@ -112,6 +112,13 @@
                         ]"
                         @update:modelValue="setArgs({ countMode: $event })"
                     />
+                    <div class="flex items-center mb-3">
+                        <wwEditorInputSwitch
+                            :model-value="autoSync"
+                            @update:modelValue="setArgs({ autoSync: $event })"
+                        />
+                        <div class="label-3 ml-2">Use returned data to update the related collections</div>
+                    </div>
                 </template>
             </div>
         </template>
@@ -153,7 +160,9 @@ export default {
         autoSync() {
             return this.args.autoSync === undefined ? true : this.args.autoSync;
         },
-
+        returnFieldsMinimal() {
+            return this.args.returnFieldsMinimal || false;
+        },
         ignoreDuplicates() {
             return this.args.ignoreDuplicates || false;
         },
@@ -207,7 +216,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false });
+        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMinimal: true });
     },
     methods: {
         setTable(table) {
