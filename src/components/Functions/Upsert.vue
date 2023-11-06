@@ -54,7 +54,7 @@
                         { label: 'Planned', value: 'planned' },
                         { label: 'Estimated', value: 'estimated' },
                     ]"
-                    @update:modelValue="setCountMode"
+                    @update:modelValue="setArg({ countMode: $event })"
                 />
                 <wwEditorInputRow
                     label="On conflict"
@@ -63,16 +63,51 @@
                     :options="tablePropertiesOptions"
                     :model-value="onConflict"
                     placeholder="Unique field(s)"
-                    @update:modelValue="setOnConflict"
+                    @update:modelValue="setArg({ onConflict: $event })"
                 />
                 <div class="flex items-center mt-2">
-                    <wwEditorInputSwitch :model-value="ignoreDuplicates" @update:modelValue="setIgnoreDuplicates" />
+                    <wwEditorInputSwitch
+                        :model-value="ignoreDuplicates"
+                        @update:modelValue="setArg({ ignoreDuplicates: $event })"
+                    />
                     <div class="label-3 ml-2">Ignore duplicates</div>
                 </div>
                 <div class="flex items-center mt-2">
-                    <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setReturnData" />
+                    <wwEditorInputSwitch
+                        :model-value="returnData"
+                        @update:modelValue="setArg({ returnData: $event })"
+                    />
                     <div class="label-3 ml-2">Return data</div>
                 </div>
+                <div class="flex items-center mt-2" v-if="returnData">
+                    <wwEditorInputSwitch :model-value="autoSync" @update:modelValue="setArg({ autoSync: $event })" />
+                    <div class="label-3 ml-2">Sync related collections</div>
+                </div>
+                <wwEditorFormRow label="Fields" required v-if="returnData">
+                    <wwEditorInputRadio
+                        class="mb-2"
+                        :model-value="returnFieldsMode"
+                        :choices="fieldsModeChoices"
+                        small
+                        @update:modelValue="setArg({ returnFieldsMode: $event })"
+                    />
+                    <wwEditorInput
+                        v-if="fieldsMode === 'guided'"
+                        type="select"
+                        multiple
+                        :options="tablePropertiesOptions"
+                        :model-value="returnDataFields"
+                        placeholder="All fields"
+                        @update:modelValue="setArg({ returnDataFields: $event })"
+                    />
+                    <wwEditorInput
+                        v-else
+                        type="string"
+                        :model-value="returnDataFieldsAdvanced"
+                        placeholder="column, linkedColumn(column)"
+                        @update:modelValue="setArg({ returnDataFieldsAdvanced: $event })"
+                    />
+                </wwEditorFormRow>
             </div>
         </template>
     </Expandable>
@@ -94,6 +129,10 @@ export default {
             isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
+            fieldsModeChoices: [
+                { label: 'Guided', value: 'guided', default: true },
+                { label: 'Advanced', value: 'advanced' },
+            ],
         };
     },
     computed: {
@@ -106,11 +145,23 @@ export default {
         returnData() {
             return this.args.returnData || false;
         },
+        autoSync() {
+            return this.args.autoSync || false;
+        },
         ignoreDuplicates() {
             return this.args.ignoreDuplicates || false;
         },
         onConflict() {
             return this.args.onConflict || [];
+        },
+        returnFieldsMode() {
+            return this.args.returnFieldsMode;
+        },
+        returnDataFields() {
+            return this.args.returnDataFields || [];
+        },
+        returnDataFieldsAdvanced() {
+            return this.args.returnDataFieldsAdvanced;
         },
         dataFields() {
             return this.args.dataFields || [];
@@ -155,18 +206,9 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], data: {} });
         },
-        setCountMode(countMode) {
-            this.$emit('update:args', { ...this.args, countMode });
-        },
-        setReturnData(returnData) {
-            this.$emit('update:args', { ...this.args, returnData });
-        },
-        setIgnoreDuplicates(ignoreDuplicates) {
-            this.$emit('update:args', { ...this.args, ignoreDuplicates });
-        },
-        setOnConflict(onConflict) {
-            this.$emit('update:args', { ...this.args, onConflict });
-        },
+        setArgs(arg) {
+            this.$emit('update:args', { ...this.args, ...arg });
+        }
         setDataFields(dataFields) {
             this.$emit('update:args', { ...this.args, dataFields });
             this.$nextTick(() => this.setData({ ...this.data }));

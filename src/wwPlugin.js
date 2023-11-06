@@ -123,22 +123,41 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return countMode ? (countOnly ? count : { data, count }) : data;
     },
-    async insert({ table, data: payload = {}, countMode, returnData }, wwUtils) {
+    async insert(
+        { table, data: payload = {}, countMode, returnData, autoSync, returnDataFields, returnDataFieldsAdvanced },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
 
         const query = this.instance.from(table).insert([payload], { count: countMode });
-        if (returnData) query.select();
+        if (returnData) {
+            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
+            query.select(fields).maybeSingle();
+        }
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'INSERT', new: data[0] });
-        return countMode ? { count, data: data[0] } : data[0];
+        if (!returnData) return;
+        if (!this.settings.publicData.realtimeTables[table] && autoSync)
+            this.onSubscribe({ table, eventType: 'INSERT', new: data });
+        return countMode ? { count, data } : data;
     },
-    async update({ table, primaryData = {}, data: payload = {}, countMode, returnData }, wwUtils) {
+    async update(
+        {
+            table,
+            primaryData = {},
+            data: payload = {},
+            countMode,
+            returnData,
+            autoSync,
+            returnDataFields,
+            returnDataFieldsAdvanced,
+        },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
@@ -149,15 +168,32 @@ export default {
         });
 
         const query = this.instance.from(table).update(payload, { count: countMode }).match(primaryData);
-        if (returnData) query.select();
+        if (returnData) {
+            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
+            query.select(fields).maybeSingle();
+        }
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'UPDATE', new: data[0] });
-        return countMode ? { count, data: data[0] } : data[0];
+        if (!returnData) return;
+        if (!this.settings.publicData.realtimeTables[table] && autoSync)
+            this.onSubscribe({ table, eventType: 'UPDATE', new: data });
+        return countMode ? { count, data } : data;
     },
-    async upsert({ table, data: payload = {}, countMode, ignoreDuplicates, onConflict = [], returnData }, wwUtils) {
+    async upsert(
+        {
+            table,
+            data: payload = {},
+            countMode,
+            ignoreDuplicates,
+            onConflict = [],
+            returnData,
+            autoSync,
+            returnDataFields,
+            returnDataFieldsAdvanced,
+        },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
@@ -166,15 +202,22 @@ export default {
         const query = this.instance
             .from(table)
             .upsert(payload, { count: countMode, ignoreDuplicates, onConflict: onConflict.join(',') });
-        if (returnData) query.select();
+        if (returnData) {
+            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
+            query.select(fields).maybeSingle();
+        }
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'UPSERT', new: data[0] });
-        return countMode ? { count, data: data[0] } : data[0];
+        if (!returnData) return;
+        if (!this.settings.publicData.realtimeTables[table] && autoSync)
+            this.onSubscribe({ table, eventType: 'UPSERT', new: data });
+        return countMode ? { count, data } : data;
     },
-    async delete({ table, primaryData = {}, countMode, returnData }, wwUtils) {
+    async delete(
+        { table, primaryData = {}, countMode, returnData, autoSync, returnDataFields, returnDataFieldsAdvanced },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
@@ -182,13 +225,17 @@ export default {
         wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
 
         const query = this.instance.from(table).delete({ count: countMode }).match(primaryData).select();
-        if (returnData) query.select();
+        if (returnData) {
+            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
+            query.select(fields).maybeSingle();
+        }
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'DELETE', old: data[0] });
-        return countMode ? { count, data: data[0] } : data[0];
+        if (!returnData) return;
+        if (!this.settings.publicData.realtimeTables[table] && autoSync)
+            this.onSubscribe({ table, eventType: 'DELETE', old: data });
+        return countMode ? { count, data } : data;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
