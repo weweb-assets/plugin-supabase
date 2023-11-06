@@ -124,7 +124,16 @@ export default {
         return countMode ? (countOnly ? count : { data, count }) : data;
     },
     async insert(
-        { table, data: payload = {}, countMode, returnData, autoSync, returnDataFields, returnDataFieldsAdvanced },
+        {
+            table,
+            data: payload = {},
+            countMode,
+            returnData,
+            autoSync,
+            returnFieldsMode,
+            returnDataField = [],
+            returnDataFieldsAdvanced,
+        },
         wwUtils
     ) {
         /* wwEditor:start */
@@ -134,8 +143,9 @@ export default {
 
         const query = this.instance.from(table).insert([payload], { count: countMode });
         if (returnData) {
-            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
-            query.select(fields).maybeSingle();
+            query
+                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .maybeSingle();
         }
 
         const { data, count, error } = await query;
@@ -153,7 +163,8 @@ export default {
             countMode,
             returnData,
             autoSync,
-            returnDataFields,
+            returnFieldsMode,
+            returnDataFields = [],
             returnDataFieldsAdvanced,
         },
         wwUtils
@@ -169,8 +180,9 @@ export default {
 
         const query = this.instance.from(table).update(payload, { count: countMode }).match(primaryData);
         if (returnData) {
-            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
-            query.select(fields).maybeSingle();
+            query
+                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .maybeSingle();
         }
 
         const { data, count, error } = await query;
@@ -189,7 +201,8 @@ export default {
             onConflict = [],
             returnData,
             autoSync,
-            returnDataFields,
+            returnFieldsMode,
+            returnDataFields = [],
             returnDataFieldsAdvanced,
         },
         wwUtils
@@ -203,8 +216,9 @@ export default {
             .from(table)
             .upsert(payload, { count: countMode, ignoreDuplicates, onConflict: onConflict.join(',') });
         if (returnData) {
-            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
-            query.select(fields).maybeSingle();
+            query
+                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .maybeSingle();
         }
 
         const { data, count, error } = await query;
@@ -215,7 +229,16 @@ export default {
         return countMode ? { count, data } : data;
     },
     async delete(
-        { table, primaryData = {}, countMode, returnData, autoSync, returnDataFields, returnDataFieldsAdvanced },
+        {
+            table,
+            primaryData = {},
+            countMode,
+            returnData,
+            autoSync,
+            returnFieldsMode,
+            returnDataFields = [],
+            returnDataFieldsAdvanced,
+        },
         wwUtils
     ) {
         /* wwEditor:start */
@@ -226,8 +249,9 @@ export default {
 
         const query = this.instance.from(table).delete({ count: countMode }).match(primaryData).select();
         if (returnData) {
-            const fields = fieldsMode === 'guided' ? (returnDataFields || []).join(', ') : returnDataFieldsAdvanced;
-            query.select(fields).maybeSingle();
+            query
+                .select(returnFieldsMode === 'guided' ? returnDataFields.join(', ') : returnDataFieldsAdvanced)
+                .maybeSingle();
         }
 
         const { data, count, error } = await query;
