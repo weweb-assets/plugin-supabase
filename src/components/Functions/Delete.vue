@@ -44,15 +44,15 @@
                         { label: 'Planned', value: 'planned' },
                         { label: 'Estimated', value: 'estimated' },
                     ]"
-                    @update:modelValue="setArg({ countMode: $event })"
+                    @update:modelValue="setArgs({ countMode: $event })"
                 />
             </div>
             <div class="flex items-center mt-2">
-                <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setArg({ returnData: $event })" />
+                <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setArgs({ returnData: $event })" />
                 <div class="label-3 ml-2">Return data</div>
             </div>
             <div class="flex items-center mt-2" v-if="returnData">
-                <wwEditorInputSwitch :model-value="autoSync" @update:modelValue="setArg({ autoSync: $event })" />
+                <wwEditorInputSwitch :model-value="autoSync" @update:modelValue="setArgs({ autoSync: $event })" />
                 <div class="label-3 ml-2">Sync related collections</div>
             </div>
             <wwEditorFormRow label="Fields" required v-if="returnData">
@@ -61,7 +61,7 @@
                     :model-value="returnFieldsMode"
                     :choices="fieldsModeChoices"
                     small
-                    @update:modelValue="setArg({ returnFieldsMode: $event })"
+                    @update:modelValue="setArgs({ returnFieldsMode: $event })"
                 />
                 <wwEditorInput
                     v-if="fieldsMode === 'guided'"
@@ -70,14 +70,14 @@
                     :options="tablePropertiesOptions"
                     :model-value="returnDataFields"
                     placeholder="All fields"
-                    @update:modelValue="setArg({ returnDataFields: $event })"
+                    @update:modelValue="setArgs({ returnDataFields: $event })"
                 />
                 <wwEditorInput
                     v-else
                     type="string"
                     :model-value="returnDataFieldsAdvanced"
                     placeholder="column, linkedColumn(column)"
-                    @update:modelValue="setArg({ returnDataFieldsAdvanced: $event })"
+                    @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
                 />
             </wwEditorFormRow>
         </template>
@@ -161,7 +161,7 @@ export default {
         },
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
-        }
+        },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
                 if (!this.tableProperties.find(field => field.name === primaryDataKey)) {
