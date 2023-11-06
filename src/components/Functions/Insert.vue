@@ -51,14 +51,7 @@
                     <div class="label-3 ml-2">Return data</div>
                 </div>
                 <template v-if="returnData">
-                    <div class="flex items-center mb-3">
-                        <wwEditorInputSwitch
-                            :model-value="returnFieldsMinimal"
-                            @update:modelValue="setArgs({ returnFieldsMinimal: $event })"
-                        />
-                        <div class="label-3 ml-2">Return minimal fields</div>
-                    </div>
-                    <wwEditorFormRow v-if="!returnFieldsMinimal" label="Returned fields" required>
+                    <wwEditorFormRow label="Returned fields" required>
                         <wwEditorInputRadio
                             class="mb-2"
                             :model-value="returnFieldsMode"
@@ -76,7 +69,7 @@
                             @update:modelValue="setArgs({ returnDataFields: $event })"
                         />
                         <wwEditorInput
-                            v-else
+                            v-else-if="returnFieldsMode === 'advanced'"
                             type="string"
                             :model-value="returnDataFieldsAdvanced"
                             placeholder="column, linkedColumn(column)"
@@ -126,7 +119,8 @@ export default {
             definitions: {},
             isLoading: false,
             fieldsModeChoices: [
-                { label: 'Guided', value: 'guided', default: true },
+                { label: 'Minimal', value: 'minimal', default: true },
+                { label: 'Guided', value: 'guided' },
                 { label: 'Advanced', value: 'advanced' },
             ],
         };
@@ -143,9 +137,6 @@ export default {
         },
         autoSync() {
             return this.args.autoSync === undefined ? true : this.args.autoSync;
-        },
-        returnFieldsMinimal() {
-            return this.args.returnFieldsMinimal || false;
         },
         returnFieldsMode() {
             return this.args.returnFieldsMode || 'guided';
@@ -194,7 +185,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMinimal: true });
+        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMode: 'minimal' });
     },
     methods: {
         setTable(table) {

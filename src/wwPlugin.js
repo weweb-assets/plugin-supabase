@@ -130,7 +130,6 @@ export default {
             countMode = null,
             returnData = true,
             autoSync = true,
-            returnFieldsMinimal = false,
             returnFieldsMode = 'guided',
             returnDataFields = [],
             returnDataFieldsAdvanced,
@@ -146,7 +145,7 @@ export default {
         if (returnData) {
             query
                 .select(
-                    returnFieldsMinimal
+                    returnFieldsMode === 'minimal'
                         ? ''
                         : returnFieldsMode === 'guided'
                         ? returnDataFields.length
@@ -171,7 +170,6 @@ export default {
             data: payload = {},
             countMode = null,
             returnData = true,
-            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -192,7 +190,7 @@ export default {
         if (returnData) {
             query
                 .select(
-                    returnFieldsMinimal
+                    returnFieldsMode === 'minimal'
                         ? ''
                         : returnFieldsMode === 'guided'
                         ? returnDataFields.length
@@ -218,7 +216,6 @@ export default {
             ignoreDuplicates = false,
             onConflict = [],
             returnData = true,
-            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -237,7 +234,7 @@ export default {
         if (returnData) {
             query
                 .select(
-                    returnFieldsMinimal
+                    returnFieldsMode === 'minimal'
                         ? ''
                         : returnFieldsMode === 'guided'
                         ? returnDataFields.length
@@ -261,7 +258,6 @@ export default {
             primaryData = {},
             countMode = null,
             returnData = true,
-            returnFieldsMinimal = false,
             autoSync = true,
             returnFieldsMode = 'guided',
             returnDataFields = [],
@@ -279,7 +275,7 @@ export default {
         if (returnData) {
             query
                 .select(
-                    returnFieldsMinimal
+                    returnFieldsMode === 'minimal'
                         ? ''
                         : returnFieldsMode === 'guided'
                         ? returnDataFields.length
