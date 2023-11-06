@@ -131,7 +131,7 @@ export default {
             returnData,
             autoSync,
             returnFieldsMode,
-            returnDataField = [],
+            returnDataFields = [],
             returnDataFieldsAdvanced,
         },
         wwUtils
