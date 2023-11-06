@@ -147,9 +147,11 @@ export default {
             query
                 .select(
                     returnFieldsMinimal
-                        ? '*'
+                        ? ''
                         : returnFieldsMode === 'guided'
-                        ? returnDataFields.join(', ')
+                        ? returnDataFields.length
+                            ? returnDataFields.join(', ')
+                            : '*'
                         : returnDataFieldsAdvanced
                 )
                 .maybeSingle();
@@ -191,9 +193,11 @@ export default {
             query
                 .select(
                     returnFieldsMinimal
-                        ? '*'
+                        ? ''
                         : returnFieldsMode === 'guided'
-                        ? returnDataFields.join(', ')
+                        ? returnDataFields.length
+                            ? returnDataFields.join(', ')
+                            : '*'
                         : returnDataFieldsAdvanced
                 )
                 .maybeSingle();
@@ -234,9 +238,11 @@ export default {
             query
                 .select(
                     returnFieldsMinimal
-                        ? '*'
+                        ? ''
                         : returnFieldsMode === 'guided'
-                        ? returnDataFields.join(', ')
+                        ? returnDataFields.length
+                            ? returnDataFields.join(', ')
+                            : '*'
                         : returnDataFieldsAdvanced
                 )
                 .maybeSingle();
@@ -274,9 +280,11 @@ export default {
             query
                 .select(
                     returnFieldsMinimal
-                        ? '*'
+                        ? ''
                         : returnFieldsMode === 'guided'
-                        ? returnDataFields.join(', ')
+                        ? returnDataFields.length
+                            ? returnDataFields.join(', ')
+                            : '*'
                         : returnDataFieldsAdvanced
                 )
                 .maybeSingle();

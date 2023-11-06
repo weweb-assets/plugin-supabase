@@ -56,9 +56,9 @@
                             :model-value="returnFieldsMinimal"
                             @update:modelValue="setArgs({ returnFieldsMinimal: $event })"
                         />
-                        <div class="label-3 ml-2">Return minimal data</div>
+                        <div class="label-3 ml-2">Return minimal fields</div>
                     </div>
-                    <wwEditorFormRow label="Returned fields" required>
+                    <wwEditorFormRow v-if="!returnFieldsMinimal" label="Returned fields" required>
                         <wwEditorInputRadio
                             class="mb-2"
                             :model-value="returnFieldsMode"
@@ -72,7 +72,7 @@
                             multiple
                             :options="tablePropertiesOptions"
                             :model-value="returnDataFields"
-                            placeholder="Minimal"
+                            placeholder="All fields"
                             @update:modelValue="setArgs({ returnDataFields: $event })"
                         />
                         <wwEditorInput
