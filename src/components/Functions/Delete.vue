@@ -62,7 +62,7 @@
                             multiple
                             :options="tablePropertiesOptions"
                             :model-value="returnDataFields"
-                            placeholder="All fields"
+                            placeholder="Minimal"
                             @update:modelValue="setArgs({ returnDataFields: $event })"
                         />
                         <wwEditorInput
@@ -123,13 +123,13 @@ export default {
             return this.args.countMode || null;
         },
         returnData() {
-            return this.args.returnData || false;
+            return this.args.returnData === undefined ? true : this.args.returnData;
         },
         autoSync() {
-            return this.args.autoSync || false;
+            return this.args.autoSync === undefined ? true : this.args.autoSync;
         },
         returnFieldsMode() {
-            return this.args.returnFieldsMode;
+            return this.args.returnFieldsMode || 'guided';
         },
         returnDataFields() {
             return this.args.returnDataFields || [];
@@ -163,6 +163,7 @@ export default {
     },
     mounted() {
         this.definitions = this.plugin.doc.definitions || {};
+        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false });
     },
     methods: {
         setTable(table) {
