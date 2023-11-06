@@ -33,53 +33,62 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <wwEditorInputRow
-                    label="Get count"
-                    type="select"
-                    placeholder="None"
-                    :model-value="countMode"
-                    :options="[
-                        { label: 'None', value: null },
-                        { label: 'Exact', value: 'exact' },
-                        { label: 'Planned', value: 'planned' },
-                        { label: 'Estimated', value: 'estimated' },
-                    ]"
-                    @update:modelValue="setArgs({ countMode: $event })"
-                />
+                <div class="flex items-center mb-3">
+                    <wwEditorInputSwitch
+                        :model-value="returnData"
+                        @update:modelValue="setArgs({ returnData: $event })"
+                    />
+                    <div class="label-3 ml-2">Return data</div>
+                </div>
+                <template v-if="returnData">
+                    <div class="flex items-center mb-3">
+                        <wwEditorInputSwitch
+                            :model-value="autoSync"
+                            @update:modelValue="setArgs({ autoSync: $event })"
+                        />
+                        <div class="label-3 ml-2">Sync related collections</div>
+                    </div>
+                    <wwEditorFormRow label="Returned fields" required>
+                        <wwEditorInputRadio
+                            class="mb-2"
+                            :model-value="returnFieldsMode"
+                            :choices="fieldsModeChoices"
+                            small
+                            @update:modelValue="setArgs({ returnFieldsMode: $event })"
+                        />
+                        <wwEditorInput
+                            v-if="returnFieldsMode === 'guided'"
+                            type="select"
+                            multiple
+                            :options="tablePropertiesOptions"
+                            :model-value="returnDataFields"
+                            placeholder="All fields"
+                            @update:modelValue="setArgs({ returnDataFields: $event })"
+                        />
+                        <wwEditorInput
+                            v-else
+                            type="string"
+                            :model-value="returnDataFieldsAdvanced"
+                            placeholder="column, linkedColumn(column)"
+                            @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
+                        />
+                    </wwEditorFormRow>
+
+                    <wwEditorInputRow
+                        label="Get count"
+                        type="select"
+                        placeholder="None"
+                        :model-value="countMode"
+                        :options="[
+                            { label: 'None', value: null },
+                            { label: 'Exact', value: 'exact' },
+                            { label: 'Planned', value: 'planned' },
+                            { label: 'Estimated', value: 'estimated' },
+                        ]"
+                        @update:modelValue="setArgs({ countMode: $event })"
+                    />
+                </template>
             </div>
-            <div class="flex items-center mt-2">
-                <wwEditorInputSwitch :model-value="returnData" @update:modelValue="setArgs({ returnData: $event })" />
-                <div class="label-3 ml-2">Return data</div>
-            </div>
-            <div class="flex items-center mt-2" v-if="returnData">
-                <wwEditorInputSwitch :model-value="autoSync" @update:modelValue="setArgs({ autoSync: $event })" />
-                <div class="label-3 ml-2">Sync related collections</div>
-            </div>
-            <wwEditorFormRow label="Fields" required v-if="returnData">
-                <wwEditorInputRadio
-                    class="mb-2"
-                    :model-value="returnFieldsMode"
-                    :choices="fieldsModeChoices"
-                    small
-                    @update:modelValue="setArgs({ returnFieldsMode: $event })"
-                />
-                <wwEditorInput
-                    v-if="fieldsMode === 'guided'"
-                    type="select"
-                    multiple
-                    :options="tablePropertiesOptions"
-                    :model-value="returnDataFields"
-                    placeholder="All fields"
-                    @update:modelValue="setArgs({ returnDataFields: $event })"
-                />
-                <wwEditorInput
-                    v-else
-                    type="string"
-                    :model-value="returnDataFieldsAdvanced"
-                    placeholder="column, linkedColumn(column)"
-                    @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
-                />
-            </wwEditorFormRow>
         </template>
     </Expandable>
     <wwLoader :loading="isLoading" />
