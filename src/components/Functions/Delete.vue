@@ -41,7 +41,7 @@
                     <div class="label-3 ml-2">Return data</div>
                 </div>
                 <template v-if="returnData">
-                    <wwEditorFormRow label="Returned fields" required>
+                    <wwEditorFormRow label="Returned fields">
                         <wwEditorInputRadio
                             :class="{ 'mb-2': returnFieldsMode !== 'minimal' }"
                             :model-value="returnFieldsMode"
