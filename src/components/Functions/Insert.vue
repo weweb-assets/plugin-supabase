@@ -53,7 +53,7 @@
                 <template v-if="returnData">
                     <wwEditorFormRow label="Returned fields" required>
                         <wwEditorInputRadio
-                            class="mb-2"
+                            :class="{ 'mb-2': returnFieldsMode !== 'minimal' }"
                             :model-value="returnFieldsMode"
                             :choices="fieldsModeChoices"
                             small
@@ -76,25 +76,38 @@
                             @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
                         />
                     </wwEditorFormRow>
-                    <wwEditorInputRow
-                        label="Get count"
-                        type="select"
-                        placeholder="None"
-                        :model-value="countMode"
-                        :options="[
-                            { label: 'None', value: null },
-                            { label: 'Exact', value: 'exact' },
-                            { label: 'Planned', value: 'planned' },
-                            { label: 'Estimated', value: 'estimated' },
-                        ]"
-                        @update:modelValue="setArgs({ countMode: $event })"
-                    />
+                    <div class="flex items-center mb-3">
+                        <wwEditorInputRow
+                            label="Get count"
+                            type="select"
+                            placeholder="None"
+                            :model-value="countMode"
+                            :options="[
+                                { label: 'None', value: null },
+                                { label: 'Exact', value: 'exact' },
+                                { label: 'Planned', value: 'planned' },
+                                { label: 'Estimated', value: 'estimated' },
+                            ]"
+                            @update:modelValue="setArgs({ countMode: $event })"
+                        />
+                        <wwEditorQuestionMark tooltip-position="top-left" :forced-content="`Count algorithm to use to
+                        count inserted rows. "exact": Exact but slow count algorithm. Performs a 'COUNT(*)' under the
+                        hood. "planned": Approximated but fast count algorithm. Uses the Postgres statistics under the
+                        hood. "estimated": Uses exact count for low numbers and planned count for high numbers.`"
+                        class="ml-2" />
+                    </div>
                     <div class="flex items-center mb-3">
                         <wwEditorInputSwitch
-                            :model-value="autoSync"
+                            :model-value="isRealtime || autoSync"
                             @update:modelValue="setArgs({ autoSync: $event })"
+                            :disabled="isRealtime"
                         />
-                        <div class="label-3 ml-2">Use returned data to update the related collections</div>
+                        <div class="label-3 ml-2">Auto update the related collection</div>
+                        <wwEditorQuestionMark
+                            tooltip-position="top-left"
+                            forced-content="Always true when realtime is enabled on the table"
+                            class="ml-auto"
+                        />
                     </div>
                 </template>
             </div>
@@ -152,6 +165,9 @@ export default {
         },
         data() {
             return this.args.data || {};
+        },
+        isRealtime() {
+            return this.plugin.settings.publicData.realtimeTables[this.table];
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
