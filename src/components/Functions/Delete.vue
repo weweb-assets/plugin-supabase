@@ -80,11 +80,11 @@
                             ]"
                             @update:modelValue="setArgs({ countMode: $event })"
                         />
-                        <wwEditorQuestionMark tooltip-position="top-left" :forced-content="`Count algorithm to use to
-                        count deleted rows. "exact": Exact but slow count algorithm. Performs a 'COUNT(*)' under the
-                        hood. "planned": Approximated but fast count algorithm. Uses the Postgres statistics under the
-                        hood. "estimated": Uses exact count for low numbers and planned count for high numbers.`"
-                        class="ml-2" />
+                        <wwEditorQuestionMark
+                            tooltip-position="top-left"
+                            forced-content="Count algorithm to use to count deleted rows. **exact**: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. **planned**: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. **estimated**: Uses exact count for low numbers and planned count for high numbers."
+                            class="ml-2"
+                        />
                     </div>
                     <div class="flex items-center mb-3">
                         <wwEditorInputSwitch
