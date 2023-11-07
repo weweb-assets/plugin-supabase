@@ -64,7 +64,7 @@
                 <template v-if="returnData">
                     <wwEditorFormRow label="Returned fields" required>
                         <wwEditorInputRadio
-                            class="mb-2"
+                            :class="{ 'mb-2': returnFieldsMode !== 'minimal' }"
                             :model-value="returnFieldsMode"
                             :choices="fieldsModeChoices"
                             small
@@ -87,36 +87,37 @@
                             @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
                         />
                     </wwEditorFormRow>
-                    <div class="flex items-center mb-3">
-                        <wwEditorInputRow
-                            label="Get count"
-                            type="select"
-                            placeholder="None"
-                            :model-value="countMode"
-                            :options="[
-                                { label: 'None', value: null },
-                                { label: 'Exact', value: 'exact' },
-                                { label: 'Planned', value: 'planned' },
-                                { label: 'Estimated', value: 'estimated' },
-                            ]"
-                            @update:modelValue="setArgs({ countMode: $event })"
-                        />
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            forced-content="Count algorithm to use to count updated rows. **exact**: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. **planned**: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. **estimated**: Uses exact count for low numbers and planned count for high numbers."
-                            class="ml-2"
-                        />
-                    </div>
+                    <wwEditorFormRow label="Get count">
+                        <div class="flex">
+                            <wwEditorInput
+                                type="select"
+                                placeholder="None"
+                                :model-value="countMode"
+                                :options="[
+                                    { label: 'None', value: null },
+                                    { label: 'Exact', value: 'exact' },
+                                    { label: 'Planned', value: 'planned' },
+                                    { label: 'Estimated', value: 'estimated' },
+                                ]"
+                                @update:modelValue="setArgs({ countMode: $event })"
+                            />
+                            <wwEditorQuestionMark
+                                tooltip-position="top-left"
+                                forced-content="Count algorithm to use to count impacted rows. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
+                                class="ml-2"
+                            />
+                        </div>
+                    </wwEditorFormRow>
                     <div class="flex items-center mb-3">
                         <wwEditorInputSwitch
                             :model-value="isRealtime || autoSync"
                             @update:modelValue="setArgs({ autoSync: $event })"
                             :disabled="isRealtime"
                         />
-                        <div class="label-3 ml-2">Auto update the related collection</div>
+                        <div class="label-3 ml-2">Auto update the related collections</div>
                         <wwEditorQuestionMark
                             tooltip-position="top-left"
-                            forced-content="Always true when realtime is enabled on the table"
+                            forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
                             class="ml-auto"
                         />
                     </div>
