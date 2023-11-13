@@ -38,6 +38,7 @@
             @update:modelValue="setDataFieldsAdvanced"
         />
     </wwEditorFormRow>
+    <QueryFilters v-model="filters" />
     <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
@@ -70,9 +71,10 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryFilters from '../Utils/QueryFilters.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
@@ -107,6 +109,9 @@ export default {
         },
         dataFieldsAdvanced() {
             return this.args.dataFieldsAdvanced;
+        },
+        filters() {
+            return this.args.filters;
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
@@ -155,6 +160,9 @@ export default {
         },
         setDataFieldsAdvanced(dataFieldsAdvanced) {
             this.$emit('update:args', { ...this.args, dataFieldsAdvanced });
+        },
+        setFilters(filters) {
+            this.$emit('update:args', { ...this.args, filters });
         },
         async fetchTables() {
             try {

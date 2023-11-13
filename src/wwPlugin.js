@@ -113,15 +113,18 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, countMode, countOnly }, wwUtils) {
+    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, countMode, countOnly }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Selecting ${table}`, { type: 'request' });
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        const { data, count, error } = await this.instance
+        const query = this.instance
             .from(table)
             .select(fields || undefined, { count: countMode, head: countOnly });
+        applyFilters(query, filters);
+        const { data, count, error } = await query
+            
         if (error) throw new Error(error.message, { cause: error });
         return countMode ? (countOnly ? count : { data, count }) : data;
     },
@@ -398,6 +401,14 @@ export default {
         string: 'query',
     },
 };
+
+const applyFilter(query, filters) {
+    for (const filter of filters) {
+        if (filter.fn === 'textSearch') query[filter.fn](filter.column, filter.value, filter.options || {})
+        else if (filter.fn === 'filter' || filter.fn === 'not') query[filter.fn](filter.column, filter.operator, filter.value)
+        else query[filter.fn](filter.column, filter.value)
+    }
+}
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {
     if (!Array.isArray(data)) return -1;
