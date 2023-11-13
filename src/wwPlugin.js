@@ -296,7 +296,13 @@ export default {
         return countMode ? { count, data } : data;
     },
     async callPostgresFunction({ functionName, params, countMode = null, countOnly = false }) {
-        const { data, error } = await this.instance.rpc(functionName, params, { count: countMode, head: countOnly });
+        const { data, error } = await this.instance.rpc(
+            functionName,
+            Array.isArray(params)
+                ? params.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
+                : params,
+            { count: countMode, head: countOnly }
+        );
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },

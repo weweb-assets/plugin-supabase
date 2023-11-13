@@ -10,11 +10,33 @@
     />
     <wwEditorInputRow
         label="Arguments"
-        type="code"
-        bindable
+        type="array"
         :model-value="params"
+        bindable
         @update:modelValue="setArgs({ params: $event })"
-    />
+        @add-item="setArgs({ params: [...(params || []), {}] })"
+    >
+        <template #default="{ item, setItem }">
+            <wwEditorInputRow
+                type="query"
+                :model-value="item.key"
+                label="Key"
+                placeholder="Property key"
+                bindable
+                small
+                @update:modelValue="setItem({ ...item, key: $event })"
+            />
+            <wwEditorInputRow
+                type="query"
+                :model-value="item.value"
+                label="Value"
+                placeholder="Property value"
+                bindable
+                small
+                @update:modelValue="setItem({ ...item, value: $event })"
+            />
+        </template>
+    </wwEditorInputRow>
     <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
@@ -66,7 +88,7 @@ export default {
             return this.args.functionName;
         },
         params() {
-            return this.args.params;
+            return this.args.params || [];
         },
         countMode() {
             return this.args.countMode || null;

@@ -35,7 +35,7 @@
                 type="query"
                 :model-value="item.key"
                 label="Key"
-                placeholder="Enter a key name"
+                placeholder="Header key"
                 bindable
                 small
                 @update:modelValue="setItem({ ...item, key: $event })"
@@ -44,7 +44,7 @@
                 type="query"
                 :model-value="item.value"
                 label="Value"
-                placeholder="Enter a value"
+                placeholder="Header value"
                 bindable
                 small
                 @update:modelValue="setItem({ ...item, value: $event })"
@@ -85,7 +85,7 @@ export default {
             return this.args.method;
         },
         headers() {
-            return this.args.headers;
+            return this.args.headers || [];
         },
         body() {
             return this.args.body;
