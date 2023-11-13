@@ -403,6 +403,7 @@ export default {
 const applyFilters = (query, filters) => {
     for (const filter of filters) {
         if (filter.fn === 'textSearch') query[filter.fn](filter.column, filter.value, filter.options || {});
+        else if (filter.fn === 'or') query[filter.fn](filter.value);
         else if (filter.fn === 'filter' || filter.fn === 'not')
             query[filter.fn](filter.column, filter.operator, filter.value);
         else query[filter.fn](filter.column, filter.value);

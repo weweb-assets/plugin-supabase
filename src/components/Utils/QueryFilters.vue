@@ -2,43 +2,60 @@
     <wwEditorInputRow label="Filters" type="array" v-model="filters" @add-item="addFilter">
         <template #default="{ item, setItem }">
             <div class="flex flex-col">
+                <div class="flex items-center">
+                    <wwEditorInputRow
+                        type="select"
+                        :model-value="item.fn"
+                        label="Condition"
+                        :options="conditions"
+                        small
+                        @update:modelValue="setItem({ ...item, fn: $event })"
+                    />
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        :forced-content="filters.find(f => f.fn === item.fn).description"
+                        class="ml-2"
+                    />
+                </div>
                 <wwEditorInputRow
-                    type="select"
-                    :model-value="item.fn"
-                    label="Condition"
-                    :options="conditions"
+                    v-if="item.fn !== 'or'"
+                    type="query"
+                    :model-value="item.column"
+                    label="Column"
+                    placeholder="name"
+                    bindable
                     small
-                    @update:modelValue="setItem({ ...item, fn: $event })"
+                    required
+                    @update:modelValue="setItem({ ...item, column: $event })"
                 />
-                <div class="flex flex-row">
-                    <wwEditorInputRow
-                        type="query"
-                        :model-value="item.column"
-                        label="Column"
-                        placeholder="name"
-                        bindable
-                        small
-                        @update:modelValue="setItem({ ...item, column: $event })"
-                    />
-                    <wwEditorInputRow
-                        v-if="item.fn === 'filter' || item.fn === 'not'"
-                        type="query"
-                        :model-value="item.operator"
-                        label="Operator"
-                        placeholder="is"
-                        bindable
-                        small
-                        @update:modelValue="setItem({ ...item, operator: $event })"
-                    />
+                <wwEditorInputRow
+                    v-if="item.fn === 'filter' || item.fn === 'not'"
+                    type="query"
+                    :model-value="item.operator"
+                    label="Operator"
+                    placeholder="is"
+                    bindable
+                    small
+                    required
+                    @update:modelValue="setItem({ ...item, operator: $event })"
+                />
+                <div class="flex items-center">
                     <wwEditorInputRow
                         type="query"
                         :model-value="item.value"
                         label="Value"
                         bindable
                         small
+                        required
                         @update:modelValue="setItem({ ...item, value: $event })"
                     />
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        class="ml-2"
+                        :forcedContent="filters.find(f => f.fn === item.fn).tooltip"
+                    />
                 </div>
+
                 <wwEditorInputRow
                     v-if="item.fn === 'textSearch'"
                     type="code"
@@ -61,8 +78,18 @@ export default {
     emits: ['update:modelValue'],
     data: () => ({
         conditions: [
-            { label: 'Column is equal to a value', value: 'eq' },
-            { label: 'Column is not equal to a value', value: 'neq' },
+            {
+                label: 'Column is equal to a value',
+                value: 'eq',
+                description: 'Match only rows where column is equal to value.',
+                tooltip: 'The value to filter with',
+            },
+            {
+                label: 'Column is not equal to a value',
+                value: 'neq',
+                description: 'Match only rows where column is not equal to value.',
+                tooltip: 'The value to filter with',
+            },
             { label: 'Column is greater than a value', value: 'gt' },
             { label: 'Column is greater than or equal to a value', value: 'gte' },
             { label: 'Column is less than a value', value: 'lt' },
@@ -98,7 +125,7 @@ export default {
     },
     methods: {
         addFilter(arg) {
-            this.filters = [...this.filters, { fn: 'eq', column: null, value: null }];
+            this.filters = [...this.filters, { fn: 'eq', column: null, value: { __wwType: 'f', code: '' } }];
         },
     },
 };
