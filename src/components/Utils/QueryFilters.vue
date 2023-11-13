@@ -1,51 +1,54 @@
 <template>
     <wwEditorInputRow label="Filters" type="array" v-model="filters" bindable @add-item="addFilter">
         <template #default="{ item, setItem }">
-            <wwEditorInputRow
-                type="select"
-                :model-value="item.fn"
-                label="Condition"
-                :options="conditions"
-                bindable
-                small
-                @update:modelValue="setItem({ ...item, fn: $event })"
-            />
-            <wwEditorInputRow
-                type="query"
-                :model-value="item.column"
-                label="Column"
-                placeholder="name"
-                bindable
-                small
-                @update:modelValue="setItem({ ...item, column: $event })"
-            />
-            <wwEditorInputRow
-                v-if="item.condition === 'filter' || item.condition === 'not'"
-                type="query"
-                :model-value="item.operator"
-                label="Operator"
-                placeholder="is"
-                bindable
-                small
-                @update:modelValue="setItem({ ...item, operator: $event })"
-            />
-            <wwEditorInputRow
-                type="code"
-                :model-value="item.value"
-                label="Value"
-                bindable
-                small
-                @update:modelValue="setItem({ ...item, value: $event })"
-            />
-            <wwEditorInputRow
-                v-if="item.condition === 'textSearch'"
-                type="query"
-                :model-value="item.options"
-                label="Options"
-                bindable
-                small
-                @update:modelValue="setItem({ ...item, options: $event })"
-            />
+            <div class="flex flex-column">
+                <wwEditorInputRow
+                    type="select"
+                    :model-value="item.fn"
+                    label="Condition"
+                    :options="conditions"
+                    small
+                    @update:modelValue="setItem({ ...item, fn: $event })"
+                />
+                <div class="flex flex-row">
+                    <wwEditorInputRow
+                        type="query"
+                        :model-value="item.column"
+                        label="Column"
+                        placeholder="name"
+                        bindable
+                        small
+                        @update:modelValue="setItem({ ...item, column: $event })"
+                    />
+                    <wwEditorInputRow
+                        v-if="item.condition === 'filter' || item.condition === 'not'"
+                        type="query"
+                        :model-value="item.operator"
+                        label="Operator"
+                        placeholder="is"
+                        bindable
+                        small
+                        @update:modelValue="setItem({ ...item, operator: $event })"
+                    />
+                    <wwEditorInputRow
+                        type="query"
+                        :model-value="item.value"
+                        label="Value"
+                        bindable
+                        small
+                        @update:modelValue="setItem({ ...item, value: $event })"
+                    />
+                </div>
+                <wwEditorInputRow
+                    v-if="item.condition === 'textSearch'"
+                    type="code"
+                    :model-value="item.options"
+                    label="Options"
+                    bindable
+                    small
+                    @update:modelValue="setItem({ ...item, options: $event })"
+                />
+            </div>
         </template>
     </wwEditorInputRow>
 </template>
