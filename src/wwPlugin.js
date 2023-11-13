@@ -10,8 +10,10 @@ import './components/Functions/Insert.vue';
 import './components/Functions/Update.vue';
 import './components/Functions/Upsert.vue';
 import './components/Functions/Delete.vue';
+import './components/Functions/CallPostgres.vue';
+import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
-import { createClient } from '@supabase/supabase-js';
+import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
 
@@ -292,6 +294,29 @@ export default {
         if (!this.settings.publicData.realtimeTables[table] && autoSync)
             this.onSubscribe({ table, eventType: 'DELETE', old: data });
         return countMode ? { count, data } : data;
+    },
+    async callPostgresFunction({ functionName, params, countMode = null, countOnly = false }) {
+        const { data, error } = await this.instance.rpc(functionName, params, { count: countMode, head: countOnly });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }) {
+        const { data, error } = await supabase.functions.invoke(functionName, {
+            body,
+            headers: Array.isArray(headers)
+                ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
+                : headers,
+            method,
+        });
+        if (error instanceof FunctionsHttpError) {
+            const errorMessage = await error.context.json();
+            throw new Error('Function returned an error: ' + errorMessage, { cause: error });
+        } else if (error instanceof FunctionsRelayError) {
+            throw new Error('Relay error: ' + error.message, { cause: error });
+        } else if (error instanceof FunctionsFetchError) {
+            throw new Error('Fetch error: ' + error.message, { cause: error });
+        }
+        return data;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(

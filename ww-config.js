@@ -131,5 +131,27 @@ export default {
             edit: () => import('./src/components/Functions/Delete.vue'),
             /* wwEditor:end */
         },
+        {
+            name: 'Call a Postgres function',
+            code: 'callPostgresFunction',
+            getIsValid({ functionName }) {
+                return !!functionName;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/CallPostgres.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Invoke an Edge function',
+            code: 'invokeEdgeFunction',
+            getIsValid({ functionName }) {
+                return !!functionName;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/InvokeEdge.vue'),
+            /* wwEditor:end */
+        },
     ],
 };
