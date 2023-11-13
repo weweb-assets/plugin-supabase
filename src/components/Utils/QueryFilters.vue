@@ -1,7 +1,7 @@
 <template>
-    <wwEditorInputRow label="Filters" type="array" v-model="filters" bindable @add-item="addFilter">
+    <wwEditorInputRow label="Filters" type="array" v-model="filters" @add-item="addFilter">
         <template #default="{ item, setItem }">
-            <div class="flex flex-column">
+            <div class="flex flex-col">
                 <wwEditorInputRow
                     type="select"
                     :model-value="item.fn"
@@ -21,7 +21,7 @@
                         @update:modelValue="setItem({ ...item, column: $event })"
                     />
                     <wwEditorInputRow
-                        v-if="item.condition === 'filter' || item.condition === 'not'"
+                        v-if="item.fn === 'filter' || item.fn === 'not'"
                         type="query"
                         :model-value="item.operator"
                         label="Operator"
@@ -40,7 +40,7 @@
                     />
                 </div>
                 <wwEditorInputRow
-                    v-if="item.condition === 'textSearch'"
+                    v-if="item.fn === 'textSearch'"
                     type="code"
                     :model-value="item.options"
                     label="Options"
@@ -89,16 +89,16 @@ export default {
     computed: {
         filters: {
             get() {
-                return this.modelValue;
+                return this.modelValue || [];
             },
             set(value) {
-                this.$emit('modelValue', value);
+                this.$emit('update:modelValue', value);
             },
         },
     },
     methods: {
         addFilter(arg) {
-            this.filters.push({ fn: 'eq', column: null, value: null });
+            this.filters = [...this.filters, { fn: 'eq', column: null, value: null }];
         },
     },
 };
