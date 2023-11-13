@@ -13,7 +13,7 @@
                         />
                         <wwEditorQuestionMark
                             tooltip-position="top-left"
-                            :forced-content="filters.find(f => f.value === item.fn).description"
+                            :forced-content="conditions.find(f => f.value === item.fn).description"
                             class="ml-2"
                         />
                     </div>
@@ -53,7 +53,7 @@
                         <wwEditorQuestionMark
                             tooltip-position="top-left"
                             class="ml-2"
-                            :forcedContent="filters.find(f => f.value === item.fn).tooltip"
+                            :forcedContent="conditions.find(f => f.value === item.fn).tooltip"
                         />
                     </div>
                 </wwEditorFormRow>
