@@ -315,8 +315,7 @@ export default {
             method,
         });
         if (error instanceof FunctionsHttpError) {
-            const errorMessage = await error.context.json();
-            throw new Error('Function returned an error: ' + errorMessage, { cause: error });
+            throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
         } else if (error instanceof FunctionsRelayError) {
             throw new Error('Relay error: ' + error.message, { cause: error });
         } else if (error instanceof FunctionsFetchError) {
