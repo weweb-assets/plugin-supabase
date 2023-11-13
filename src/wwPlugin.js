@@ -307,7 +307,7 @@ export default {
         return data;
     },
     async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }) {
-        const { data, error } = await supabase.functions.invoke(functionName, {
+        const { data, error } = await this.instance.functions.invoke(functionName, {
             body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
