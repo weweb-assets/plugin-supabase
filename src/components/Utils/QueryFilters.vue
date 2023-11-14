@@ -1,84 +1,95 @@
 <template>
-    <wwEditorInputRow label="Filters" type="array" v-model="filters" @add-item="addFilter">
-        <template #default="{ item, setItem }">
-            <div class="flex flex-col">
-                <wwEditorFormRow label="Condition">
-                    <template #append-label>
-                        <a
-                            class="ml-auto ww-editor-link"
-                            :href="'https://supabase.com/docs/reference/javascript/' + item.fn"
-                            target="_blank"
-                        >
-                            Documentation
-                        </a>
-                    </template>
-                    <div class="flex items-center">
-                        <wwEditorInputRow
-                            type="select"
-                            :model-value="item.fn"
-                            :options="conditions"
-                            small
-                            class="w-100"
-                            @update:modelValue="setItem({ ...item, fn: $event })"
-                        />
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            :forced-content="conditions.find(f => f.value === item.fn).description"
-                            class="ml-2"
-                        />
-                    </div>
-                </wwEditorFormRow>
-                <wwEditorInputRow
-                    v-if="item.fn !== 'or'"
-                    type="query"
-                    :model-value="item.column"
-                    label="Column"
-                    placeholder="name"
-                    bindable
-                    small
-                    required
-                    @update:modelValue="setItem({ ...item, column: $event })"
-                />
-                <wwEditorInputRow
-                    v-if="item.fn === 'filter' || item.fn === 'not'"
-                    type="query"
-                    :model-value="item.operator"
-                    label="Operator"
-                    placeholder="is"
-                    bindable
-                    small
-                    required
-                    @update:modelValue="setItem({ ...item, operator: $event })"
-                />
-                <wwEditorFormRow label="Value" required>
-                    <div class="flex items-center">
-                        <wwEditorInputRow
-                            type="query"
-                            :model-value="item.value"
-                            bindable
-                            small
-                            class="w-100"
-                            @update:modelValue="setItem({ ...item, value: $event })"
-                        />
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            class="ml-2"
-                            :forcedContent="conditions.find(f => f.value === item.fn).tooltip"
-                        />
-                    </div>
-                </wwEditorFormRow>
-                <wwEditorInputRow
-                    v-if="item.fn === 'textSearch'"
-                    type="code"
-                    :model-value="item.options"
-                    label="Options"
-                    bindable
-                    small
-                    @update:modelValue="setItem({ ...item, options: $event })"
-                />
-            </div>
-        </template>
-    </wwEditorInputRow>
+    <wwEditorFormRow v-for="(filter, index) in filters" :key="filter.fn + index">
+        <div class="flex flex-col">
+            <wwEditorFormRow label="Condition">
+                <template #append-label>
+                    <a
+                        class="ww-editor-link"
+                        :href="'https://supabase.com/docs/reference/javascript/' + filter.fn"
+                        target="_blank"
+                    >
+                        Documentation
+                    </a>
+                    <button
+                        type="button"
+                        class="ml-auto ww-editor-button -tertiary -red -small"
+                        @click="removeFilter(index)"
+                    >
+                        <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
+                        Remove
+                    </button>
+                </template>
+                <div class="flex items-center">
+                    <wwEditorInputRow
+                        type="select"
+                        :model-value="filter.fn"
+                        :options="conditions"
+                        small
+                        class="w-100"
+                        @update:modelValue="updateFilter({ ...filter, fn: $event })"
+                    />
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        :forced-content="conditions.find(f => f.value === filter.fn).description"
+                        class="ml-2 mb-2"
+                    />
+                </div>
+            </wwEditorFormRow>
+            <wwEditorInputRow
+                v-if="filter.fn !== 'or'"
+                type="query"
+                :model-value="filter.column"
+                label="Column"
+                placeholder="name"
+                bindable
+                small
+                required
+                @update:modelValue="updateFilter({ ...filter, column: $event })"
+            />
+            <wwEditorInputRow
+                v-if="filter.fn === 'filter' || filter.fn === 'not'"
+                type="query"
+                :model-value="filter.operator"
+                label="Operator"
+                placeholder="is"
+                bindable
+                small
+                required
+                @update:modelValue="updateFilter({ ...filter, operator: $event })"
+            />
+            <wwEditorFormRow label="Value" required>
+                <div class="flex items-center">
+                    <wwEditorInputRow
+                        type="query"
+                        :model-value="filter.value"
+                        bindable
+                        small
+                        @update:modelValue="updateFilter({ ...filter, value: $event })"
+                    />
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        class="ml-2 mb-2"
+                        :forcedContent="conditions.find(f => f.value === filter.fn).tooltip"
+                    />
+                </div>
+            </wwEditorFormRow>
+            <wwEditorInputRow
+                v-if="filter.fn === 'textSearch'"
+                type="code"
+                :model-value="filter.options"
+                label="Options"
+                bindable
+                small
+                @update:modelValue="updateFilter({ ...filter, options: $event })"
+            />
+        </div>
+    </wwEditorFormRow>
+    <wwEditorFormRow>
+        <button type="button" class="ww-editor-button -tertiary -blue -small" @click="addFilter">
+            <wwEditorIcon class="ww-editor-button-icon -left" name="plus" small />
+            Add filter
+        </button>
+    </wwEditorFormRow>
 </template>
 
 <script>
@@ -255,6 +266,16 @@ export default {
     methods: {
         addFilter(arg) {
             this.filters = [...this.filters, { fn: 'eq', column: null, value: { __wwtype: 'f', code: '' } }];
+        },
+        updateFilter(index, filter) {
+            const filters = [...this.filters];
+            filters.splice(index, 1, filter);
+            this.filters = filters;
+        },
+        removeFilter(index) {
+            const filters = [...this.filters];
+            filters.splice(index, 1);
+            this.filters = filters;
         },
     },
 };
