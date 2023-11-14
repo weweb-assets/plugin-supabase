@@ -2,17 +2,21 @@
     <div
         v-for="(filter, index) in filters"
         :key="filter.fn + index"
-        class="flex flex-col mt-3 ww-box p-2"
+        class="flex flex-col ww-box my-3"
         style="box-shadow: unset"
     >
         <wwEditorFormRow>
             <div class="flex items-center">
-                <button type="button" class="ww-editor-button -tertiary -red -small -icon" @click="moveUpFilter(index)">
+                <button
+                    type="button"
+                    class="ww-editor-button -tertiary -blue -small -icon"
+                    @click="moveUpFilter(index)"
+                >
                     <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-up" small />
                 </button>
                 <button
                     type="button"
-                    class="ww-editor-button -tertiary -red -small -icon ml-2"
+                    class="ww-editor-button -tertiary -blue -small -icon ml-2"
                     @click="moveDownFilter(index)"
                 >
                     <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-down" small />
