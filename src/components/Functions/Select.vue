@@ -38,9 +38,7 @@
             @update:modelValue="setDataFieldsAdvanced"
         />
     </wwEditorFormRow>
-    <wwEditorFormRow label="Filters">
-        <QueryFilters :model-value="filters" @update:modelValue="setFilters" />
-    </wwEditorFormRow>
+    <QueryFilters :model-value="filters" @update:modelValue="setFilters" />
     <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
