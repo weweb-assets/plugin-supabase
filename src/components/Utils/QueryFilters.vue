@@ -3,12 +3,22 @@
         <template #default="{ item, setItem }">
             <div class="flex flex-col">
                 <wwEditorFormRow label="Condition">
+                    <template #append-label>
+                        <a
+                            class="ml-auto ww-editor-link"
+                            :href="'https://supabase.com/docs/reference/javascript/' + item.fn"
+                            target="_blank"
+                        >
+                            Documentation
+                        </a>
+                    </template>
                     <div class="flex items-center">
                         <wwEditorInputRow
                             type="select"
                             :model-value="item.fn"
                             :options="conditions"
                             small
+                            class="w-100"
                             @update:modelValue="setItem({ ...item, fn: $event })"
                         />
                         <wwEditorQuestionMark
@@ -40,14 +50,14 @@
                     required
                     @update:modelValue="setItem({ ...item, operator: $event })"
                 />
-                <wwEditorFormRow label="Value">
+                <wwEditorFormRow label="Value" required>
                     <div class="flex items-center">
                         <wwEditorInputRow
                             type="query"
                             :model-value="item.value"
                             bindable
                             small
-                            required
+                            class="w-100"
                             @update:modelValue="setItem({ ...item, value: $event })"
                         />
                         <wwEditorQuestionMark
@@ -244,7 +254,7 @@ export default {
     },
     methods: {
         addFilter(arg) {
-            this.filters = [...this.filters, { fn: 'eq', column: null, value: { __wwType: 'f', code: '' } }];
+            this.filters = [...this.filters, { fn: 'eq', column: null, value: { __wwtype: 'f', code: '' } }];
         },
     },
 };
