@@ -6,24 +6,26 @@
         style="box-shadow: unset"
     >
         <wwEditorFormRow>
-            <button
-                type="button"
-                class="ml-auto ww-editor-button -tertiary -red -small -icon"
-                @click="moveUpFilter(index)"
-            >
-                <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-up" small />
-            </button>
-            <button
-                type="button"
-                class="ml-auto ww-editor-button -tertiary -red -small -icon ml-2"
-                @click="moveDownFilter(index)"
-            >
-                <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-down" small />
-            </button>
-            <button type="button" class="ml-auto ww-editor-button -tertiary -red -small" @click="removeFilter(index)">
-                <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
-                Remove
-            </button>
+            <div class="flex items-center">
+                <button type="button" class="ww-editor-button -tertiary -red -small -icon" @click="moveUpFilter(index)">
+                    <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-up" small />
+                </button>
+                <button
+                    type="button"
+                    class="ww-editor-button -tertiary -red -small -icon ml-2"
+                    @click="moveDownFilter(index)"
+                >
+                    <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-down" small />
+                </button>
+                <button
+                    type="button"
+                    class="ml-auto ww-editor-button -tertiary -red -small"
+                    @click="removeFilter(index)"
+                >
+                    <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
+                    Remove
+                </button>
+            </div>
         </wwEditorFormRow>
         <wwEditorFormRow label="Condition">
             <template #append-label>
@@ -301,14 +303,14 @@ export default {
             if (index <= 0) return;
             const filters = [...this.filters];
             const removed = filters.splice(index, 1);
-            filters.splice(index - 1, 0, removed);
+            filters.splice(index - 1, 0, removed[0]);
             this.filters = filters;
         },
         moveDownFilter(index) {
             if (index >= this.filters.length - 1) return;
             const filters = [...this.filters];
             const removed = filters.splice(index, 1);
-            filters.splice(index + 1, 0, removed);
+            filters.splice(index + 1, 0, removed[0]);
             this.filters = filters;
         },
         removeFilter(index) {
