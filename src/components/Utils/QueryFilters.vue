@@ -2,7 +2,7 @@
     <div
         v-for="(filter, index) in filters"
         :key="filter.fn + index"
-        class="flex flex-col ww-box my-3"
+        class="flex flex-col ww-box my-3 p-2"
         style="box-shadow: unset"
     >
         <wwEditorFormRow>
