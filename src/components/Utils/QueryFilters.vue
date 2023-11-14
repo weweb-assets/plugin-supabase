@@ -1,22 +1,39 @@
 <template>
-    <div v-for="(filter, index) in filters" :key="filter.fn + index" class="flex flex-col mt-3">
+    <div
+        v-for="(filter, index) in filters"
+        :key="filter.fn + index"
+        class="flex flex-col mt-3 ww-box p-2"
+        style="box-shadow: unset"
+    >
         <wwEditorFormRow>
+            <button
+                type="button"
+                class="ml-auto ww-editor-button -tertiary -red -small -icon"
+                @click="moveUpFilter(index)"
+            >
+                <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-up" small />
+            </button>
+            <button
+                type="button"
+                class="ml-auto ww-editor-button -tertiary -red -small -icon ml-2"
+                @click="moveDownFilter(index)"
+            >
+                <wwEditorIcon class="ww-editor-button-icon -left" name="chevron-down" small />
+            </button>
+            <button type="button" class="ml-auto ww-editor-button -tertiary -red -small" @click="removeFilter(index)">
+                <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
+                Remove
+            </button>
+        </wwEditorFormRow>
+        <wwEditorFormRow label="Condition">
             <template #append-label>
                 <a
-                    class="ww-editor-link"
+                    class="ww-editor-link ml-auto"
                     :href="'https://supabase.com/docs/reference/javascript/' + filter.fn"
                     target="_blank"
                 >
                     Documentation
                 </a>
-                <button
-                    type="button"
-                    class="ml-auto ww-editor-button -tertiary -red -small"
-                    @click.self="removeFilter(index)"
-                >
-                    <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
-                    Remove
-                </button>
             </template>
             <div class="flex items-center">
                 <wwEditorInput
@@ -79,6 +96,14 @@
             bindable
             small
             @update:modelValue="updateFilter(index, { ...filter, options: $event })"
+        />
+        <wwEditorInputRow
+            type="onoff"
+            :model-value="filter.isEnabled"
+            label="Apply if"
+            bindable
+            small
+            @update:modelValue="updateFilter(index, { ...filter, isEnabled: $event })"
         />
     </div>
     <wwEditorFormRow>
@@ -262,11 +287,28 @@ export default {
     },
     methods: {
         addFilter(arg) {
-            this.filters = [...this.filters, { fn: 'eq', column: null, value: { __wwtype: 'f', code: '' } }];
+            this.filters = [
+                ...this.filters,
+                { fn: 'eq', column: null, value: { __wwtype: 'f', code: '' }, isEnabled: true },
+            ];
         },
         updateFilter(index, filter) {
             const filters = [...this.filters];
             filters.splice(index, 1, filter);
+            this.filters = filters;
+        },
+        moveUpFilter(index) {
+            if (index <= 0) return;
+            const filters = [...this.filters];
+            const removed = filters.splice(index, 1);
+            filters.splice(index - 1, 0, removed);
+            this.filters = filters;
+        },
+        moveDownFilter(index) {
+            if (index >= this.filters.length - 1) return;
+            const filters = [...this.filters];
+            const removed = filters.splice(index, 1);
+            filters.splice(index + 1, 0, removed);
             this.filters = filters;
         },
         removeFilter(index) {
