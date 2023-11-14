@@ -1,5 +1,5 @@
 <template>
-    <div v-for="(filter, index) in filters" :key="filter.fn + index" class="flex flex-col">
+    <div v-for="(filter, index) in filters" :key="filter.fn + index" class="flex flex-col mt-3">
         <wwEditorFormRow>
             <template #append-label>
                 <a
@@ -12,7 +12,7 @@
                 <button
                     type="button"
                     class="ml-auto ww-editor-button -tertiary -red -small"
-                    @click="removeFilter(index)"
+                    @click.self="removeFilter(index)"
                 >
                     <wwEditorIcon class="ww-editor-button-icon -left" name="trash" small />
                     Remove
@@ -24,13 +24,12 @@
                     :model-value="filter.fn"
                     :options="conditions"
                     small
-                    class="w-100"
                     @update:modelValue="updateFilter(index, { ...filter, fn: $event })"
                 />
                 <wwEditorQuestionMark
                     tooltip-position="top-left"
                     :forced-content="conditions.find(f => f.value === filter.fn).description"
-                    class="ml-2 mb-2"
+                    class="ml-2"
                 />
             </div>
         </wwEditorFormRow>
@@ -63,12 +62,11 @@
                     :model-value="filter.value"
                     bindable
                     small
-                    class="w-100"
                     @update:modelValue="updateFilter(index, { ...filter, value: $event })"
                 />
                 <wwEditorQuestionMark
                     tooltip-position="top-left"
-                    class="ml-2 mb-2"
+                    class="ml-2"
                     :forcedContent="conditions.find(f => f.value === filter.fn).tooltip"
                 />
             </div>
