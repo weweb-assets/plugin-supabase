@@ -8,12 +8,13 @@
             label="Mode"
             type="select"
             :options="[
-                { label: 'Exact', value: 'exact', default: true },
+                { label: 'Exact', value: 'exact' },
                 { label: 'Planned', value: 'planned' },
                 { label: 'Estimated', value: 'estimated' },
             ]"
             bindable
             small
+            required
             :model-value="modifiers.count.mode"
             @update:modelValue="setModifierSettings('count', { mode: $event })"
         />
@@ -163,11 +164,12 @@
             label="Format"
             type="select"
             :options="[
-                { label: 'text', value: 'text', default: true },
+                { label: 'text', value: 'text' },
                 { label: 'json', value: 'json' },
             ]"
             bindable
             small
+            required
             :model-value="modifiers.explain.format"
             @update:modelValue="setModifierSettings('explain', { format: $event })"
         />

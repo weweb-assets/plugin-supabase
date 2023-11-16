@@ -403,7 +403,7 @@ export default {
     },
 };
 
-const applyFilters = (query, filters) => {
+const applyFilters = (query, filters = []) => {
     for (const filter of filters) {
         if (!filter.isEnabled) continue;
         if (filter.fn === 'textSearch') query[filter.fn](filter.column, filter.value, filter.options || {});
@@ -414,7 +414,7 @@ const applyFilters = (query, filters) => {
     }
 };
 
-const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain }) => {
+const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain } = {}) => {
     if (order)
         query.order(order.column, {
             ascending: order.ascending ?? true,
