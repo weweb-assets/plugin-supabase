@@ -1,5 +1,32 @@
 <template>
     <div class="flex items-center mb-2">
+        <wwEditorInputSwitch :model-value="!!modifiers.count" @update:modelValue="toggleModifier('count')" />
+        <div class="label-3 ml-2">Count the results</div>
+    </div>
+    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+        <wwEditorInputRow
+            label="Mode"
+            type="select"
+            :options="[
+                { label: 'Exact', value: 'exact', default: true },
+                { label: 'Planned', value: 'planned' },
+                { label: 'Estimated', value: 'estimated' },
+            ]"
+            bindable
+            small
+            :model-value="modifiers.count.mode"
+            @update:modelValue="setModifierSettings('count', { mode: $event })"
+        />
+        <wwEditorInputRow
+            label="Return count only"
+            type="onoff"
+            bindable
+            small
+            :model-value="modifiers.count.countOnly"
+            @update:modelValue="setModifierSettings('count', { countOnly: $event })"
+        />
+    </div>
+    <div class="flex items-center mb-2">
         <wwEditorInputSwitch :model-value="!!modifiers.order" @update:modelValue="toggleModifier('order')" />
         <div class="label-3 ml-2">Order the results</div>
     </div>
@@ -18,7 +45,7 @@
             type="onoff"
             bindable
             small
-            :model-value="modifiers.order.ascending"
+            :model-value="modifiers.order.ascending ?? true"
             @update:modelValue="setModifierSettings('order', { ascending: $event })"
         />
         <wwEditorInputRow
@@ -31,9 +58,10 @@
         />
         <wwEditorInputRow
             label="Nulls first"
-            type="number"
+            type="onoff"
             bindable
             small
+            class="mb-0"
             :model-value="modifiers.order.nullsFirst"
             @update:modelValue="setModifierSettings('order', { nullsFirst: $event })"
         />
@@ -57,6 +85,7 @@
             type="query"
             bindable
             small
+            class="mb-0"
             :model-value="modifiers.limit.foreignTable"
             @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
         />
@@ -89,6 +118,7 @@
             type="query"
             bindable
             small
+            class="mb-0"
             :model-value="modifiers.range.foreignTable"
             @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
         />
@@ -162,6 +192,7 @@
             type="onoff"
             bindable
             small
+            class="mb-0"
             :model-value="modifiers.explain.wal"
             @update:modelValue="setModifierSettings('explain', { wal: $event })"
         />

@@ -46,24 +46,7 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <wwEditorInputRow
-                    label="Get count"
-                    type="select"
-                    placeholder="None"
-                    :model-value="countMode"
-                    :options="[
-                        { label: 'None', value: null },
-                        { label: 'Exact', value: 'exact' },
-                        { label: 'Planned', value: 'planned' },
-                        { label: 'Estimated', value: 'estimated' },
-                    ]"
-                    @update:modelValue="setCountMode"
-                />
-                <div class="flex items-center mt-2" v-if="countMode">
-                    <wwEditorInputSwitch :model-value="countOnly" @update:modelValue="setCountOnly" />
-                    <div class="label-3 ml-2">Count only</div>
-                </div>
-                <QueryModifiers class="mt-2" :model-value="modifiers" @update:modelValue="setModifiers" />
+                <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" />
             </div>
         </template>
     </Expandable>
@@ -96,12 +79,6 @@ export default {
     computed: {
         table() {
             return this.args.table;
-        },
-        countMode() {
-            return this.args.countMode || null;
-        },
-        countOnly() {
-            return this.args.countOnly || false;
         },
         fieldsMode() {
             return this.args.fieldsMode;
@@ -150,12 +127,6 @@ export default {
     methods: {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], dataFieldsAdvanced: '' });
-        },
-        setCountMode(countMode) {
-            this.$emit('update:args', { ...this.args, countMode });
-        },
-        setCountOnly(countOnly) {
-            this.$emit('update:args', { ...this.args, countOnly });
         },
         setFieldsMode(fieldsMode) {
             this.$emit('update:args', { ...this.args, fieldsMode });

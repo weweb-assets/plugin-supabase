@@ -113,22 +113,21 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async select(
-        { table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers, countMode, countOnly },
-        wwUtils
-    ) {
+    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Selecting ${table}`, { type: 'request' });
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        const query = this.instance.from(table).select(fields || undefined, { count: countMode, head: countOnly });
+        const query = this.instance
+            .from(table)
+            .select(fields || undefined, { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly });
         applyFilters(query, filters);
         applyModifiers(query, modifiers);
         const { data, count, error } = await query;
 
         if (error) throw new Error(error.message, { cause: error });
-        return countMode ? (countOnly ? count : { data, count }) : data;
+        return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
     async insert(
         {
@@ -418,7 +417,7 @@ const applyFilters = (query, filters) => {
 const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain }) => {
     if (order)
         query.order(order.column, {
-            ascending: order.ascending,
+            ascending: order.ascending ?? true,
             foreignTable: order.foreignTable,
             nullsFirst: order.nullsFirst,
         });
