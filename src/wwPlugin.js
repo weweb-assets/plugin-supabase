@@ -113,7 +113,10 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, countMode, countOnly }, wwUtils) {
+    async select(
+        { table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers, countMode, countOnly },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
@@ -121,6 +124,7 @@ export default {
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
         const query = this.instance.from(table).select(fields || undefined, { count: countMode, head: countOnly });
         applyFilters(query, filters);
+        applyModifiers(query, modifiers);
         const { data, count, error } = await query;
 
         if (error) throw new Error(error.message, { cause: error });
@@ -409,6 +413,21 @@ const applyFilters = (query, filters) => {
             query[filter.fn](filter.column, filter.operator, filter.value);
         else query[filter.fn](filter.column, filter.value);
     }
+};
+
+const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain }) => {
+    if (order)
+        query.order(order.column, {
+            ascending: order.ascending,
+            foreignTable: order.foreignTable,
+            nullsFirst: order.nullsFirst,
+        });
+    if (limit) query.limit(limit.count, { foreignTable: limit.foreignTable });
+    if (range) query.range(range.from, range.to, { foreignTable: limit.foreignTable });
+    if (single) query.single();
+    if (maybeSingle) query.maybeSingle();
+    if (csv) query.csv();
+    if (explain) query.explain(explain);
 };
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {

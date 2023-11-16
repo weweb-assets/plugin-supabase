@@ -39,6 +39,7 @@
         />
     </wwEditorFormRow>
     <QueryFilters :model-value="filters" @update:modelValue="setFilters" />
+    <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" />
     <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
@@ -72,9 +73,10 @@
 <script>
 import Expandable from '../Utils/Expandable.vue';
 import QueryFilters from '../Utils/QueryFilters.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable, QueryFilters },
+    components: { Expandable, QueryFilters, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
@@ -112,6 +114,9 @@ export default {
         },
         filters() {
             return this.args.filters;
+        },
+        modifiers() {
+            return this.args.modifiers;
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
@@ -163,6 +168,9 @@ export default {
         },
         setFilters(filters) {
             this.$emit('update:args', { ...this.args, filters });
+        },
+        setModifiers(modifiers) {
+            this.$emit('update:args', { ...this.args, modifiers });
         },
         async fetchTables() {
             try {
