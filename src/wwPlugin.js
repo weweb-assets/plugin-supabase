@@ -417,7 +417,7 @@ const applyFilters = (query, filters = []) => {
 const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain } = {}) => {
     if (order)
         query.order(order.column, {
-            ascending: order.ascending ?? true,
+            ascending: order.ascending,
             foreignTable: order.foreignTable,
             nullsFirst: order.nullsFirst,
         });

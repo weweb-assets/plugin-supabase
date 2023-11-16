@@ -1,6 +1,9 @@
 <template>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.count" @update:modelValue="toggleModifier('count')" />
+        <wwEditorInputSwitch
+            :model-value="!!modifiers.count"
+            @update:modelValue="toggleModifier('count', { mode: 'exact' })"
+        />
         <div class="label-3 ml-2">Count the results</div>
     </div>
     <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
@@ -28,7 +31,10 @@
         />
     </div>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.order" @update:modelValue="toggleModifier('order')" />
+        <wwEditorInputSwitch
+            :model-value="!!modifiers.order"
+            @update:modelValue="toggleModifier('order', { ascending: true })"
+        />
         <div class="label-3 ml-2">Order the results</div>
     </div>
     <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
@@ -46,7 +52,7 @@
             type="onoff"
             bindable
             small
-            :model-value="modifiers.order.ascending ?? true"
+            :model-value="modifiers.order.ascending"
             @update:modelValue="setModifierSettings('order', { ascending: $event })"
         />
         <wwEditorInputRow
@@ -140,7 +146,10 @@
         <div class="label-3 ml-2">Retrieve as a CSV</div>
     </div>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.explain" @update:modelValue="toggleModifier('explain')" />
+        <wwEditorInputSwitch
+            :model-value="!!modifiers.explain"
+            @update:modelValue="toggleModifier('explain', { format: 'text' })"
+        />
         <div class="label-3 ml-2">Using explain</div>
     </div>
     <div v-if="modifiers.explain" class="flex flex-col ww-box p-2" style="box-shadow: unset">
@@ -218,8 +227,8 @@ export default {
         },
     },
     methods: {
-        toggleModifier(modifier) {
-            this.modifiers = { ...this.modifiers, [modifier]: this.modifiers[modifier] ? false : {} };
+        toggleModifier(modifier, baseSettings = true) {
+            this.modifiers = { ...this.modifiers, [modifier]: this.modifiers[modifier] ? false : baseSettings };
         },
         setModifierSettings(modifier, settings) {
             this.modifiers = { ...this.modifiers, [modifier]: { ...this.modifiers[modifier], ...settings } };
