@@ -1,29 +1,14 @@
 <template>
-    <wwEditorFormRow label="Modifiers">
-        <template #append-label>
-            <a
-                class="ww-editor-link ml-auto"
-                href="https://supabase.com/docs/reference/javascript/using-modifiers"
-                target="_blank"
-            >
-                See documentation
-            </a>
-        </template>
-        <wwEditorInputRow
-            label="Order"
-            type="onoff"
-            small
-            :model-value="!!modifiers.order"
-            @update:modelValue="toggleModifier('order')"
-        />
-        <wwEditorInputRow
-            label="Limit"
-            type="onoff"
-            small
-            :model-value="!!modifiers.limit"
-            @update:modelValue="toggleModifier('limit')"
-        />
-        <div v-if="modifiers.limit" class="flex flex-col ww-box mb-3 p-2" style="box-shadow: unset">
+    <wwEditorFormRow>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.order" @update:modelValue="toggleModifier('order')" />
+            <div class="label-3 ml-2">Order the results</div>
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.limit" @update:modelValue="toggleModifier('limit')" />
+            <div class="label-3 ml-2">Limit the number of rows returned</div>
+        </div>
+        <div v-if="modifiers.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
             <wwEditorInputRow
                 label="Count"
                 type="number"
@@ -33,14 +18,11 @@
                 @update:modelValue="setModifierSettings('limit', { count: $event })"
             />
         </div>
-        <wwEditorInputRow
-            label="Range"
-            type="onoff"
-            small
-            :model-value="!!modifiers.range"
-            @update:modelValue="toggleModifier('range')"
-        />
-        <div v-if="modifiers.range" class="flex flex-col ww-box mb-3 p-2" style="box-shadow: unset">
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.range" @update:modelValue="toggleModifier('range')" />
+            <div class="label-3 ml-2">Limit the query to a range</div>
+        </div>
+        <div v-if="modifiers.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
             <wwEditorInputRow
                 label="From"
                 type="number"
@@ -58,36 +40,26 @@
                 @update:modelValue="setModifierSettings('range', { to: $event })"
             />
         </div>
-        <wwEditorInputRow
-            label="Single"
-            type="onoff"
-            small
-            :model-value="!!modifiers.single"
-            @update:modelValue="toggleModifier('single')"
-        />
-        <wwEditorInputRow
-            label="Maybe single"
-            type="onoff"
-            small
-            :model-value="!!modifiers.maybeSingle"
-            @update:modelValue="toggleModifier('maybeSingle')"
-        />
-        <wwEditorInputRow
-            label="CSV"
-            type="onoff"
-            small
-            :model-value="!!modifiers.csv"
-            @update:modelValue="toggleModifier('csv')"
-        />
-        <wwEditorInputRow
-            label="Explain"
-            type="onoff"
-            bindable
-            small
-            :model-value="!!modifiers.explain"
-            @update:modelValue="toggleModifier('explain')"
-        />
-        <div v-if="modifiers.explain" class="flex flex-col ww-box mb-3 p-2" style="box-shadow: unset">
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.single" @update:modelValue="toggleModifier('single')" />
+            <div class="label-3 ml-2">Retrieve one row of data</div>
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch
+                :model-value="!!modifiers.maybeSingle"
+                @update:modelValue="toggleModifier('maybeSingle')"
+            />
+            <div class="label-3 ml-2">Retrieve zero or one row of data</div>
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.csv" @update:modelValue="toggleModifier('csv')" />
+            <div class="label-3 ml-2">Retrieve as a CSV</div>
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.explain" @update:modelValue="toggleModifier('explain')" />
+            <div class="label-3 ml-2">Using explain</div>
+        </div>
+        <div v-if="modifiers.explain" class="flex flex-col ww-box p-2" style="box-shadow: unset">
             <wwEditorInputRow
                 label="Analyze"
                 type="onoff"
@@ -162,10 +134,10 @@ export default {
     },
     methods: {
         toggleModifier(modifier) {
-            this.modifiers = { ...this.modifiers, modifier: modifier ? false : {} };
+            this.modifiers = { ...this.modifiers, [modifier]: this.modifiers[modifier] ? false : {} };
         },
         setModifierSettings(modifier, settings) {
-            this.modifiers = { ...this.modifiers, modifier: { ...this.modifiers[modifier], ...settings } };
+            this.modifiers = { ...this.modifiers, [modifier]: { ...this.modifiers[modifier], ...settings } };
         },
     },
 };

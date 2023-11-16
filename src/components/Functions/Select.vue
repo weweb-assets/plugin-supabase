@@ -39,7 +39,6 @@
         />
     </wwEditorFormRow>
     <QueryFilters :model-value="filters" @update:modelValue="setFilters" />
-    <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" />
     <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
@@ -64,6 +63,7 @@
                     <wwEditorInputSwitch :model-value="countOnly" @update:modelValue="setCountOnly" />
                     <div class="label-3 ml-2">Count only</div>
                 </div>
+                <QueryModifiers class="mt-2" :model-value="modifiers" @update:modelValue="setModifiers" />
             </div>
         </template>
     </Expandable>
