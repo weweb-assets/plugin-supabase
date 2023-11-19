@@ -85,13 +85,13 @@
             @update:modelValue="setModifierSettings('order', { nullsFirst: $event })"
         />
     </div>
-    <div class="flex items-center mb-2">
+    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.limit }">
         <wwEditorInputSwitch
             :model-value="disabled.limit ? false : !!modifiers.limit"
             @update:modelValue="toggleModifier('limit')"
             :disabled="disabled.limit"
         />
-        <div class="label-3 ml-2">Limit the number of rows returned</div>
+        <div class="label-3 ml-2">Limit the number of rows</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
             forced-content="Limit the query result by count. Set foreign table to order by a foreign column."
@@ -119,7 +119,7 @@
             @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
         />
     </div>
-    <div class="flex items-center mb-2">
+    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.range }">
         <wwEditorInputSwitch
             :model-value="disabled.range ? false : !!modifiers.range"
             @update:modelValue="toggleModifier('range')"
@@ -164,7 +164,7 @@
             @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
         />
     </div>
-    <div class="flex items-center mb-2">
+    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.single }">
         <wwEditorInputSwitch
             :model-value="disabled.single ? false : !!modifiers.single"
             @update:modelValue="toggleModifier('single')"
@@ -177,7 +177,7 @@
             class="ml-auto"
         />
     </div>
-    <div class="flex items-center mb-2">
+    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.maybeSingle }">
         <wwEditorInputSwitch
             :model-value="disabled.maybeSingle ? false : !!modifiers.maybeSingle"
             @update:modelValue="toggleModifier('maybeSingle')"
