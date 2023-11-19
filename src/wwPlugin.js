@@ -423,8 +423,8 @@ const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, 
         });
     if (limit && limit.count) query.limit(limit.count, { foreignTable: limit.foreignTable });
     if (range && (range.from || range.to)) query.range(range.from, range.to, { foreignTable: limit.foreignTable });
-    if (single) query.single();
-    if (maybeSingle) query.maybeSingle();
+    if (single) query.limit(1).single();
+    if (maybeSingle) query.limit(1).maybeSingle();
     if (csv) query.csv();
     if (explain) query.explain(explain);
 };

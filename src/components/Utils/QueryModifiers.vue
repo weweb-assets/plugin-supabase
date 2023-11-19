@@ -86,7 +86,11 @@
         />
     </div>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.limit" @update:modelValue="toggleModifier('limit')" />
+        <wwEditorInputSwitch
+            :model-value="disabled.limit ? false : !!modifiers.limit"
+            @update:modelValue="toggleModifier('limit')"
+            :disabled="disabled.limit"
+        />
         <div class="label-3 ml-2">Limit the number of rows returned</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
@@ -94,7 +98,7 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+    <div v-if="modifiers.limit && !disabled.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
             label="Count"
             type="number"
@@ -116,7 +120,11 @@
         />
     </div>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.range" @update:modelValue="toggleModifier('range')" />
+        <wwEditorInputSwitch
+            :model-value="disabled.range ? false : !!modifiers.range"
+            @update:modelValue="toggleModifier('range')"
+            :disabled="disabled.range"
+        />
         <div class="label-3 ml-2">Limit the query to a range</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
@@ -124,7 +132,7 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+    <div v-if="modifiers.range && !disabled.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
             label="From"
             type="number"
@@ -157,23 +165,28 @@
         />
     </div>
     <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.single" @update:modelValue="toggleModifier('single')" />
+        <wwEditorInputSwitch
+            :model-value="disabled.single ? false : !!modifiers.single"
+            @update:modelValue="toggleModifier('single')"
+            :disabled="disabled.single"
+        />
         <div class="label-3 ml-2">Retrieve one row of data</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
-            forced-content="Return data as a single object instead of an array of objects."
+            forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects. Throw an error if no row is returned."
             class="ml-auto"
         />
     </div>
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch
-            :model-value="!!modifiers.maybeSingle"
+            :model-value="disabled.maybeSingle ? false : !!modifiers.maybeSingle"
             @update:modelValue="toggleModifier('maybeSingle')"
+            :disabled="disabled.maybeSingle"
         />
         <div class="label-3 ml-2">Retrieve zero or one row of data</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
-            forced-content="Return data as a single object instead of an array of objects."
+            forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects."
             class="ml-auto"
         />
     </div>
@@ -278,6 +291,14 @@ export default {
             set(value) {
                 this.$emit('update:modelValue', value);
             },
+        },
+        disabled() {
+            return {
+                limit: this.modifiers.single || this.modifiers.maybeSingle,
+                range: this.modifiers.single || this.modifiers.maybeSingle,
+                single: this.modifiers.maybeSingle || this.modifiers.limit || this.modifiers.range,
+                maybeSingle: this.modifiers.single || this.modifiers.limit || this.modifiers.range,
+            };
         },
     },
     methods: {
