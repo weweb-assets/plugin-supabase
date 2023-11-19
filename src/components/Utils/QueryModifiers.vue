@@ -5,6 +5,11 @@
             @update:modelValue="toggleModifier('count', { mode: 'exact' })"
         />
         <div class="label-3 ml-2">Count the results</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="It will return the query related rows count depending of the selected count algorithm. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
+            class="ml-auto"
+        />
     </div>
     <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
@@ -36,11 +41,17 @@
             @update:modelValue="toggleModifier('order', { ascending: true })"
         />
         <div class="label-3 ml-2">Order the results</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Order the query result by column. Set foreign table to order by a foreign column."
+            class="ml-auto"
+        />
     </div>
     <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
             label="Column"
             type="query"
+            placeholder="Enter a column name"
             bindable
             small
             required
@@ -58,6 +69,7 @@
         <wwEditorInputRow
             label="Foreign table"
             type="query"
+            placeholder="Enter a foreign table name"
             bindable
             small
             :model-value="modifiers.order.foreignTable"
@@ -76,6 +88,11 @@
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch :model-value="!!modifiers.limit" @update:modelValue="toggleModifier('limit')" />
         <div class="label-3 ml-2">Limit the number of rows returned</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Limit the query result by count. Set foreign table to order by a foreign column."
+            class="ml-auto"
+        />
     </div>
     <div v-if="modifiers.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
@@ -90,6 +107,7 @@
         <wwEditorInputRow
             label="Foreign table"
             type="query"
+            placeholder="Enter a foreign table name"
             bindable
             small
             class="mb-0"
@@ -100,11 +118,17 @@
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch :model-value="!!modifiers.range" @update:modelValue="toggleModifier('range')" />
         <div class="label-3 ml-2">Limit the query to a range</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Limit the query result by starting at an offset index (from) and ending at the given end index (to). Only records within this range are returned. This respects the query order and if there is no order clause the range could behave unexpectedly. The from and to values are 0-based and inclusive: range(1, 3) will include the second, third and fourth rows of the query. Set a foreign table to limit rows of foreign tables instead of the current table."
+            class="ml-auto"
+        />
     </div>
     <div v-if="modifiers.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
         <wwEditorInputRow
             label="From"
             type="number"
+            placeholder="Enter the start index (ex: 0)"
             bindable
             small
             required
@@ -114,6 +138,7 @@
         <wwEditorInputRow
             label="To"
             type="number"
+            placeholder="Enter the end index (ex: 5)"
             bindable
             small
             required
@@ -123,6 +148,7 @@
         <wwEditorInputRow
             label="Foreign table"
             type="query"
+            placeholder="Enter a foreign table name"
             bindable
             small
             class="mb-0"
@@ -133,6 +159,11 @@
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch :model-value="!!modifiers.single" @update:modelValue="toggleModifier('single')" />
         <div class="label-3 ml-2">Retrieve one row of data</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Return data as a single object instead of an array of objects."
+            class="ml-auto"
+        />
     </div>
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch
@@ -140,10 +171,20 @@
             @update:modelValue="toggleModifier('maybeSingle')"
         />
         <div class="label-3 ml-2">Retrieve zero or one row of data</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Return data as a single object instead of an array of objects."
+            class="ml-auto"
+        />
     </div>
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch :model-value="!!modifiers.csv" @update:modelValue="toggleModifier('csv')" />
         <div class="label-3 ml-2">Retrieve as a CSV</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Return data as a string in CSV format."
+            class="ml-auto"
+        />
     </div>
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch
@@ -151,6 +192,19 @@
             @update:modelValue="toggleModifier('explain', { format: 'text' })"
         />
         <div class="label-3 ml-2">Using explain</div>
+        <wwEditorQuestionMark
+            tooltip-position="top-left"
+            forced-content="Return data as the EXPLAIN plan for the query.  
+
+For debugging slow queries, you can get the Postgres EXPLAIN execution plan of a query
+using the explain() method. This works on any query, even for rpc() or writes.  
+
+Explain is not enabled by default as it can reveal sensitive information about your database.
+It's best to only enable this for testing environments but if you wish to enable it for production you can provide additional protection by using a pre-request function.  
+
+Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/rest/debugging-performance#enabling-explain) to enable the functionality on your project."
+            class="ml-auto"
+        />
     </div>
     <div v-if="modifiers.explain" class="flex flex-col ww-box p-2" style="box-shadow: unset">
         <wwEditorInputRow

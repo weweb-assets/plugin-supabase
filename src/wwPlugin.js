@@ -415,14 +415,14 @@ const applyFilters = (query, filters = []) => {
 };
 
 const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain } = {}) => {
-    if (order)
+    if (order && order.column)
         query.order(order.column, {
             ascending: order.ascending,
             foreignTable: order.foreignTable,
             nullsFirst: order.nullsFirst,
         });
-    if (limit) query.limit(limit.count, { foreignTable: limit.foreignTable });
-    if (range) query.range(range.from, range.to, { foreignTable: limit.foreignTable });
+    if (limit && limit.count) query.limit(limit.count, { foreignTable: limit.foreignTable });
+    if (range && (range.from || range.to)) query.range(range.from, range.to, { foreignTable: limit.foreignTable });
     if (single) query.single();
     if (maybeSingle) query.maybeSingle();
     if (csv) query.csv();
