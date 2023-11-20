@@ -349,10 +349,10 @@ const applyModifiers = (query, { select, order, limit, range, single, maybeSingl
             select.mode === 'minimal'
                 ? ''
                 : select.mode === 'guided'
-                ? select.fields.length
+                ? select?.fields.length
                     ? select.fields.join(', ')
                     : '*'
-                : select.fieldsAdvanced
+                : select?.fieldsAdvanced
         );
     }
 
