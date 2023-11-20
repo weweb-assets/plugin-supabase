@@ -9,34 +9,36 @@
                 class="ml-auto"
             />
         </div>
-        <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset; gap: 8px">
-            <wwEditorFormRow label="Returned fields"></wwEditorFormRow>
-            <wwEditorInputRadio
-                :model-value="modifiers?.select.mode"
-                :choices="[
-                    { label: 'Minimal', value: 'minimal', default: true },
-                    { label: 'Guided', value: 'guided' },
-                    { label: 'Advanced', value: 'advanced' },
-                ]"
-                small
-                @update:modelValue="setModifierSettings('select', { mode: $event })"
-            />
-            <wwEditorInput
-                v-if="modifiers?.select.mode === 'guided'"
-                type="select"
-                multiple
-                :options="columns"
-                :model-value="modifiers?.select.fields"
-                placeholder="All fields"
-                @update:modelValue="setModifierSettings('select', { fields: $event })"
-            />
-            <wwEditorInput
-                v-else-if="modifiers?.select.mode === 'advanced'"
-                type="string"
-                :model-value="modifiers?.select.fieldsAdvanced"
-                placeholder="column, linkedColumn(column)"
-                @update:modelValue="setModifierSettings('select', { fieldsAdvanced: $event })"
-            />
+        <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+            <wwEditorInputRow label="Returned fields">
+                <wwEditorInputRadio
+                    :class="{ 'mb-2': modifiers?.select.mode !== 'minimal' }"
+                    :model-value="modifiers?.select.mode"
+                    :choices="[
+                        { label: 'Minimal', value: 'minimal', default: true },
+                        { label: 'Guided', value: 'guided' },
+                        { label: 'Advanced', value: 'advanced' },
+                    ]"
+                    small
+                    @update:modelValue="setModifierSettings('select', { mode: $event })"
+                />
+                <wwEditorInput
+                    v-if="modifiers?.select.mode === 'guided'"
+                    type="select"
+                    multiple
+                    :options="columns"
+                    :model-value="modifiers?.select.fields"
+                    placeholder="All fields"
+                    @update:modelValue="setModifierSettings('select', { fields: $event })"
+                />
+                <wwEditorInput
+                    v-else-if="modifiers?.select.mode === 'advanced'"
+                    type="string"
+                    :model-value="modifiers?.select.fieldsAdvanced"
+                    placeholder="column, linkedColumn(column)"
+                    @update:modelValue="setModifierSettings('select', { fieldsAdvanced: $event })"
+                />
+            </wwEditorInputRow>
         </div>
     </template>
     <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.count }">
@@ -51,8 +53,8 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset; gap: 8px">
-        <wwEditorInput
+    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+        <wwEditorInputRow
             label="Mode"
             type="select"
             :options="[
@@ -66,7 +68,7 @@
             :model-value="modifiers.count.mode"
             @update:modelValue="setModifierSettings('count', { mode: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             v-if="noSelect"
             label="Return count only"
             type="onoff"
@@ -88,8 +90,8 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset; gap: 8px">
-        <wwEditorInput
+    <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+        <wwEditorInputRow
             label="Column"
             type="query"
             placeholder="Enter a column name"
@@ -99,7 +101,7 @@
             :model-value="modifiers.order.column"
             @update:modelValue="setModifierSettings('order', { column: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Ascending"
             type="onoff"
             bindable
@@ -107,7 +109,7 @@
             :model-value="modifiers.order.ascending"
             @update:modelValue="setModifierSettings('order', { ascending: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Foreign table"
             type="query"
             placeholder="Enter a foreign table name"
@@ -116,7 +118,7 @@
             :model-value="modifiers.order.foreignTable"
             @update:modelValue="setModifierSettings('order', { foreignTable: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Nulls first"
             type="onoff"
             bindable
@@ -138,12 +140,8 @@
             class="ml-auto"
         />
     </div>
-    <div
-        v-if="modifiers.limit && !disabled.limit"
-        class="flex flex-col ww-box mb-2 p-2"
-        style="box-shadow: unset; gap: 8px"
-    >
-        <wwEditorInput
+    <div v-if="modifiers.limit && !disabled.limit" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+        <wwEditorInputRow
             label="Count"
             type="number"
             bindable
@@ -152,13 +150,12 @@
             :model-value="modifiers.limit.count"
             @update:modelValue="setModifierSettings('limit', { count: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Foreign table"
             type="query"
             placeholder="Enter a foreign table name"
             bindable
             small
-            class="mb-0"
             :model-value="modifiers.limit.foreignTable"
             @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
         />
@@ -176,12 +173,8 @@
             class="ml-auto"
         />
     </div>
-    <div
-        v-if="modifiers.range && !disabled.range"
-        class="flex flex-col ww-box mb-2 p-2"
-        style="box-shadow: unset; gap: 8px"
-    >
-        <wwEditorInput
+    <div v-if="modifiers.range && !disabled.range" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+        <wwEditorInputRow
             label="From"
             type="number"
             placeholder="Enter the start index (ex: 0)"
@@ -191,7 +184,7 @@
             :model-value="modifiers.range.from"
             @update:modelValue="setModifierSettings('range', { from: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="To"
             type="number"
             placeholder="Enter the end index (ex: 5)"
@@ -201,13 +194,12 @@
             :model-value="modifiers.range.to"
             @update:modelValue="setModifierSettings('range', { to: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Foreign table"
             type="query"
             placeholder="Enter a foreign table name"
             bindable
             small
-            class="mb-0"
             :model-value="modifiers.range.foreignTable"
             @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
         />
@@ -239,7 +231,11 @@
         />
     </div>
     <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.csv }">
-        <wwEditorInputSwitch :model-value="!!modifiers.csv" @update:modelValue="toggleModifier('csv')" />
+        <wwEditorInputSwitch
+            :model-value="!!modifiers.csv"
+            @update:modelValue="toggleModifier('csv')"
+            :disabled="disabled.csv"
+        />
         <div class="label-3 ml-2">Retrieve as a CSV</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
@@ -267,8 +263,8 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.explain" class="flex flex-col ww-box p-2" style="box-shadow: unset; gap: 8px">
-        <wwEditorInput
+    <div v-if="modifiers.explain" class="flex flex-col ww-box p-2 pb-0" style="box-shadow: unset">
+        <wwEditorInputRow
             label="Analyze"
             type="onoff"
             bindable
@@ -276,7 +272,7 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             :model-value="modifiers.explain.analyze"
             @update:modelValue="setModifierSettings('explain', { analyze: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Buffers"
             type="onoff"
             bindable
@@ -284,7 +280,7 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             :model-value="modifiers.explain.buffers"
             @update:modelValue="setModifierSettings('explain', { buffers: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Format"
             type="select"
             :options="[
@@ -293,10 +289,11 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             ]"
             bindable
             small
+            required
             :model-value="modifiers.explain.format"
             @update:modelValue="setModifierSettings('explain', { format: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Settings"
             type="onoff"
             bindable
@@ -304,7 +301,7 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             :model-value="modifiers.explain.settings"
             @update:modelValue="setModifierSettings('explain', { settings: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Verbose"
             type="onoff"
             bindable
@@ -312,7 +309,7 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             :model-value="modifiers.explain.verbose"
             @update:modelValue="setModifierSettings('explain', { verbose: $event })"
         />
-        <wwEditorInput
+        <wwEditorInputRow
             label="Wal"
             type="onoff"
             bindable
