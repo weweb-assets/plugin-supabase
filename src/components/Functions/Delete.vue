@@ -39,11 +39,11 @@
                     selectLabel="Return deleted rows"
                     :columns="tablePropertiesOptions"
                 />
-                <div class="flex items-center mb-2">
+                <div class="flex items-center mb-2" :class="{ 'text-stale-400': lockedAutoSync }">
                     <wwEditorInputSwitch
                         :model-value="isRealtime || (autoSync && modifiers.select && !modifiers.csv)"
                         @update:modelValue="setArgs({ autoSync: $event })"
-                        :disabled="isRealtime || !modifiers.select || modifiers.csv"
+                        :disabled="lockedAutoSync"
                     />
                     <div class="label-3 ml-2">Auto update the related collections</div>
                     <wwEditorQuestionMark
@@ -116,6 +116,9 @@ export default {
                         this.definitions[this.table].required &&
                         this.definitions[this.table].required.includes(propertyName),
                 }));
+        },
+        lockedAutoSync() {
+            return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
         },
     },
     mounted() {
