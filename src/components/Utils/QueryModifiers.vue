@@ -50,7 +50,10 @@
         <div class="label-3 ml-2">Count the results</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
-            forced-content="It will return the query related rows count depending of the selected count algorithm. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
+            forced-content="It will return the query related rows count depending of the selected count algorithm.  
+`exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood.  
+`planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood.  
+`estimated`: Uses exact count for low numbers and planned count for high numbers."
             class="ml-auto"
         />
     </div>
@@ -171,7 +174,14 @@
         <div class="label-3 ml-2">Limit the query to a range</div>
         <wwEditorQuestionMark
             tooltip-position="top-left"
-            forced-content="Limit the query result by starting at an offset index (from) and ending at the given end index (to). Only records within this range are returned. This respects the query order and if there is no order clause the range could behave unexpectedly. The from and to values are 0-based and inclusive: range(1, 3) will include the second, third and fourth rows of the query. Set a foreign table to limit rows of foreign tables instead of the current table."
+            forced-content="Limit the query result by starting at an offset index (from) and ending at the given end index (to). 
+Only records within this range are returned.  
+
+This respects the query order and if there is no order clause the range could behave unexpectedly.  
+
+The from and to values are 0-based and inclusive: range(1, 3) will include the second, third and fourth rows of the query.  
+
+Set a foreign table to limit rows of foreign tables instead of the current table."
             class="ml-auto"
         />
     </div>
