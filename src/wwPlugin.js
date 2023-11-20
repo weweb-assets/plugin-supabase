@@ -140,9 +140,7 @@ export default {
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!select) return;
-        if (!this.settings.publicData.realtimeTables[table] && autoSync)
-            this.onSubscribe({ table, eventType: 'INSERT', new: data });
+        if (autoSync) this.performAutoSync(table, 'INSERT', data);
         return countMode ? { count, data } : data;
     },
     async update({ table, primaryData = {}, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
@@ -160,9 +158,7 @@ export default {
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!select) return;
-        if (!this.settings.publicData.realtimeTables[table] && autoSync)
-            this.onSubscribe({ table, eventType: 'UPDATE', new: data });
+        if (autoSync) this.performAutoSync(table, 'UPDATE', data);
         return countMode ? { count, data } : data;
     },
     async upsert(
@@ -182,9 +178,7 @@ export default {
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!select) return;
-        if (!this.settings.publicData.realtimeTables[table] && autoSync)
-            this.onSubscribe({ table, eventType: 'UPSERT', new: data });
+        if (autoSync) this.performAutoSync(table, 'UPSERT', data);
         return countMode ? { count, data } : data;
     },
     async delete({ table, primaryData = {}, autoSync = true, modifiers = {} }, wwUtils) {
@@ -198,9 +192,7 @@ export default {
         applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!select) return;
-        if (!this.settings.publicData.realtimeTables[table] && autoSync)
-            this.onSubscribe({ table, eventType: 'DELETE', old: data });
+        if (autoSync) this.performAutoSync(table, 'DELETE', data);
         return countMode ? { count, data } : data;
     },
     async callPostgresFunction({ functionName, params, modifiers }) {
@@ -301,6 +293,14 @@ export default {
                     wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
                 }
                 return;
+        }
+    },
+    performAutoSync(table, type, data) {
+        if (!data || this.settings.publicData.realtimeTables[table]) return;
+        if (typeof data === 'string') return; // csv case
+        const rows = Array.isArray(data) ? data : [data];
+        for (const row of rows) {
+            this.onSubscribe({ table, eventType: type, [type === 'DELETE' ? 'old' : 'new']: row });
         }
     },
     types: {

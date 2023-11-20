@@ -49,11 +49,11 @@
                     selectLabel="Return inserted rows"
                     :columns="tablePropertiesOptions"
                 />
-                <div class="flex items-center mb-3">
+                <div class="flex items-center mb-2">
                     <wwEditorInputSwitch
-                        :model-value="isRealtime || (autoSync && modifiers?.select)"
+                        :model-value="isRealtime || (autoSync && modifiers.select && !modifiers.csv)"
                         @update:modelValue="setArgs({ autoSync: $event })"
-                        :disabled="isRealtime || (autoSync && !modifiers?.select)"
+                        :disabled="isRealtime || !modifiers.select || modifiers.csv"
                     />
                     <div class="label-3 ml-2">Auto update the related collections</div>
                     <wwEditorQuestionMark
