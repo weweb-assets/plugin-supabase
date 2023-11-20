@@ -141,7 +141,7 @@ export default {
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'INSERT', data);
-        return countMode ? { count, data } : data;
+        return modifiers?.count ? { count, data } : data;
     },
     async update({ table, primaryData = {}, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
         /* wwEditor:start */
@@ -159,7 +159,7 @@ export default {
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'UPDATE', data);
-        return countMode ? { count, data } : data;
+        return modifiers?.count ? { count, data } : data;
     },
     async upsert(
         { table, data: payload = {}, ignoreDuplicates = false, onConflict = [], autoSync = true, modifiers = {} },
@@ -179,7 +179,7 @@ export default {
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
-        return countMode ? { count, data } : data;
+        return modifiers?.count ? { count, data } : data;
     },
     async delete({ table, primaryData = {}, autoSync = true, mode, modifiers = {}, filters = [] }, wwUtils) {
         /* wwEditor:start */
@@ -195,7 +195,7 @@ export default {
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'DELETE', data);
-        return countMode ? { count, data } : data;
+        return modifiers?.count ? { count, data } : data;
     },
     async callPostgresFunction({ functionName, params, modifiers }) {
         const query = this.instance.rpc(
