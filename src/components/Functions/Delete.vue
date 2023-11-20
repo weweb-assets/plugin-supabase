@@ -32,7 +32,7 @@
         />
         <div v-else class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
             <wwEditorInputRow
-                v-for="property of tableProperties"
+                v-for="property of primaryProperties"
                 :key="property.name"
                 :label="property.name"
                 placeholder="Enter a value"
@@ -130,17 +130,23 @@ export default {
         },
         tableProperties() {
             if (!this.definitions[this.table]) return [];
-            return Object.keys(this.definitions[this.table].properties)
-                .filter(propertyName =>
-                    (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>')
-                )
-                .map(propertyName => ({
-                    name: propertyName,
-                    type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
-                    required:
-                        this.definitions[this.table].required &&
-                        this.definitions[this.table].required.includes(propertyName),
-                }));
+            return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
+                name: propertyName,
+                type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                required:
+                    this.definitions[this.table].required &&
+                    this.definitions[this.table].required.includes(propertyName),
+                isPrimary: (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>'),
+            }));
+        },
+        primaryProperties() {
+            return this.tableProperties.filter(prop => prop.isPrimary);
+        },
+        tablePropertiesOptions() {
+            return this.tableProperties.map(property => ({
+                label: property.name,
+                value: property.name,
+            }));
         },
         lockedAutoSync() {
             return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
@@ -159,11 +165,11 @@ export default {
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
-                if (!this.tableProperties.find(field => field.name === primaryDataKey)) {
+                if (!this.primaryProperties.find(field => field.name === primaryDataKey)) {
                     delete primaryData[primaryDataKey];
                 }
             }
-            for (const field of this.tableProperties) {
+            for (const field of this.primaryProperties) {
                 if (!primaryData[field.name]) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
@@ -184,7 +190,7 @@ export default {
             // clear removed fields
             const primaryData = { ...this.args.primaryData };
             for (const key in primaryData) {
-                if (!this.tableProperties.includes(key)) delete primaryData[key];
+                if (!this.primaryProperties.includes(key)) delete primaryData[key];
             }
             this.setPrimaryData(primaryData);
         },
