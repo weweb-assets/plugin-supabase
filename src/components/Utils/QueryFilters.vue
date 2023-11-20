@@ -64,7 +64,7 @@
                 </div>
             </wwEditorFormRow>
             <wwEditorInputRow
-                v-if="filter.fn !== 'or'"
+                v-if="filter.fn !== 'or' && filter.fn !== 'match'"
                 type="query"
                 :model-value="filter.column"
                 label="Column"

@@ -181,14 +181,16 @@ export default {
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
         return countMode ? { count, data } : data;
     },
-    async delete({ table, primaryData = {}, autoSync = true, modifiers = {} }, wwUtils) {
+    async delete({ table, primaryData = {}, autoSync = true, mode, modifiers = {}, filters = [] }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
 
-        const query = this.instance.from(table).delete({ count: modifiers?.count?.mode }).match(primaryData).select();
+        const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
+        if (mode === 'primary') query.match(primaryData);
+        else applyFilters(query, filters);
         applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });

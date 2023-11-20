@@ -14,7 +14,24 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <template v-if="table">
+        <wwEditorFormRow label="Delete by">
+            <wwEditorInputRadio
+                :model-value="mode"
+                :choices="[
+                    { label: 'Primary keys', value: 'primary', default: true },
+                    { label: 'Custom filters', value: 'filters' },
+                ]"
+                small
+                @update:modelValue="setArgs({ mode: $event })"
+            />
+        </wwEditorFormRow>
+        <QueryFilters
+            v-if="mode === 'filters'"
+            :model-value="filters"
+            @update:modelValue="setArgs({ filters: $event })"
+        />
         <wwEditorInputRow
+            v-else
             v-for="property of tableProperties"
             :key="property.name"
             :label="property.name"
@@ -61,9 +78,10 @@
 <script>
 import Expandable from '../Utils/Expandable.vue';
 import QueryModifiers from '../Utils/QueryModifiers.vue';
+import QueryFilters from '../Utils/QueryFilters.vue';
 
 export default {
-    components: { Expandable, QueryModifiers },
+    components: { Expandable, QueryModifiers, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -82,6 +100,12 @@ export default {
         },
         autoSync() {
             return this.args.autoSync ?? true;
+        },
+        mode() {
+            return this.args.mode ?? 'primary';
+        },
+        filters() {
+            return this.args.filters || [];
         },
         modifiers() {
             return {
