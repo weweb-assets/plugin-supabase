@@ -157,11 +157,12 @@ export default {
     ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'primary' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'filters' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Updating ${table}`, {
             type: 'request',
-            preview: { primaryData, data: payload },
+            preview: { primaryData, filters, data: payload },
         });
 
         const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode });
@@ -200,9 +201,13 @@ export default {
     ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'primary' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'filters' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
+        wwUtils?.log('info', `[Supabase] Deleting from ${table}`, {
+            type: 'request',
+            preview: mode === 'primary' ? primaryData : filters,
+        });
 
         const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
         if (mode === 'primary') query.match(primaryData);
