@@ -177,7 +177,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
+        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false, maybeSingle: false } });
     },
     methods: {
         setTable(table) {
