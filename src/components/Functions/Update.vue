@@ -30,18 +30,19 @@
             :model-value="filters"
             @update:modelValue="setArgs({ filters: $event })"
         />
-        <wwEditorInputRow
-            v-else
-            v-for="property of primaryProperties"
-            :key="property.name"
-            :label="property.name"
-            placeholder="Enter a value"
-            :type="property.type"
-            :required="property.required"
-            :model-value="primaryData[property.name]"
-            @update:modelValue="setPrimaryData({ ...primaryData, [property.name]: $event })"
-            bindable
-        />
+        <div v-else class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
+            <wwEditorInputRow
+                v-for="property of primaryProperties"
+                :key="property.name"
+                :label="property.name"
+                placeholder="Enter a value"
+                :type="property.type"
+                :required="property.required"
+                :model-value="primaryData[property.name]"
+                @update:modelValue="setPrimaryData({ ...primaryData, [property.name]: $event })"
+                bindable
+            />
+        </div>
         <wwEditorInputRow
             label="Fields"
             type="select"
