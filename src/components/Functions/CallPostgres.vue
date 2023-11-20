@@ -53,9 +53,10 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
