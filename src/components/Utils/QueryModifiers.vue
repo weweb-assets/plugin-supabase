@@ -9,7 +9,7 @@
                 class="ml-auto"
             />
         </div>
-        <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+        <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
             <wwEditorInputRow label="Returned fields">
                 <wwEditorInputRadio
                     :class="{ 'mb-2': modifiers?.select.mode !== 'minimal' }"
@@ -57,7 +57,7 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
         <wwEditorInputRow
             label="Mode"
             type="select"
@@ -95,7 +95,7 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+    <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
         <wwEditorInputRow
             label="Column"
             type="query"
@@ -145,7 +145,11 @@
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.limit && !disabled.limit" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+    <div
+        v-if="modifiers.limit && !disabled.limit"
+        class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0"
+        style="box-shadow: unset"
+    >
         <wwEditorInputRow
             label="Count"
             type="number"
@@ -185,7 +189,11 @@ Set a foreign table to limit rows of foreign tables instead of the current table
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.range && !disabled.range" class="flex flex-col ww-box mb-2 p-2 pb-0" style="box-shadow: unset">
+    <div
+        v-if="modifiers.range && !disabled.range"
+        class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0"
+        style="box-shadow: unset"
+    >
         <wwEditorInputRow
             label="From"
             type="number"
@@ -275,7 +283,7 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
             class="ml-auto"
         />
     </div>
-    <div v-if="modifiers.explain" class="flex flex-col ww-box p-2 pb-0" style="box-shadow: unset">
+    <div v-if="modifiers.explain" class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
         <wwEditorInputRow
             label="Analyze"
             type="onoff"
