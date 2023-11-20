@@ -143,7 +143,18 @@ export default {
         if (autoSync) this.performAutoSync(table, 'INSERT', data);
         return modifiers?.count ? { count, data } : data;
     },
-    async update({ table, primaryData = {}, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
+    async update(
+        {
+            table,
+            primaryData = {},
+            data: payload = {},
+            autoSync = true,
+            mode = 'primary',
+            filters = [],
+            modifiers = {},
+        },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
@@ -153,7 +164,9 @@ export default {
             preview: { primaryData, data: payload },
         });
 
-        const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode }).match(primaryData);
+        const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode });
+        if (mode === 'primary') query.match(primaryData);
+        else applyFilters(query, filters);
         applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 
         const { data, count, error } = await query;
@@ -181,7 +194,10 @@ export default {
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
         return modifiers?.count ? { count, data } : data;
     },
-    async delete({ table, primaryData = {}, autoSync = true, mode, modifiers = {}, filters = [] }, wwUtils) {
+    async delete(
+        { table, primaryData = {}, autoSync = true, mode = 'primary', filters = [], modifiers = {} },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
