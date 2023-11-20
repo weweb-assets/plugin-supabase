@@ -45,6 +45,7 @@
         <wwEditorInputSwitch
             :model-value="!!modifiers.count"
             @update:modelValue="toggleModifier('count', { mode: 'exact' })"
+            :disabled="disabled.count"
         />
         <div class="label-3 ml-2">Count the results</div>
         <wwEditorQuestionMark
@@ -82,6 +83,7 @@
         <wwEditorInputSwitch
             :model-value="!!modifiers.order"
             @update:modelValue="toggleModifier('order', { ascending: true })"
+            :disabled="disabled.order"
         />
         <div class="label-3 ml-2">Order the results</div>
         <wwEditorQuestionMark
