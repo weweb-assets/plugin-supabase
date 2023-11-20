@@ -22,7 +22,7 @@
                     { label: 'Custom filters', value: 'filters' },
                 ]"
                 small
-                @update:modelValue="setArgs({ mode: $event })"
+                @update:modelValue="setMode"
             />
         </wwEditorFormRow>
         <QueryFilters
@@ -48,7 +48,7 @@
             type="select"
             required
             multiple
-            :options="tablePropertiesOptions"
+            :options="tablePropertiesOptionsFiltered"
             :model-value="dataFields"
             placeholder="All fields"
             @update:modelValue="setDataFields"
@@ -123,6 +123,12 @@ export default {
         autoSync() {
             return this.args.autoSync ?? true;
         },
+        mode() {
+            return this.args.mode ?? 'primary';
+        },
+        filters() {
+            return this.args.filters || [];
+        },
         modifiers() {
             return {
                 // Support legacy config
@@ -149,47 +155,35 @@ export default {
                 value: tableName,
             }));
         },
-        primaryProperties() {
-            if (!this.definitions[this.table]) return [];
-            return Object.keys(this.definitions[this.table].properties)
-                .filter(propertyName =>
-                    (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>')
-                )
-                .map(propertyName => ({
-                    name: propertyName,
-                    type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
-                    required:
-                        this.definitions[this.table].required &&
-                        this.definitions[this.table].required.includes(propertyName),
-                }));
-        },
         tableProperties() {
             if (!this.definitions[this.table]) return [];
-            return Object.keys(this.definitions[this.table].properties)
-                .filter(
-                    propertyName =>
-                        !(this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>')
-                )
-                .map(propertyName => ({
-                    name: propertyName,
-                    type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
-                    required:
-                        this.definitions[this.table].required &&
-                        this.definitions[this.table].required.includes(propertyName) &&
-                        !this.definitions[this.table].properties[propertyName].default,
-                    default: this.definitions[this.table].properties[propertyName].default,
-                }));
-        },
-        tablePropertiesFiltered() {
-            return this.tableProperties.filter(
-                property => !this.dataFields.length || this.dataFields.includes(property.name)
-            );
+            return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
+                name: propertyName,
+                type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
+                required:
+                    this.definitions[this.table].required &&
+                    this.definitions[this.table].required.includes(propertyName),
+                isPrimary: (this.definitions[this.table].properties[propertyName].description || '').includes('<pk/>'),
+            }));
         },
         tablePropertiesOptions() {
             return this.tableProperties.map(property => ({
                 label: property.name,
                 value: property.name,
             }));
+        },
+        tablePropertiesOptionsFiltered() {
+            return this.tablePropertiesOptions.filter(property => !property.isPrimary || this.mode === 'filters');
+        },
+        primaryProperties() {
+            return this.tableProperties.filter(prop => prop.isPrimary);
+        },
+        tablePropertiesFiltered() {
+            return this.tableProperties.filter(
+                property =>
+                    (!this.dataFields.length || this.dataFields.includes(property.name)) &&
+                    (!property.isPrimary || this.mode === 'filters')
+            );
         },
         lockedAutoSync() {
             return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
@@ -206,11 +200,9 @@ export default {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
         },
-        mode() {
-            return this.args.mode ?? 'primary';
-        },
-        filters() {
-            return this.args.filters || [];
+        setMode(mode) {
+            this.$emit('update:args', { ...this.args, mode });
+            this.$nextTick(() => this.setData({ ...this.data }));
         },
         setPrimaryData(primaryData) {
             for (const primaryDataKey in primaryData) {
@@ -253,7 +245,7 @@ export default {
         refreshFields() {
             // clear removed fields
             this.setDataFields(
-                this.args.dataFields.filter(field => this.tableProperties.some(prop => prop.name === field))
+                this.args.dataFields.filter(field => this.tablePropertiesFiltered.some(prop => prop.name === field))
             );
         },
     },
