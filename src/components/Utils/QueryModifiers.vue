@@ -7,7 +7,7 @@
         <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
             <wwEditorInputRadio
                 :class="{ 'mb-2': modifiers?.select.mode !== 'minimal' }"
-                :model-value="!!modifiers?.select.mode"
+                :model-value="modifiers?.select.mode"
                 :choices="[
                     { label: 'Minimal', value: 'minimal', default: true },
                     { label: 'Guided', value: 'guided' },
