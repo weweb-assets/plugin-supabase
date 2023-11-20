@@ -123,66 +123,29 @@ export default {
             .from(table)
             .select(fields || undefined, { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly });
         applyFilters(query, filters);
-        applyModifiers(query, modifiers);
+        applyModifiers(query, modifier);
         const { data, count, error } = await query;
 
         if (error) throw new Error(error.message, { cause: error });
         return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
-    async insert(
-        {
-            table,
-            data: payload = {},
-            countMode = null,
-            returnData = true,
-            autoSync = true,
-            returnFieldsMode = 'guided',
-            returnDataFields = [],
-            returnDataFieldsAdvanced,
-        },
-        wwUtils
-    ) {
+    async insert({ table, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
 
-        const query = this.instance.from(table).insert([payload], { count: countMode });
-        if (returnData) {
-            query
-                .select(
-                    returnFieldsMode === 'minimal'
-                        ? ''
-                        : returnFieldsMode === 'guided'
-                        ? returnDataFields.length
-                            ? returnDataFields.join(', ')
-                            : '*'
-                        : returnDataFieldsAdvanced
-                )
-                .maybeSingle();
-        }
+        const query = this.instance.from(table).insert([payload], { count: modifiers?.count?.mode });
+        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!returnData) return;
+        if (!select) return;
         if (!this.settings.publicData.realtimeTables[table] && autoSync)
             this.onSubscribe({ table, eventType: 'INSERT', new: data });
         return countMode ? { count, data } : data;
     },
-    async update(
-        {
-            table,
-            primaryData = {},
-            data: payload = {},
-            countMode = null,
-            returnData = true,
-            autoSync = true,
-            returnFieldsMode = 'guided',
-            returnDataFields = [],
-            returnDataFieldsAdvanced,
-        },
-        wwUtils
-    ) {
+    async update({ table, primaryData = {}, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
@@ -192,41 +155,18 @@ export default {
             preview: { primaryData, data: payload },
         });
 
-        const query = this.instance.from(table).update(payload, { count: countMode }).match(primaryData);
-        if (returnData) {
-            query
-                .select(
-                    returnFieldsMode === 'minimal'
-                        ? ''
-                        : returnFieldsMode === 'guided'
-                        ? returnDataFields.length
-                            ? returnDataFields.join(', ')
-                            : '*'
-                        : returnDataFieldsAdvanced
-                )
-                .maybeSingle();
-        }
+        const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode }).match(primaryData);
+        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!returnData) return;
+        if (!select) return;
         if (!this.settings.publicData.realtimeTables[table] && autoSync)
             this.onSubscribe({ table, eventType: 'UPDATE', new: data });
         return countMode ? { count, data } : data;
     },
     async upsert(
-        {
-            table,
-            data: payload = {},
-            countMode = null,
-            ignoreDuplicates = false,
-            onConflict = [],
-            returnData = true,
-            autoSync = true,
-            returnFieldsMode = 'guided',
-            returnDataFields = [],
-            returnDataFieldsAdvanced,
-        },
+        { table, data: payload = {}, ignoreDuplicates = false, onConflict = [], autoSync = true, modifiers = {} },
         wwUtils
     ) {
         /* wwEditor:start */
@@ -236,77 +176,43 @@ export default {
 
         const query = this.instance
             .from(table)
-            .upsert(payload, { count: countMode, ignoreDuplicates, onConflict: onConflict.join(',') });
-        if (returnData) {
-            query
-                .select(
-                    returnFieldsMode === 'minimal'
-                        ? ''
-                        : returnFieldsMode === 'guided'
-                        ? returnDataFields.length
-                            ? returnDataFields.join(', ')
-                            : '*'
-                        : returnDataFieldsAdvanced
-                )
-                .maybeSingle();
-        }
+            .upsert(payload, { count: modifiers?.count?.mode, ignoreDuplicates, onConflict: onConflict.join(',') });
+
+        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!returnData) return;
+        if (!select) return;
         if (!this.settings.publicData.realtimeTables[table] && autoSync)
             this.onSubscribe({ table, eventType: 'UPSERT', new: data });
         return countMode ? { count, data } : data;
     },
-    async delete(
-        {
-            table,
-            primaryData = {},
-            countMode = null,
-            returnData = true,
-            autoSync = true,
-            returnFieldsMode = 'guided',
-            returnDataFields = [],
-            returnDataFieldsAdvanced,
-        },
-        wwUtils
-    ) {
+    async delete({ table, primaryData = {}, autoSync = true, modifiers = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
 
-        const query = this.instance.from(table).delete({ count: countMode }).match(primaryData).select();
-        if (returnData) {
-            query
-                .select(
-                    returnFieldsMode === 'minimal'
-                        ? ''
-                        : returnFieldsMode === 'guided'
-                        ? returnDataFields.length
-                            ? returnDataFields.join(', ')
-                            : '*'
-                        : returnDataFieldsAdvanced
-                )
-                .maybeSingle();
-        }
-
+        const query = this.instance.from(table).delete({ count: modifiers?.count?.mode }).match(primaryData).select();
+        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!returnData) return;
+        if (!select) return;
         if (!this.settings.publicData.realtimeTables[table] && autoSync)
             this.onSubscribe({ table, eventType: 'DELETE', old: data });
         return countMode ? { count, data } : data;
     },
-    async callPostgresFunction({ functionName, params, countMode = null, countOnly = false }) {
-        const { data, error } = await this.instance.rpc(
+    async callPostgresFunction({ functionName, params, modifiers }) {
+        const query = this.instance.rpc(
             functionName,
             Array.isArray(params)
                 ? params.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
                 : params,
-            { count: countMode, head: countOnly }
+            { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly }
         );
+        applyModifiers(query, modifiers);
+        const { data, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
@@ -414,7 +320,19 @@ const applyFilters = (query, filters = []) => {
     }
 };
 
-const applyModifiers = (query, { order, limit, range, single, maybeSingle, csv, explain } = {}) => {
+const applyModifiers = (query, { select, order, limit, range, single, maybeSingle, csv, explain } = {}) => {
+    if (select) {
+        query.select(
+            select.mode === 'minimal'
+                ? ''
+                : select.mode === 'guided'
+                ? select.fields.length
+                    ? select.fields.join(', ')
+                    : '*'
+                : select.fieldsAdvanced
+        );
+    }
+
     if (order && order.column)
         query.order(order.column, {
             ascending: order.ascending,

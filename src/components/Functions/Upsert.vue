@@ -72,74 +72,25 @@
                         class="ml-auto"
                     />
                 </div>
+                <QueryModifiers
+                    :model-value="modifiers"
+                    @update:modelValue="setArgs({ modifiers: $event })"
+                    selectLabel="Return upserted rows"
+                    :columns="tablePropertiesOptions"
+                />
                 <div class="flex items-center mb-3">
                     <wwEditorInputSwitch
-                        :model-value="returnData"
-                        @update:modelValue="setArgs({ returnData: $event })"
+                        :model-value="isRealtime || (autoSync && modifiers?.select)"
+                        @update:modelValue="setArgs({ autoSync: $event })"
+                        :disabled="isRealtime || (autoSync && !modifiers?.select)"
                     />
-                    <div class="label-3 ml-2">Return data</div>
+                    <div class="label-3 ml-2">Auto update the related collections</div>
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
+                        class="ml-auto"
+                    />
                 </div>
-                <template v-if="returnData">
-                    <wwEditorFormRow label="Returned fields">
-                        <wwEditorInputRadio
-                            :class="{ 'mb-2': returnFieldsMode !== 'minimal' }"
-                            :model-value="returnFieldsMode"
-                            :choices="fieldsModeChoices"
-                            small
-                            @update:modelValue="setArgs({ returnFieldsMode: $event })"
-                        />
-                        <wwEditorInput
-                            v-if="returnFieldsMode === 'guided'"
-                            type="select"
-                            multiple
-                            :options="tablePropertiesOptions"
-                            :model-value="returnDataFields"
-                            placeholder="All fields"
-                            @update:modelValue="setArgs({ returnDataFields: $event })"
-                        />
-                        <wwEditorInput
-                            v-else-if="returnFieldsMode === 'advanced'"
-                            type="string"
-                            :model-value="returnDataFieldsAdvanced"
-                            placeholder="column, linkedColumn(column)"
-                            @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
-                        />
-                    </wwEditorFormRow>
-                    <wwEditorFormRow label="Get count">
-                        <div class="flex">
-                            <wwEditorInput
-                                type="select"
-                                placeholder="None"
-                                :model-value="countMode"
-                                :options="[
-                                    { label: 'None', value: null },
-                                    { label: 'Exact', value: 'exact' },
-                                    { label: 'Planned', value: 'planned' },
-                                    { label: 'Estimated', value: 'estimated' },
-                                ]"
-                                @update:modelValue="setArgs({ countMode: $event })"
-                            />
-                            <wwEditorQuestionMark
-                                tooltip-position="top-left"
-                                forced-content="Count algorithm to use to count impacted rows. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
-                                class="ml-2"
-                            />
-                        </div>
-                    </wwEditorFormRow>
-                    <div class="flex items-center mb-3">
-                        <wwEditorInputSwitch
-                            :model-value="isRealtime || autoSync"
-                            @update:modelValue="setArgs({ autoSync: $event })"
-                            :disabled="isRealtime"
-                        />
-                        <div class="label-3 ml-2">Auto update the related collections</div>
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
-                            class="ml-auto"
-                        />
-                    </div>
-                </template>
             </div>
         </template>
     </Expandable>
@@ -148,9 +99,10 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -161,40 +113,28 @@ export default {
             isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
-            fieldsModeChoices: [
-                { label: 'Minimal', value: 'minimal', default: true },
-                { label: 'Guided', value: 'guided' },
-                { label: 'Advanced', value: 'advanced' },
-            ],
         };
     },
     computed: {
         table() {
             return this.args.table;
         },
-        countMode() {
-            return this.args.countMode || null;
-        },
-        returnData() {
-            return this.args.returnData === undefined ? true : this.args.returnData;
-        },
         autoSync() {
-            return this.args.autoSync === undefined ? true : this.args.autoSync;
+            return this.args.autoSync ?? true;
         },
         ignoreDuplicates() {
-            return this.args.ignoreDuplicates || false;
+            return this.args.ignoreDuplicates ?? false;
         },
         onConflict() {
-            return this.args.onConflict || [];
+            return this.args.onConflict ?? [];
         },
-        returnFieldsMode() {
-            return this.args.returnFieldsMode || 'guided';
-        },
-        returnDataFields() {
-            return this.args.returnDataFields || [];
-        },
-        returnDataFieldsAdvanced() {
-            return this.args.returnDataFieldsAdvanced;
+        modifiers() {
+            return {
+                // Support legacy config
+                select: { mode: 'guided', fields: [] },
+                maybeSingle: true,
+                ...(this.args.modifiers || {}),
+            };
         },
         dataFields() {
             return this.args.dataFields || [];
@@ -237,7 +177,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMode: 'minimal' });
+        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
     },
     methods: {
         setTable(table) {

@@ -1,204 +1,242 @@
 <template>
-    <div class="flex items-center mb-2">
-        <wwEditorInputSwitch
-            :model-value="!!modifiers.count"
-            @update:modelValue="toggleModifier('count', { mode: 'exact' })"
-        />
-        <div class="label-3 ml-2">Count the results</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="It will return the query related rows count depending of the selected count algorithm. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
-            class="ml-auto"
-        />
-    </div>
-    <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
-        <wwEditorInputRow
-            label="Mode"
-            type="select"
-            :options="[
-                { label: 'Exact', value: 'exact' },
-                { label: 'Planned', value: 'planned' },
-                { label: 'Estimated', value: 'estimated' },
-            ]"
-            bindable
-            small
-            required
-            :model-value="modifiers.count.mode"
-            @update:modelValue="setModifierSettings('count', { mode: $event })"
-        />
-        <wwEditorInputRow
-            label="Return count only"
-            type="onoff"
-            bindable
-            small
-            :model-value="modifiers.count.countOnly"
-            @update:modelValue="setModifierSettings('count', { countOnly: $event })"
-        />
-    </div>
-    <div class="flex items-center mb-2">
-        <wwEditorInputSwitch
-            :model-value="!!modifiers.order"
-            @update:modelValue="toggleModifier('order', { ascending: true })"
-        />
-        <div class="label-3 ml-2">Order the results</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Order the query result by column. Set foreign table to order by a foreign column."
-            class="ml-auto"
-        />
-    </div>
-    <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
-        <wwEditorInputRow
-            label="Column"
-            type="query"
-            placeholder="Enter a column name"
-            bindable
-            small
-            required
-            :model-value="modifiers.order.column"
-            @update:modelValue="setModifierSettings('order', { column: $event })"
-        />
-        <wwEditorInputRow
-            label="Ascending"
-            type="onoff"
-            bindable
-            small
-            :model-value="modifiers.order.ascending"
-            @update:modelValue="setModifierSettings('order', { ascending: $event })"
-        />
-        <wwEditorInputRow
-            label="Foreign table"
-            type="query"
-            placeholder="Enter a foreign table name"
-            bindable
-            small
-            :model-value="modifiers.order.foreignTable"
-            @update:modelValue="setModifierSettings('order', { foreignTable: $event })"
-        />
-        <wwEditorInputRow
-            label="Nulls first"
-            type="onoff"
-            bindable
-            small
-            class="mb-0"
-            :model-value="modifiers.order.nullsFirst"
-            @update:modelValue="setModifierSettings('order', { nullsFirst: $event })"
-        />
-    </div>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.limit }">
-        <wwEditorInputSwitch
-            :model-value="disabled.limit ? false : !!modifiers.limit"
-            @update:modelValue="toggleModifier('limit')"
-            :disabled="disabled.limit"
-        />
-        <div class="label-3 ml-2">Limit the number of rows</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Limit the query result by count. Set foreign table to order by a foreign column."
-            class="ml-auto"
-        />
-    </div>
-    <div v-if="modifiers.limit && !disabled.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
-        <wwEditorInputRow
-            label="Count"
-            type="number"
-            bindable
-            small
-            required
-            :model-value="modifiers.limit.count"
-            @update:modelValue="setModifierSettings('limit', { count: $event })"
-        />
-        <wwEditorInputRow
-            label="Foreign table"
-            type="query"
-            placeholder="Enter a foreign table name"
-            bindable
-            small
-            class="mb-0"
-            :model-value="modifiers.limit.foreignTable"
-            @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
-        />
-    </div>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.range }">
-        <wwEditorInputSwitch
-            :model-value="disabled.range ? false : !!modifiers.range"
-            @update:modelValue="toggleModifier('range')"
-            :disabled="disabled.range"
-        />
-        <div class="label-3 ml-2">Limit the query to a range</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Limit the query result by starting at an offset index (from) and ending at the given end index (to). Only records within this range are returned. This respects the query order and if there is no order clause the range could behave unexpectedly. The from and to values are 0-based and inclusive: range(1, 3) will include the second, third and fourth rows of the query. Set a foreign table to limit rows of foreign tables instead of the current table."
-            class="ml-auto"
-        />
-    </div>
-    <div v-if="modifiers.range && !disabled.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
-        <wwEditorInputRow
-            label="From"
-            type="number"
-            placeholder="Enter the start index (ex: 0)"
-            bindable
-            small
-            required
-            :model-value="modifiers.range.from"
-            @update:modelValue="setModifierSettings('range', { from: $event })"
-        />
-        <wwEditorInputRow
-            label="To"
-            type="number"
-            placeholder="Enter the end index (ex: 5)"
-            bindable
-            small
-            required
-            :model-value="modifiers.range.to"
-            @update:modelValue="setModifierSettings('range', { to: $event })"
-        />
-        <wwEditorInputRow
-            label="Foreign table"
-            type="query"
-            placeholder="Enter a foreign table name"
-            bindable
-            small
-            class="mb-0"
-            :model-value="modifiers.range.foreignTable"
-            @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
-        />
-    </div>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.single }">
-        <wwEditorInputSwitch
-            :model-value="disabled.single ? false : !!modifiers.single"
-            @update:modelValue="toggleModifier('single')"
-            :disabled="disabled.single"
-        />
-        <div class="label-3 ml-2">Retrieve one row of data</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects. Throw an error if no row is returned."
-            class="ml-auto"
-        />
-    </div>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.maybeSingle }">
-        <wwEditorInputSwitch
-            :model-value="disabled.maybeSingle ? false : !!modifiers.maybeSingle"
-            @update:modelValue="toggleModifier('maybeSingle')"
-            :disabled="disabled.maybeSingle"
-        />
-        <div class="label-3 ml-2">Retrieve zero or one row of data</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects."
-            class="ml-auto"
-        />
-    </div>
-    <div class="flex items-center mb-2">
-        <wwEditorInputSwitch :model-value="!!modifiers.csv" @update:modelValue="toggleModifier('csv')" />
-        <div class="label-3 ml-2">Retrieve as a CSV</div>
-        <wwEditorQuestionMark
-            tooltip-position="top-left"
-            forced-content="Return data as a string in CSV format."
-            class="ml-auto"
-        />
-    </div>
+    <template v-if="!noSelect">
+        <div class="flex items-center mb-3">
+            <wwEditorInputSwitch :model-value="!!modifiers.select" @update:modelValue="toggleSelect" />
+            <div class="label-3 ml-2">{{ selectLabel || 'Return rows' }}</div>
+        </div>
+        <wwEditorFormRow label="Returned fields" v-if="modifiers.select">
+            <wwEditorInputRadio
+                :class="{ 'mb-2': modifiers?.select.mode !== 'minimal' }"
+                :model-value="!!modifiers?.select.mode"
+                :choices="[
+                    { label: 'Minimal', value: 'minimal', default: true },
+                    { label: 'Guided', value: 'guided' },
+                    { label: 'Advanced', value: 'advanced' },
+                ]"
+                small
+                @update:modelValue="setModifierSettings('select', { mode: $event })"
+            />
+            <wwEditorInput
+                v-if="select.mode === 'guided'"
+                type="select"
+                multiple
+                :options="columns"
+                :model-value="modifiers?.select.fields"
+                placeholder="All fields"
+                @update:modelValue="setModifierSettings('select', { fields: $event })"
+            />
+            <wwEditorInput
+                v-else-if="select.mode === 'advanced'"
+                type="string"
+                :model-value="modifiers?.select.fieldsAdvanced"
+                placeholder="column, linkedColumn(column)"
+                @update:modelValue="setModifierSettings('select', { fieldsAdvanced: $event })"
+            />
+        </wwEditorFormRow>
+    </template>
+    <template v-if="modifiers.select || noSelect">
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch
+                :model-value="!!modifiers.count"
+                @update:modelValue="toggleModifier('count', { mode: 'exact' })"
+            />
+            <div class="label-3 ml-2">Count the results</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="It will return the query related rows count depending of the selected count algorithm. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
+                class="ml-auto"
+            />
+        </div>
+        <div v-if="modifiers.count" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+            <wwEditorInputRow
+                label="Mode"
+                type="select"
+                :options="[
+                    { label: 'Exact', value: 'exact' },
+                    { label: 'Planned', value: 'planned' },
+                    { label: 'Estimated', value: 'estimated' },
+                ]"
+                bindable
+                small
+                required
+                :model-value="modifiers.count.mode"
+                @update:modelValue="setModifierSettings('count', { mode: $event })"
+            />
+            <wwEditorInputRow
+                v-if="noSelect"
+                label="Return count only"
+                type="onoff"
+                bindable
+                small
+                :model-value="modifiers.count.countOnly"
+                @update:modelValue="setModifierSettings('count', { countOnly: $event })"
+            />
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch
+                :model-value="!!modifiers.order"
+                @update:modelValue="toggleModifier('order', { ascending: true })"
+            />
+            <div class="label-3 ml-2">Order the results</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Order the query result by column. Set foreign table to order by a foreign column."
+                class="ml-auto"
+            />
+        </div>
+        <div v-if="modifiers.order" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+            <wwEditorInputRow
+                label="Column"
+                type="query"
+                placeholder="Enter a column name"
+                bindable
+                small
+                required
+                :model-value="modifiers.order.column"
+                @update:modelValue="setModifierSettings('order', { column: $event })"
+            />
+            <wwEditorInputRow
+                label="Ascending"
+                type="onoff"
+                bindable
+                small
+                :model-value="modifiers.order.ascending"
+                @update:modelValue="setModifierSettings('order', { ascending: $event })"
+            />
+            <wwEditorInputRow
+                label="Foreign table"
+                type="query"
+                placeholder="Enter a foreign table name"
+                bindable
+                small
+                :model-value="modifiers.order.foreignTable"
+                @update:modelValue="setModifierSettings('order', { foreignTable: $event })"
+            />
+            <wwEditorInputRow
+                label="Nulls first"
+                type="onoff"
+                bindable
+                small
+                class="mb-0"
+                :model-value="modifiers.order.nullsFirst"
+                @update:modelValue="setModifierSettings('order', { nullsFirst: $event })"
+            />
+        </div>
+        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.limit }">
+            <wwEditorInputSwitch
+                :model-value="modifiers.limit && !disabled.limit"
+                @update:modelValue="toggleModifier('limit')"
+                :disabled="disabled.limit"
+            />
+            <div class="label-3 ml-2">Limit the number of rows</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Limit the query result by count. Set foreign table to order by a foreign column."
+                class="ml-auto"
+            />
+        </div>
+        <div v-if="modifiers.limit && !disabled.limit" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+            <wwEditorInputRow
+                label="Count"
+                type="number"
+                bindable
+                small
+                required
+                :model-value="modifiers.limit.count"
+                @update:modelValue="setModifierSettings('limit', { count: $event })"
+            />
+            <wwEditorInputRow
+                label="Foreign table"
+                type="query"
+                placeholder="Enter a foreign table name"
+                bindable
+                small
+                class="mb-0"
+                :model-value="modifiers.limit.foreignTable"
+                @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
+            />
+        </div>
+        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.range }">
+            <wwEditorInputSwitch
+                :model-value="modifiers.range && !disabled.range"
+                @update:modelValue="toggleModifier('range')"
+                :disabled="disabled.range"
+            />
+            <div class="label-3 ml-2">Limit the query to a range</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Limit the query result by starting at an offset index (from) and ending at the given end index (to). Only records within this range are returned. This respects the query order and if there is no order clause the range could behave unexpectedly. The from and to values are 0-based and inclusive: range(1, 3) will include the second, third and fourth rows of the query. Set a foreign table to limit rows of foreign tables instead of the current table."
+                class="ml-auto"
+            />
+        </div>
+        <div v-if="modifiers.range && !disabled.range" class="flex flex-col ww-box mb-2 p-2" style="box-shadow: unset">
+            <wwEditorInputRow
+                label="From"
+                type="number"
+                placeholder="Enter the start index (ex: 0)"
+                bindable
+                small
+                required
+                :model-value="modifiers.range.from"
+                @update:modelValue="setModifierSettings('range', { from: $event })"
+            />
+            <wwEditorInputRow
+                label="To"
+                type="number"
+                placeholder="Enter the end index (ex: 5)"
+                bindable
+                small
+                required
+                :model-value="modifiers.range.to"
+                @update:modelValue="setModifierSettings('range', { to: $event })"
+            />
+            <wwEditorInputRow
+                label="Foreign table"
+                type="query"
+                placeholder="Enter a foreign table name"
+                bindable
+                small
+                class="mb-0"
+                :model-value="modifiers.range.foreignTable"
+                @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
+            />
+        </div>
+        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.single }">
+            <wwEditorInputSwitch
+                :model-value="modifiers.single && !disabled.single"
+                @update:modelValue="toggleModifier('single')"
+                :disabled="disabled.single"
+            />
+            <div class="label-3 ml-2">Retrieve one row of data</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects. Throw an error if no row is returned."
+                class="ml-auto"
+            />
+        </div>
+        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.maybeSingle }">
+            <wwEditorInputSwitch
+                :model-value="modifiers.maybeSingle && !disabled.maybeSingle"
+                @update:modelValue="toggleModifier('maybeSingle')"
+                :disabled="disabled.maybeSingle"
+            />
+            <div class="label-3 ml-2">Retrieve zero or one row of data</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Apply a limit to 1 and return data as a single object instead of an array of objects."
+                class="ml-auto"
+            />
+        </div>
+        <div class="flex items-center mb-2">
+            <wwEditorInputSwitch :model-value="!!modifiers.csv" @update:modelValue="toggleModifier('csv')" />
+            <div class="label-3 ml-2">Retrieve as a CSV</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Return data as a string in CSV format."
+                class="ml-auto"
+            />
+        </div>
+    </template>
     <div class="flex items-center mb-2">
         <wwEditorInputSwitch
             :model-value="!!modifiers.explain"
@@ -281,6 +319,9 @@ Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/re
 export default {
     props: {
         modelValue: { type: Object, default: () => {} },
+        noSelect: { type: Boolean, default: false },
+        selectLabel: { type: String, default: '' },
+        columns: { type: Array, default: [] },
     },
     emits: ['update:modelValue'],
     computed: {
@@ -307,6 +348,21 @@ export default {
         },
         setModifierSettings(modifier, settings) {
             this.modifiers = { ...this.modifiers, [modifier]: { ...this.modifiers[modifier], ...settings } };
+        },
+        toggleSelect(value) {
+            this.modifiers = value
+                ? { ...this.modifiers, select: { mode: 'minimal' } }
+                : {
+                      ...this.modifiers,
+                      select: false,
+                      count: false,
+                      order: false,
+                      limit: false,
+                      range: false,
+                      single: false,
+                      maybeSingle: false,
+                      csv: false,
+                  };
         },
     },
 };
