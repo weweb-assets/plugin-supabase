@@ -129,13 +129,18 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
-    async insert({ table, data: payload = {}, autoSync = true, modifiers = {} }, wwUtils) {
+    async insert(
+        { table, data: payload = {}, autoSync = true, mode = 'single', modifiers = {}, defaultToNull = false },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
 
-        const query = this.instance.from(table).insert([payload], { count: modifiers?.count?.mode });
+        const query = this.instance
+            .from(table)
+            .insert(mode === 'single' ? [payload] : payload, { count: modifiers?.count?.mode, defaultToNull });
         applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 
         const { data, count, error } = await query;
@@ -176,7 +181,16 @@ export default {
         return modifiers?.count ? { count, data } : data;
     },
     async upsert(
-        { table, data: payload = {}, ignoreDuplicates = false, onConflict = [], autoSync = true, modifiers = {} },
+        {
+            table,
+            data: payload = {},
+            ignoreDuplicates = false,
+            onConflict = [],
+            defaultToNull = false,
+            autoSync = true,
+            mode = 'single',
+            modifiers = {},
+        },
         wwUtils
     ) {
         /* wwEditor:start */
@@ -184,9 +198,12 @@ export default {
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: payload });
 
-        const query = this.instance
-            .from(table)
-            .upsert(payload, { count: modifiers?.count?.mode, ignoreDuplicates, onConflict: onConflict.join(',') });
+        const query = this.instance.from(table).upsert(mode === 'single' ? [payload] : payload, {
+            count: modifiers?.count?.mode,
+            ignoreDuplicates,
+            onConflict: onConflict.join(','),
+            defaultToNull,
+        });
 
         applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
 

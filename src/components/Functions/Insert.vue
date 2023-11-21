@@ -14,27 +14,49 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <template v-if="table">
+        <wwEditorFormRow label="Insert mode">
+            <wwEditorInputRadio
+                :model-value="mode"
+                :choices="[
+                    { label: 'Single', value: 'single', default: true },
+                    { label: 'Multiple', value: 'multiple' },
+                ]"
+                small
+                @update:modelValue="setArgs({ mode: $event, dataFields: [], data: $event === 'single' ? {} : [] })"
+            />
+        </wwEditorFormRow>
         <wwEditorInputRow
-            label="Fields"
-            type="select"
-            required
-            multiple
-            :options="tablePropertiesOptions"
-            :model-value="dataFields"
-            placeholder="All fields"
-            @update:modelValue="setDataFields"
-        />
-        <wwEditorInputRow
-            v-for="property of tablePropertiesFiltered"
-            :key="property.name"
-            :label="property.name"
-            :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
-            :type="property.type"
-            :required="property.required"
-            :model-value="data[property.name]"
-            @update:modelValue="setData({ ...data, [property.name]: $event })"
+            v-if="mode === 'multiple'"
+            label="Rows"
+            type="code"
             bindable
-        />
+            required
+            :model-value="data"
+            @update:modelValue="setData"
+        ></wwEditorInputRow>
+        <template v-else>
+            <wwEditorInputRow
+                label="Fields"
+                type="select"
+                required
+                multiple
+                :options="tablePropertiesOptions"
+                :model-value="dataFields"
+                placeholder="All fields"
+                @update:modelValue="setDataFields"
+            />
+            <wwEditorInputRow
+                v-for="property of tablePropertiesFiltered"
+                :key="property.name"
+                :label="property.name"
+                :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
+                :type="property.type"
+                :required="property.required"
+                :model-value="data[property.name]"
+                @update:modelValue="setData({ ...data, [property.name]: $event })"
+                bindable
+            />
+        </template>
     </template>
     <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
@@ -43,6 +65,18 @@
         </template>
         <template #content>
             <div class="mt-3">
+                <div class="flex items-center mb-2">
+                    <wwEditorInputSwitch
+                        :model-value="defaultToNull"
+                        @update:modelValue="setArgs({ defaultToNull: $event })"
+                    />
+                    <div class="label-3 ml-2">Default to null</div>
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        forced-content="Make missing fields default to `null`. Otherwise, use the default value for the column. Only applies for multiple inserts."
+                        class="ml-auto"
+                    />
+                </div>
                 <QueryModifiers
                     :model-value="modifiers"
                     @update:modelValue="setArgs({ modifiers: $event })"
@@ -92,6 +126,12 @@ export default {
         },
         autoSync() {
             return this.args.autoSync ?? true;
+        },
+        mode() {
+            return this.args.mode ?? 'single';
+        },
+        ignoreDuplicates() {
+            return this.args.ignoreDuplicates ?? false;
         },
         modifiers() {
             return {
@@ -159,13 +199,15 @@ export default {
             this.$nextTick(() => this.setData({ ...this.data }));
         },
         setData(data) {
-            for (const dataKey in data) {
-                if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
-                    delete data[dataKey];
+            if (this.mode === 'single') {
+                for (const dataKey in data) {
+                    if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
+                        delete data[dataKey];
+                    }
                 }
-            }
-            for (const field of this.tablePropertiesFiltered) {
-                if (!data[field.name]) delete data[field.name];
+                for (const field of this.tablePropertiesFiltered) {
+                    if (!data[field.name]) delete data[field.name];
+                }
             }
             this.$emit('update:args', { ...this.args, data });
         },
