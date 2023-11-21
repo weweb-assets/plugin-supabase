@@ -30,10 +30,9 @@
             label="Rows"
             type="array"
             bindable
-            required
             :model-value="data"
             @update:modelValue="setData"
-            @add-item="setData([...data, { wwtype: 'f', code: '{}' }])"
+            @add-item="setData([...data, { wwtype: 'f', code: null }])"
         >
             <template #default="{ item, setItem }">
                 <wwEditorInputRow
