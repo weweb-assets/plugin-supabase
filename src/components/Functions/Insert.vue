@@ -28,12 +28,25 @@
         <wwEditorInputRow
             v-if="mode === 'multiple'"
             label="Rows"
-            type="code"
+            type="array"
             bindable
             required
             :model-value="data"
             @update:modelValue="setData"
-        ></wwEditorInputRow>
+            @add-item="setData([...data, { wwtype: 'f', code: '{}' }])"
+        >
+            <template #default="{ item, setItem }">
+                <wwEditorInputRow
+                    type="query"
+                    :model-value="item.key"
+                    label="Row"
+                    placeholder="Bind an object"
+                    small
+                    bindable
+                    @update:modelValue="setItem"
+                />
+            </template>
+        </wwEditorInputRow>
         <template v-else>
             <wwEditorInputRow
                 label="Fields"
