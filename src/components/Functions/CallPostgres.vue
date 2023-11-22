@@ -44,7 +44,7 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <QueryModifiers :model-value="modifiers" @update:modelValue="setArgs('modifiers', $event)" noSelect />
+                <QueryModifiers :model-value="modifiers" @update:modelValue="setArgs('modifiers', $event)" />
             </div>
         </template>
     </Expandable>

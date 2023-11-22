@@ -123,7 +123,7 @@ export default {
             .from(table)
             .select(fields || undefined, { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly });
         applyFilters(query, filters);
-        applyModifiers(query, modifier);
+        applyModifiers(query, modifiers);
         const { data, count, error } = await query;
 
         if (error) throw new Error(error.message, { cause: error });
@@ -141,7 +141,12 @@ export default {
         const query = this.instance
             .from(table)
             .insert(mode === 'single' ? [payload] : payload, { count: modifiers?.count?.mode, defaultToNull });
-        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+            maybeSingle: mode === 'single',
+        });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
@@ -173,7 +178,12 @@ export default {
         const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode });
         if (mode === 'primary') query.match(primaryData);
         else applyFilters(query, filters);
-        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+            maybeSingle: mode === 'single',
+        });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
@@ -205,7 +215,11 @@ export default {
             defaultToNull,
         });
 
-        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+            maybeSingle: mode === 'single',
+        });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
@@ -227,9 +241,16 @@ export default {
         });
 
         const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
+
         if (mode === 'primary') query.match(primaryData);
         else applyFilters(query, filters);
-        applyModifiers(query, { select: { mode: 'guided', fields: [] }, maybeSingle: true, ...modifiers });
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+            maybeSingle: mode === 'single',
+        });
+
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'DELETE', data);

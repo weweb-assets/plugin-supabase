@@ -119,10 +119,11 @@
                     />
                 </div>
                 <QueryModifiers
-                    :model-value="modifiers"
-                    @update:modelValue="setArgs({ modifiers: $event })"
+                    type="UPSERT"
                     selectLabel="Return upserted rows"
                     :columns="tablePropertiesOptions"
+                    :model-value="modifiers"
+                    @update:modelValue="setArgs({ modifiers: $event })"
                 />
                 <div class="flex items-center mb-2" :class="{ 'text-stale-400': lockedAutoSync }">
                     <wwEditorInputSwitch
@@ -130,7 +131,7 @@
                         @update:modelValue="setArgs({ autoSync: $event })"
                         :disabled="lockedAutoSync"
                     />
-                    <div class="label-3 ml-2">Auto update the related collections</div>
+                    <div class="label-3 ml-2">Auto update collections using {{ table }} table</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
@@ -232,7 +233,7 @@ export default {
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false, maybeSingle: false } });
+        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
     },
     methods: {
         setTable(table) {

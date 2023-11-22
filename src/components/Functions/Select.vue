@@ -46,7 +46,7 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" noSelect />
+                <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" />
             </div>
         </template>
     </Expandable>
