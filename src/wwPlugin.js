@@ -265,11 +265,19 @@ export default {
             { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly }
         );
         applyModifiers(query, modifiers);
+        wwUtils?.log('info', `[Supabase] Call a Postgres function - ${functionName}`, {
+            type: 'request',
+            preview: params,
+        });
         const { data, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
     async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }) {
+        wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
+            type: 'request',
+            preview: { body, headers, method },
+        });
         const { data, error } = await this.instance.functions.invoke(functionName, {
             body,
             headers: Array.isArray(headers)
