@@ -22,7 +22,13 @@
                     { label: 'Multiple', value: 'multiple' },
                 ]"
                 small
-                @update:modelValue="setArgs({ mode: $event, dataFields: [], data: $event === 'single' ? {} : [] })"
+                @update:modelValue="
+                    setArgs({
+                        mode: $event,
+                        dataFields: [],
+                        data: $event === 'single' ? {} : { __wwtype: 'f', code: null },
+                    })
+                "
             />
         </wwEditorFormRow>
         <wwEditorInputRow
@@ -32,7 +38,7 @@
             bindable
             :model-value="data"
             @update:modelValue="setData"
-            @add-item="setData([...data, { wwtype: 'f', code: null }])"
+            @add-item="setData([...data, { __wwtype: 'f', code: null }])"
         >
             <template #default="{ item, setItem }">
                 <wwEditorInputRow

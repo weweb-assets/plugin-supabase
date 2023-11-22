@@ -20,7 +20,7 @@
                         { label: 'Advanced', value: 'advanced' },
                     ]"
                     small
-                    @update:modelValue="setModifierSettings('select', { mode: $event })"
+                    @update:modelValue="setModifierSettings('select', { mode: $event, fields: [], advanced: '' })"
                 />
                 <wwEditorInput
                     v-if="modifiers?.select.mode === 'guided'"

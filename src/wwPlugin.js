@@ -86,6 +86,31 @@ export default {
                 .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
                 .subscribe();
         }
+
+        // Experimental
+        const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
+            collection =>
+                collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
+                Object.keys(realtimeTables).includes(collection.config.table)
+        );
+        for (const collection of collections) {
+            this.instance
+                .channel('public:' + collection.id)
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: collection.config.table,
+                        filter: generateFilter(collection.filter),
+                    },
+                    event => this.onCollectionUpdate(collection.id, event)
+                )
+                .subscribe();
+        }
+    },
+    onCollectionUpdate(collectionId, event) {
+        console.log(collectionId, event);
     },
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
