@@ -38,30 +38,15 @@
             @update:modelValue="setDataFieldsAdvanced"
         />
     </wwEditorFormRow>
-    <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
+    <QueryFilters :model-value="filters" @update:modelValue="setFilters" />
+    <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
             <div class="ml-1 label-sm">Options</div>
         </template>
         <template #content>
             <div class="mt-3">
-                <wwEditorInputRow
-                    label="Get count"
-                    type="select"
-                    placeholder="None"
-                    :model-value="countMode"
-                    :options="[
-                        { label: 'None', value: null },
-                        { label: 'Exact', value: 'exact' },
-                        { label: 'Planned', value: 'planned' },
-                        { label: 'Estimated', value: 'estimated' },
-                    ]"
-                    @update:modelValue="setCountMode"
-                />
-                <div class="flex items-center mt-2" v-if="countMode">
-                    <wwEditorInputSwitch :model-value="countOnly" @update:modelValue="setCountOnly" />
-                    <div class="label-3 ml-2">Count only</div>
-                </div>
+                <QueryModifiers :model-value="modifiers" @update:modelValue="setModifiers" />
             </div>
         </template>
     </Expandable>
@@ -70,9 +55,11 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryFilters from '../Utils/QueryFilters.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryFilters, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
@@ -93,12 +80,6 @@ export default {
         table() {
             return this.args.table;
         },
-        countMode() {
-            return this.args.countMode || null;
-        },
-        countOnly() {
-            return this.args.countOnly || false;
-        },
         fieldsMode() {
             return this.args.fieldsMode;
         },
@@ -107,6 +88,12 @@ export default {
         },
         dataFieldsAdvanced() {
             return this.args.dataFieldsAdvanced;
+        },
+        filters() {
+            return this.args.filters;
+        },
+        modifiers() {
+            return this.args.modifiers;
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
@@ -141,12 +128,6 @@ export default {
         setTable(table) {
             this.$emit('update:args', { ...this.args, table, dataFields: [], dataFieldsAdvanced: '' });
         },
-        setCountMode(countMode) {
-            this.$emit('update:args', { ...this.args, countMode });
-        },
-        setCountOnly(countOnly) {
-            this.$emit('update:args', { ...this.args, countOnly });
-        },
         setFieldsMode(fieldsMode) {
             this.$emit('update:args', { ...this.args, fieldsMode });
         },
@@ -155,6 +136,12 @@ export default {
         },
         setDataFieldsAdvanced(dataFieldsAdvanced) {
             this.$emit('update:args', { ...this.args, dataFieldsAdvanced });
+        },
+        setFilters(filters) {
+            this.$emit('update:args', { ...this.args, filters });
+        },
+        setModifiers(modifiers) {
+            this.$emit('update:args', { ...this.args, modifiers });
         },
         async fetchTables() {
             try {
