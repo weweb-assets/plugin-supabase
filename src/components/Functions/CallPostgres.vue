@@ -37,30 +37,14 @@
             />
         </template>
     </wwEditorInputRow>
-    <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
+    <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
             <div class="ml-1 label-sm">Options</div>
         </template>
         <template #content>
             <div class="mt-3">
-                <wwEditorInputRow
-                    label="Get count"
-                    type="select"
-                    placeholder="None"
-                    :model-value="countMode"
-                    :options="[
-                        { label: 'None', value: null },
-                        { label: 'Exact', value: 'exact' },
-                        { label: 'Planned', value: 'planned' },
-                        { label: 'Estimated', value: 'estimated' },
-                    ]"
-                    @update:modelValue="setArgs({ countMode: $event })"
-                />
-                <div class="flex items-center mt-2" v-if="countMode">
-                    <wwEditorInputSwitch :model-value="countOnly" @update:modelValue="setArgs({ countOnly: $event })" />
-                    <div class="label-3 ml-2">Count only</div>
-                </div>
+                <QueryModifiers :model-value="modifiers" @update:modelValue="setArgs('modifiers', $event)" />
             </div>
         </template>
     </Expandable>
@@ -69,9 +53,10 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
@@ -90,11 +75,8 @@ export default {
         params() {
             return this.args.params || [];
         },
-        countMode() {
-            return this.args.countMode || null;
-        },
-        countOnly() {
-            return this.args.countOnly || false;
+        modifiers() {
+            return this.args.modifiers;
         },
     },
     methods: {

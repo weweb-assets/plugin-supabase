@@ -14,27 +14,67 @@
         <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
     </div>
     <template v-if="table">
+        <wwEditorFormRow label="Insert mode">
+            <wwEditorInputRadio
+                :model-value="mode"
+                :choices="[
+                    { label: 'Single', value: 'single', default: true },
+                    { label: 'Multiple', value: 'multiple' },
+                ]"
+                small
+                @update:modelValue="
+                    setArgs({
+                        mode: $event,
+                        dataFields: [],
+                        data: $event === 'single' ? {} : { __wwtype: 'f', code: null },
+                    })
+                "
+            />
+        </wwEditorFormRow>
         <wwEditorInputRow
-            label="Fields"
-            type="select"
-            required
-            multiple
-            :options="tablePropertiesOptions"
-            :model-value="dataFields"
-            placeholder="All fields"
-            @update:modelValue="setDataFields"
-        />
-        <wwEditorInputRow
-            v-for="property of tablePropertiesFiltered"
-            :key="property.name"
-            :label="property.name"
-            :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
-            :type="property.type"
-            :required="property.required"
-            :model-value="data[property.name]"
-            @update:modelValue="setData({ ...data, [property.name]: $event })"
+            v-if="mode === 'multiple'"
+            label="Rows"
+            type="array"
             bindable
-        />
+            :model-value="data"
+            @update:modelValue="setData"
+            @add-item="setData([...data, { __wwtype: 'f', code: null }])"
+        >
+            <template #default="{ item, setItem }">
+                <wwEditorInputRow
+                    type="query"
+                    :model-value="item.key"
+                    label="Row"
+                    placeholder="Bind an object"
+                    small
+                    bindable
+                    @update:modelValue="setItem"
+                />
+            </template>
+        </wwEditorInputRow>
+        <template v-else>
+            <wwEditorInputRow
+                label="Fields"
+                type="select"
+                required
+                multiple
+                :options="tablePropertiesOptions"
+                :model-value="dataFields"
+                placeholder="All fields"
+                @update:modelValue="setDataFields"
+            />
+            <wwEditorInputRow
+                v-for="property of tablePropertiesFiltered"
+                :key="property.name"
+                :label="property.name"
+                :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
+                :type="property.type"
+                :required="property.required"
+                :model-value="data[property.name]"
+                @update:modelValue="setData({ ...data, [property.name]: $event })"
+                bindable
+            />
+        </template>
     </template>
     <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
@@ -43,74 +83,39 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <div class="flex items-center mb-3">
+                <div class="flex items-center mb-2" :class="{ 'text-stale-400': mode !== 'multiple' }">
                     <wwEditorInputSwitch
-                        :model-value="returnData"
-                        @update:modelValue="setArgs({ returnData: $event })"
+                        :model-value="defaultToNull"
+                        @update:modelValue="setArgs({ defaultToNull: $event })"
+                        :disabled="mode !== 'multiple'"
                     />
-                    <div class="label-3 ml-2">Return data</div>
+                    <div class="label-3 ml-2">Default to null</div>
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        forced-content="Make missing fields default to `null`. Otherwise, use the default value for the column. Only applies for multiple inserts."
+                        class="ml-auto"
+                    />
                 </div>
-                <template v-if="returnData">
-                    <wwEditorFormRow label="Returned fields">
-                        <wwEditorInputRadio
-                            :class="{ 'mb-2': returnFieldsMode !== 'minimal' }"
-                            :model-value="returnFieldsMode"
-                            :choices="fieldsModeChoices"
-                            small
-                            @update:modelValue="setArgs({ returnFieldsMode: $event })"
-                        />
-                        <wwEditorInput
-                            v-if="returnFieldsMode === 'guided'"
-                            type="select"
-                            multiple
-                            :options="tablePropertiesOptions"
-                            :model-value="returnDataFields"
-                            placeholder="All fields"
-                            @update:modelValue="setArgs({ returnDataFields: $event })"
-                        />
-                        <wwEditorInput
-                            v-else-if="returnFieldsMode === 'advanced'"
-                            type="string"
-                            :model-value="returnDataFieldsAdvanced"
-                            placeholder="column, linkedColumn(column)"
-                            @update:modelValue="setArgs({ returnDataFieldsAdvanced: $event })"
-                        />
-                    </wwEditorFormRow>
-                    <wwEditorFormRow label="Get count">
-                        <div class="flex">
-                            <wwEditorInput
-                                type="select"
-                                placeholder="None"
-                                :model-value="countMode"
-                                :options="[
-                                    { label: 'None', value: null },
-                                    { label: 'Exact', value: 'exact' },
-                                    { label: 'Planned', value: 'planned' },
-                                    { label: 'Estimated', value: 'estimated' },
-                                ]"
-                                @update:modelValue="setArgs({ countMode: $event })"
-                            />
-                            <wwEditorQuestionMark
-                                tooltip-position="top-left"
-                                forced-content="Count algorithm to use to count impacted rows. `exact`: Exact but slow count algorithm. Performs a 'COUNT(*)' under the hood. `planned`: Approximated but fast count algorithm. Uses the Postgres statistics under the hood. `estimated`: Uses exact count for low numbers and planned count for high numbers."
-                                class="ml-2"
-                            />
-                        </div>
-                    </wwEditorFormRow>
-                    <div class="flex items-center mb-3">
-                        <wwEditorInputSwitch
-                            :model-value="isRealtime || autoSync"
-                            @update:modelValue="setArgs({ autoSync: $event })"
-                            :disabled="isRealtime"
-                        />
-                        <div class="label-3 ml-2">Auto update the related collections</div>
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
-                            class="ml-auto"
-                        />
-                    </div>
-                </template>
+                <QueryModifiers
+                    type="INSERT"
+                    selectLabel="Return inserted rows"
+                    :columns="tablePropertiesOptions"
+                    :model-value="modifiers"
+                    @update:modelValue="setArgs({ modifiers: $event })"
+                />
+                <div class="flex items-center mb-2" :class="{ 'text-stale-400': lockedAutoSync }">
+                    <wwEditorInputSwitch
+                        :model-value="isRealtime || (autoSync && modifiers.select && !modifiers.csv)"
+                        @update:modelValue="setArgs({ autoSync: $event })"
+                        :disabled="lockedAutoSync"
+                    />
+                    <div class="label-3 ml-2">Auto update collections using {{ table }} table</div>
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
+                        class="ml-auto"
+                    />
+                </div>
             </div>
         </template>
     </Expandable>
@@ -119,9 +124,10 @@
 
 <script>
 import Expandable from '../Utils/Expandable.vue';
+import QueryModifiers from '../Utils/QueryModifiers.vue';
 
 export default {
-    components: { Expandable },
+    components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -132,34 +138,28 @@ export default {
             isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
-            fieldsModeChoices: [
-                { label: 'Minimal', value: 'minimal', default: true },
-                { label: 'Guided', value: 'guided' },
-                { label: 'Advanced', value: 'advanced' },
-            ],
         };
     },
     computed: {
         table() {
             return this.args.table;
         },
-        countMode() {
-            return this.args.countMode || null;
-        },
-        returnData() {
-            return this.args.returnData === undefined ? true : this.args.returnData;
-        },
         autoSync() {
-            return this.args.autoSync === undefined ? true : this.args.autoSync;
+            return this.args.autoSync ?? true;
         },
-        returnFieldsMode() {
-            return this.args.returnFieldsMode || 'guided';
+        mode() {
+            return this.args.mode ?? 'single';
         },
-        returnDataFields() {
-            return this.args.returnDataFields || [];
+        defaultToNull() {
+            return this.mode === 'multiple' ? this.args.defaultToNull : false;
         },
-        returnDataFieldsAdvanced() {
-            return this.args.returnDataFieldsAdvanced;
+        modifiers() {
+            return {
+                // Support legacy config
+                select: { mode: 'guided', fields: [] },
+                maybeSingle: true,
+                ...(this.args.modifiers || {}),
+            };
         },
         dataFields() {
             return this.args.dataFields || [];
@@ -199,10 +199,13 @@ export default {
                 value: property.name,
             }));
         },
+        lockedAutoSync() {
+            return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
+        },
     },
     mounted() {
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
-        if (!this.args.table) this.setArgs({ autoSync: false, returnData: false, returnFieldsMode: 'minimal' });
+        if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
     },
     methods: {
         setTable(table) {
@@ -216,13 +219,15 @@ export default {
             this.$nextTick(() => this.setData({ ...this.data }));
         },
         setData(data) {
-            for (const dataKey in data) {
-                if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
-                    delete data[dataKey];
+            if (this.mode === 'single') {
+                for (const dataKey in data) {
+                    if (!this.tablePropertiesFiltered.find(field => field.name === dataKey)) {
+                        delete data[dataKey];
+                    }
                 }
-            }
-            for (const field of this.tablePropertiesFiltered) {
-                if (!data[field.name]) delete data[field.name];
+                for (const field of this.tablePropertiesFiltered) {
+                    if (!data[field.name]) delete data[field.name];
+                }
             }
             this.$emit('update:args', { ...this.args, data });
         },
