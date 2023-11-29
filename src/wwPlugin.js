@@ -5,11 +5,12 @@ import './components/Realtime/SettingsEdit.vue';
 import './components/Realtime/SettingsSummary.vue';
 import './components/Collection/CollectionEdit.vue';
 import './components/Collection/CollectionSummary.vue';
-import './components/Functions/Select.vue';
-import './components/Functions/Insert.vue';
-import './components/Functions/Update.vue';
-import './components/Functions/Upsert.vue';
-import './components/Functions/Delete.vue';
+import './components/Functions/Database/Select.vue';
+import './components/Functions/Database/Insert.vue';
+import './components/Functions/Database/Update.vue';
+import './components/Functions/Database/Upsert.vue';
+import './components/Functions/Database/Delete.vue';
+import './components/Functions/Storage/CreateSignedUrl.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -317,6 +318,28 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         }
+        return data;
+    },
+    async createSignedUrl({ bucket, path, expiresIn, options }) {
+        const query = supabase.storage.from(bucket);
+
+        if (mode === 'single') {
+            query.createSignedUrl(path, expiresIn, {
+                download: options.download ? options.download.filename || true : false,
+                transform: options.transform
+                    ? {
+                          width: options.transform.width,
+                          height: options.transform.height,
+                      }
+                    : null,
+            });
+        } else {
+            query.createSignedUrls(path, expiresIn, {
+                download: options.download ? options.download.filename || true : false,
+            });
+        }
+        const { data, error } = await query;
+        if (error) throw new Error(error.message, { cause: error });
         return data;
     },
     onSubscribe(payload) {

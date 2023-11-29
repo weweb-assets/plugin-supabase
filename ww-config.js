@@ -89,7 +89,7 @@ export default {
             parameters: [],
             isAsync: true,
             /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Select.vue'),
+            edit: () => import('./src/components/Functions/Database/Select.vue'),
             /* wwEditor:end */
         },
         {
@@ -98,7 +98,7 @@ export default {
             parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Insert.vue'),
+            edit: () => import('./src/components/Functions/Database/Insert.vue'),
             /* wwEditor:end */
         },
         {
@@ -110,7 +110,7 @@ export default {
             ],
             isAsync: true,
             /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Update.vue'),
+            edit: () => import('./src/components/Functions/Database/Update.vue'),
             /* wwEditor:end */
         },
         {
@@ -119,7 +119,7 @@ export default {
             parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Upsert.vue'),
+            edit: () => import('./src/components/Functions/Database/Upsert.vue'),
             /* wwEditor:end */
         },
         {
@@ -128,7 +128,7 @@ export default {
             parameters: [{ name: 'primaryData', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Delete.vue'),
+            edit: () => import('./src/components/Functions/Database/Delete.vue'),
             /* wwEditor:end */
         },
         {
@@ -151,6 +151,17 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/InvokeEdge.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Create signed URL',
+            code: 'createSignedUrl',
+            getIsValid({ bucket, path, expiresIn }) {
+                return !!bucket && !!path && !!expiresIn;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
             /* wwEditor:end */
         },
     ],
