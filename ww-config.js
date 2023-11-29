@@ -84,7 +84,7 @@ export default {
     },
     actions: [
         {
-            name: 'Select',
+            name: 'Database | Select',
             code: 'select',
             parameters: [],
             isAsync: true,
@@ -93,7 +93,7 @@ export default {
             /* wwEditor:end */
         },
         {
-            name: 'Insert',
+            name: 'Database | Insert',
             code: 'insert',
             parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
@@ -102,7 +102,7 @@ export default {
             /* wwEditor:end */
         },
         {
-            name: 'Update',
+            name: 'Database | Update',
             code: 'update',
             parameters: [
                 { name: 'primaryData', type: 'object' },
@@ -114,7 +114,7 @@ export default {
             /* wwEditor:end */
         },
         {
-            name: 'Upsert',
+            name: 'Database | Upsert',
             code: 'upsert',
             parameters: [{ name: 'data', type: 'object' }],
             isAsync: true,
@@ -123,12 +123,23 @@ export default {
             /* wwEditor:end */
         },
         {
-            name: 'Delete',
+            name: 'Database | Delete',
             code: 'delete',
             parameters: [{ name: 'primaryData', type: 'object' }],
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Delete.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Create signed URL',
+            code: 'createSignedUrl',
+            getIsValid({ bucket, path, expiresIn }) {
+                return !!bucket && !!path && !!expiresIn;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
             /* wwEditor:end */
         },
         {
@@ -151,17 +162,6 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/InvokeEdge.vue'),
-            /* wwEditor:end */
-        },
-        {
-            name: 'Create signed URL',
-            code: 'createSignedUrl',
-            getIsValid({ bucket, path, expiresIn }) {
-                return !!bucket && !!path && !!expiresIn;
-            },
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
             /* wwEditor:end */
         },
     ],

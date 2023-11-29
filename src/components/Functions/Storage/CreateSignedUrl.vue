@@ -33,7 +33,7 @@
         bindable
         :model-value="path"
         @update:modelValue="setArgs({ path: $event })"
-        @add-item="setArgs([...path, ''])"
+        @add-item="setArgs({ path: [...path, ''] })"
     >
         <template #default="{ item, setItem }">
             <wwEditorInputRow
