@@ -54,9 +54,9 @@
 </template>
 
 <script>
-import Expandable from '../Utils/Expandable.vue';
-import QueryFilters from '../Utils/QueryFilters.vue';
-import QueryModifiers from '../Utils/QueryModifiers.vue';
+import Expandable from '../../Utils/Expandable.vue';
+import QueryFilters from '../../Utils/QueryFilters.vue';
+import QueryModifiers from '../../Utils/QueryModifiers.vue';
 
 export default {
     components: { Expandable, QueryFilters, QueryModifiers },

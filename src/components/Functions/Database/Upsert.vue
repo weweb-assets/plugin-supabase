@@ -152,8 +152,8 @@
 </template>
 
 <script>
-import Expandable from '../Utils/Expandable.vue';
-import QueryModifiers from '../Utils/QueryModifiers.vue';
+import Expandable from '../../Utils/Expandable.vue';
+import QueryModifiers from '../../Utils/QueryModifiers.vue';
 
 export default {
     components: { Expandable, QueryModifiers },

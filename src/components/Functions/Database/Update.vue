@@ -99,9 +99,9 @@
 </template>
 
 <script>
-import Expandable from '../Utils/Expandable.vue';
-import QueryModifiers from '../Utils/QueryModifiers.vue';
-import QueryFilters from '../Utils/QueryFilters.vue';
+import Expandable from '../../Utils/Expandable.vue';
+import QueryModifiers from '../../Utils/QueryModifiers.vue';
+import QueryFilters from '../../Utils/QueryFilters.vue';
 
 export default {
     components: { Expandable, QueryModifiers, QueryFilters },
