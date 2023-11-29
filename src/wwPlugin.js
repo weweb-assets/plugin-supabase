@@ -47,7 +47,9 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' });
+                let query = this.instance
+                    .from(collection.config.table)
+                    .select(fields || undefined, { count: collection.limit ? 'exact' : null });
                 const filter = generateFilter(collection.filter);
 
                 if (filter) query.or(filter);
@@ -61,7 +63,7 @@ export default {
                 }
 
                 const { data, error, count } = await query;
-                return { data, error, total: count };
+                return { data, error, total: count ?? data?.length };
             } catch (err) {
                 return {
                     data: [],
@@ -113,7 +115,7 @@ export default {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Selecting ${table}`,  { type: 'request' });
+        wwUtils?.log('info', `[Supabase] Selecting ${table}`, { type: 'request' });
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
         const { data: result, error } = await this.instance.from(table).select(fields || undefined);
         if (error) throw new Error(error.message, { cause: error });
