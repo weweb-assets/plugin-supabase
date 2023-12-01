@@ -237,7 +237,7 @@ export default {
         const query = this.instance.from(table).upsert(mode === 'single' ? [payload] : payload, {
             count: modifiers?.count?.mode,
             ignoreDuplicates,
-            onConflict: onConflict.join(','),
+            ...(onConflict.length ? { onConflict: onConflict.join(',') } : null),
             defaultToNull,
         });
 
