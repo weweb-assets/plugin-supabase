@@ -180,15 +180,7 @@ export default {
         return modifiers?.count ? { count, data } : data;
     },
     async update(
-        {
-            table,
-            primaryData = {},
-            data: payload = {},
-            autoSync = true,
-            mode = 'primary',
-            filters = [],
-            modifiers = {},
-        },
+        { table, primaryData = {}, data: payload = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} },
         wwUtils
     ) {
         /* wwEditor:start */

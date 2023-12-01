@@ -18,15 +18,15 @@
             <wwEditorInputRadio
                 :model-value="mode"
                 :choices="[
-                    { label: 'Primary keys', value: 'primary', default: true },
-                    { label: 'Custom filters', value: 'filters' },
+                    { label: 'Primary keys', value: 'single', default: true },
+                    { label: 'Custom filters', value: 'multiple' },
                 ]"
                 small
                 @update:modelValue="setArgs({ mode: $event })"
             />
         </wwEditorFormRow>
         <QueryFilters
-            v-if="mode === 'filters'"
+            v-if="mode === 'multiple'"
             :model-value="filters"
             @update:modelValue="setArgs({ filters: $event })"
         />
@@ -104,7 +104,7 @@ export default {
             return this.args.autoSync ?? true;
         },
         mode() {
-            return this.args.mode ?? 'primary';
+            return this.args.mode ?? 'single';
         },
         filters() {
             return this.args.filters || [];

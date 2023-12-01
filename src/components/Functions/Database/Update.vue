@@ -18,15 +18,15 @@
             <wwEditorInputRadio
                 :model-value="mode"
                 :choices="[
-                    { label: 'Primary keys', value: 'primary', default: true },
-                    { label: 'Custom filters', value: 'filters' },
+                    { label: 'Primary keys', value: 'single', default: true },
+                    { label: 'Custom filters', value: 'multiple' },
                 ]"
                 small
                 @update:modelValue="setMode"
             />
         </wwEditorFormRow>
         <QueryFilters
-            v-if="mode === 'filters'"
+            v-if="mode === 'multiple'"
             :model-value="filters"
             @update:modelValue="setArgs({ filters: $event })"
         />
@@ -125,7 +125,7 @@ export default {
             return this.args.autoSync ?? true;
         },
         mode() {
-            return this.args.mode ?? 'primary';
+            return this.args.mode ?? 'single';
         },
         filters() {
             return this.args.filters || [];
@@ -174,7 +174,7 @@ export default {
             }));
         },
         tablePropertiesOptionsFiltered() {
-            return this.tablePropertiesOptions.filter(property => !property.isPrimary || this.mode === 'filters');
+            return this.tablePropertiesOptions.filter(property => !property.isPrimary || this.mode === 'multiple');
         },
         primaryProperties() {
             return this.tableProperties.filter(prop => prop.isPrimary);
@@ -183,7 +183,7 @@ export default {
             return this.tableProperties.filter(
                 property =>
                     (!this.dataFields.length || this.dataFields.includes(property.name)) &&
-                    (!property.isPrimary || this.mode === 'filters')
+                    (!property.isPrimary || this.mode === 'multiple')
             );
         },
         lockedAutoSync() {
