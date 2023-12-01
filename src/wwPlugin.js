@@ -185,8 +185,8 @@ export default {
     ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (mode === 'primary' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
-        if (mode === 'filters' && !filters.length) throw new Error('No filters defined.');
+        if (mode === 'single' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'multiple' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Updating ${table}`, {
             type: 'request',
@@ -194,7 +194,7 @@ export default {
         });
 
         const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode });
-        if (mode === 'primary') query.match(primaryData);
+        if (mode === 'single') query.match(primaryData);
         else applyFilters(query, filters);
 
         applyModifiers(query, {
@@ -244,18 +244,15 @@ export default {
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
         return modifiers?.count ? { count, data } : data;
     },
-    async delete(
-        { table, primaryData = {}, autoSync = true, mode = 'primary', filters = [], modifiers = {} },
-        wwUtils
-    ) {
+    async delete({ table, primaryData = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (mode === 'primary' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
-        if (mode === 'filters' && !filters.length) throw new Error('No filters defined.');
+        if (mode === 'single' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'multiple' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Deleting from ${table}`, {
             type: 'request',
-            preview: mode === 'primary' ? primaryData : filters,
+            preview: mode === 'single' ? primaryData : filters,
         });
 
         const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
