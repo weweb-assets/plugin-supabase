@@ -255,7 +255,7 @@ export default {
 
         const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
 
-        if (mode === 'primary') query.match(primaryData);
+        if (mode === 'single') query.match(primaryData);
         else applyFilters(query, filters);
 
         applyModifiers(query, {
