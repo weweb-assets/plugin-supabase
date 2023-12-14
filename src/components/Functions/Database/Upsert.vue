@@ -112,11 +112,10 @@
                         class="ml-auto"
                     />
                 </div>
-                <div class="flex items-center mb-2" :class="{ 'text-stale-400': mode !== 'multiple' }">
+                <div class="flex items-center mb-2">
                     <wwEditorInputSwitch
                         :model-value="defaultToNull"
                         @update:modelValue="setArgs({ defaultToNull: $event })"
-                        :disabled="mode !== 'multiple'"
                     />
                     <div class="label-3 ml-2">Default to null</div>
                     <wwEditorQuestionMark
@@ -183,7 +182,7 @@ export default {
             return this.args.ignoreDuplicates ?? false;
         },
         defaultToNull() {
-            return this.mode === 'multiple' ? this.args.defaultToNull : false;
+            return this.args.defaultToNull ?? true;
         },
         onConflict() {
             return this.args.onConflict ?? [];

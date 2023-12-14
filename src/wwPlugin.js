@@ -156,7 +156,7 @@ export default {
         return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
     async insert(
-        { table, data: payload = {}, autoSync = true, mode = 'single', modifiers = {}, defaultToNull = false },
+        { table, data: payload = {}, autoSync = true, mode = 'single', modifiers = {}, defaultToNull = true },
         wwUtils
     ) {
         /* wwEditor:start */
@@ -164,9 +164,7 @@ export default {
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
 
-        const query = this.instance
-            .from(table)
-            .insert(mode === 'single' ? [payload] : payload, { count: modifiers?.count?.mode, defaultToNull });
+        const query = this.instance.from(table).insert(payload, { count: modifiers?.count?.mode, defaultToNull });
 
         applyModifiers(query, {
             select: { mode: 'guided', fields: [] },
@@ -214,7 +212,7 @@ export default {
             data: payload = {},
             ignoreDuplicates = false,
             onConflict = [],
-            defaultToNull = false,
+            defaultToNull = true,
             autoSync = true,
             mode = 'single',
             modifiers = {},
@@ -226,7 +224,7 @@ export default {
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: payload });
 
-        const query = this.instance.from(table).upsert(mode === 'single' ? [payload] : payload, {
+        const query = this.instance.from(table).upsert(payload, {
             count: modifiers?.count?.mode,
             ignoreDuplicates,
             ...(onConflict.length ? { onConflict: onConflict.join(',') } : null),
