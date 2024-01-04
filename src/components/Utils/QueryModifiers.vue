@@ -20,7 +20,13 @@
                         { label: 'Advanced', value: 'advanced' },
                     ]"
                     small
-                    @update:modelValue="setModifierSettings('select', { mode: $event, fields: [], advanced: '' })"
+                    @update:modelValue="
+                        setModifierSettings('select', {
+                            mode: $event,
+                            fields: modifiers?.select.fields || [],
+                            advanced: modifiers?.select.advanced || '',
+                        })
+                    "
                 />
                 <wwEditorInput
                     v-if="modifiers?.select.mode === 'guided'"
@@ -281,7 +287,7 @@ using the explain() method. This works on any query, even for rpc() or writes.
 Explain is not enabled by default as it can reveal sensitive information about your database.
 It's best to only enable this for testing environments but if you wish to enable it for production you can provide additional protection by using a pre-request function.  
 
-Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/api/rest/debugging-performance#enabling-explain) to enable the functionality on your project. [See documentation](https://supabase.com/docs/reference/javascript/explain)"
+Follow the [Performance Debugging Guide](https://supabase.com/docs/guides/database/debugging-performance) to enable the functionality on your project. [See documentation](https://supabase.com/docs/reference/javascript/explain)"
             class="ml-auto"
         />
     </div>

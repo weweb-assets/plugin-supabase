@@ -308,7 +308,7 @@ export default {
         return data;
     },
     async createSignedUrl({ bucket, path, expiresIn, options }, wwUtils) {
-        const query = supabase.storage.from(bucket);
+        const query = this.instance.storage.from(bucket);
         wwUtils?.log('info', `[Supabase] Create a signed URL`, {
             type: 'request',
             preview: { bucket, path, expiresIn, options },

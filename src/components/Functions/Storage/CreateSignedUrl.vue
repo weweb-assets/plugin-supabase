@@ -178,7 +178,7 @@ export default {
     components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
-        args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
+        args: { type: Object, default: () => ({}) },
     },
     emits: ['update:args'],
     data() {
@@ -196,6 +196,9 @@ export default {
         },
         path() {
             return this.args.path || '';
+        },
+        expiresIn() {
+            return this.args.expiresIn;
         },
         options() {
             return this.args.options || {};
