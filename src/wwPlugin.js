@@ -269,7 +269,7 @@ export default {
         if (autoSync) this.performAutoSync(table, 'DELETE', data);
         return modifiers?.count ? { count, data } : data;
     },
-    async callPostgresFunction({ functionName, params, modifiers }) {
+    async callPostgresFunction({ functionName, params, modifiers }, wwUtils) {
         const query = this.instance.rpc(
             functionName,
             Array.isArray(params)
@@ -286,7 +286,7 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
-    async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }) {
+    async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
             type: 'request',
             preview: { body, headers, method },
@@ -307,9 +307,12 @@ export default {
         }
         return data;
     },
-    async createSignedUrl({ bucket, path, expiresIn, options }) {
+    async createSignedUrl({ bucket, path, expiresIn, options }, wwUtils) {
         const query = supabase.storage.from(bucket);
-
+        wwUtils?.log('info', `[Supabase] Create a signed URL`, {
+            type: 'request',
+            preview: { bucket, path, expiresIn, options },
+        });
         if (mode === 'single') {
             query.createSignedUrl(path, expiresIn, {
                 download: options.download ? options.download.filename || true : false,
