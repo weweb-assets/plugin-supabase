@@ -26,7 +26,7 @@
                     setArgs({
                         mode: $event,
                         dataFields: [],
-                        data: $event === 'single' ? {} : { __wwtype: 'f', code: null },
+                        data: $event === 'single' ? {} : [],
                     })
                 "
             />
@@ -38,11 +38,11 @@
             bindable
             :binding-validation="{
                 type: 'array',
-                tooltip: 'A array containing multiple objects to insert.',
+                tooltip: 'An array containing multiple objects to insert. `[' + formatHelper + ']`',
             }"
             :model-value="data"
             @update:modelValue="setData"
-            @add-item="setData([...(data || []), { __wwtype: 'f', code: null }])"
+            @add-item="setData([...(Array.isArray(data) ? data : []), { __wwtype: 'f', code: null }])"
         >
             <template #default="{ item, setItem }">
                 <wwEditorInputRow
@@ -52,7 +52,7 @@
                     placeholder="Bind an object"
                     :binding-validation="{
                         type: 'object',
-                        tooltip: 'An object to insert.',
+                        tooltip: 'An object to insert. `[' + formatHelper + ']`',
                     }"
                     small
                     bindable
@@ -208,6 +208,9 @@ export default {
         },
         lockedAutoSync() {
             return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
+        },
+        formatHelper() {
+            return '{ ' + this.tablePropertiesOptions.map(prop => prop.name + ': null ').join(', ') + ' }';
         },
     },
     mounted() {
