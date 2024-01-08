@@ -169,13 +169,12 @@ export default {
         applyModifiers(query, {
             select: { mode: 'guided', fields: [] },
             ...modifiers,
-            maybeSingle: mode === 'single',
         });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'INSERT', data);
-        return modifiers?.count ? { count, data } : data;
+        return this.formatReturn(data, count, mode === 'single');
     },
     async update(
         { table, primaryData = {}, data: payload = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} },
@@ -198,13 +197,12 @@ export default {
         applyModifiers(query, {
             select: { mode: 'guided', fields: [] },
             ...modifiers,
-            maybeSingle: mode === 'single',
         });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'UPDATE', data);
-        return modifiers?.count ? { count, data } : data;
+        return this.formatReturn(data, count, mode === 'single');
     },
     async upsert(
         {
@@ -234,13 +232,12 @@ export default {
         applyModifiers(query, {
             select: { mode: 'guided', fields: [] },
             ...modifiers,
-            maybeSingle: mode === 'single',
         });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
-        return modifiers?.count ? { count, data } : data;
+        return this.formatReturn(data, count, mode === 'single');
     },
     async delete({ table, primaryData = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} }, wwUtils) {
         /* wwEditor:start */
@@ -261,13 +258,12 @@ export default {
         applyModifiers(query, {
             select: { mode: 'guided', fields: [] },
             ...modifiers,
-            maybeSingle: mode === 'single',
         });
 
         const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
         if (autoSync) this.performAutoSync(table, 'DELETE', data);
-        return modifiers?.count ? { count, data } : data;
+        return this.formatReturn(data, count, mode === 'single');
     },
     async callPostgresFunction({ functionName, params, modifiers }, wwUtils) {
         const query = this.instance.rpc(
@@ -282,9 +278,9 @@ export default {
             type: 'request',
             preview: params,
         });
-        const { data, error } = await query;
+        const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        return data;
+        return this.formatReturn(data, count);
     },
     async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
@@ -409,6 +405,10 @@ export default {
         for (const row of rows) {
             this.onSubscribe({ table, eventType: type, [type === 'DELETE' ? 'old' : 'new']: row });
         }
+    },
+    formatReturn(rows, count, single = false) {
+        const data = single && Array.isArray(rows) ? rows[0] || null : rows;
+        return count !== undefined ? { data, count } : data;
     },
     types: {
         integer: 'number',

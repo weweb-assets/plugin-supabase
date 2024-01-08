@@ -113,7 +113,6 @@ export default {
             return {
                 // Support legacy config
                 select: { mode: 'guided', fields: [] },
-                maybeSingle: true,
                 ...(this.args.modifiers || {}),
             };
         },

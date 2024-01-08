@@ -164,7 +164,6 @@ export default {
             return {
                 // Support legacy config
                 select: { mode: 'guided', fields: [] },
-                maybeSingle: true,
                 ...(this.args.modifiers || {}),
             };
         },
@@ -210,7 +209,7 @@ export default {
             return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
         },
         formatHelper() {
-            return '{ ' + this.tablePropertiesOptions.map(prop => prop.value + ': null ').join(', ') + ' }';
+            return '{ ' + this.tablePropertiesOptions.map(prop => prop.value + ': null').join(', ') + ' }';
         },
     },
     mounted() {
