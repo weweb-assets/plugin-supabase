@@ -408,7 +408,7 @@ export default {
     },
     formatReturn(rows, count, single = false) {
         const data = single && Array.isArray(rows) ? rows[0] || null : rows;
-        return count !== undefined ? { data, count } : data;
+        return count !== null ? { data, count } : data;
     },
     types: {
         integer: 'number',
