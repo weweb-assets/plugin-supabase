@@ -36,6 +36,10 @@
             label="Rows"
             type="array"
             bindable
+            :binding-validation="{
+                type: 'array',
+                tooltip: 'A array containing multiple objects to upsert.',
+            }"
             :model-value="data"
             @update:modelValue="setData"
             @add-item="setData([...data, { __wwtype: 'f', code: null }])"
@@ -48,7 +52,12 @@
                     placeholder="Bind an object"
                     small
                     bindable
+                    :binding-validation="{
+                        type: 'object',
+                        tooltip: 'An object to upsert.',
+                    }"
                     @update:modelValue="setItem"
+                    @add-item="setData([...(data || []), { __wwtype: 'f', code: null }])"
                 />
             </template>
         </wwEditorInputRow>

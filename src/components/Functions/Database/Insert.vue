@@ -36,9 +36,13 @@
             label="Rows"
             type="array"
             bindable
+            :binding-validation="{
+                type: 'array',
+                tooltip: 'A array containing multiple objects to insert.',
+            }"
             :model-value="data"
             @update:modelValue="setData"
-            @add-item="setData([...data, { __wwtype: 'f', code: null }])"
+            @add-item="setData([...(data || []), { __wwtype: 'f', code: null }])"
         >
             <template #default="{ item, setItem }">
                 <wwEditorInputRow
@@ -46,6 +50,10 @@
                     :model-value="item.key"
                     label="Row"
                     placeholder="Bind an object"
+                    :binding-validation="{
+                        type: 'object',
+                        tooltip: 'An object to insert.',
+                    }"
                     small
                     bindable
                     @update:modelValue="setItem"

@@ -106,7 +106,7 @@
             <wwEditorInputRow
                 label="Column"
                 type="query"
-                placeholder="Enter a column name"
+                placeholder="column or linkedColumn(column)"
                 bindable
                 small
                 required
