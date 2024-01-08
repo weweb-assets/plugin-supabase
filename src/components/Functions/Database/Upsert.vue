@@ -47,7 +47,7 @@
             <template #default="{ item, setItem }">
                 <wwEditorInputRow
                     type="query"
-                    :model-value="item.key"
+                    :model-value="item"
                     label="Row"
                     placeholder="Bind an object"
                     small
@@ -246,7 +246,7 @@ export default {
             return this.isRealtime || !this.modifiers.select || this.modifiers.csv;
         },
         formatHelper() {
-            return '{ ' + this.tablePropertiesOptions.map(prop => prop.name + ': null ').join(', ') + ' }';
+            return '{ ' + this.tablePropertiesOptions.map(prop => prop.value + ': null ').join(', ') + ' }';
         },
     },
     mounted() {
