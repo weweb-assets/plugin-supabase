@@ -303,14 +303,17 @@ export default {
         }
         return data;
     },
-    async createSignedUrl({ mode, bucket, path, expiresIn, options = { download: false, transform: null } }, wwUtils) {
-        const query = this.instance.storage.from(bucket);
+    async createSignedUrl(
+        { mode = 'single', bucket, path, expiresIn, options = { download: false, transform: null } },
+        wwUtils
+    ) {
+        let query = this.instance.storage.from(bucket);
         wwUtils?.log('info', `[Supabase] Create a signed URL`, {
             type: 'request',
             preview: { bucket, path, expiresIn, options },
         });
         if (mode === 'single') {
-            query.createSignedUrl(path, expiresIn, {
+            query = query.createSignedUrl(path, expiresIn, {
                 download: options.download ? options.download.filename || true : false,
                 transform: options.transform
                     ? {
@@ -320,7 +323,7 @@ export default {
                     : null,
             });
         } else {
-            query.createSignedUrls(path, expiresIn, {
+            query = query.createSignedUrls(path, expiresIn, {
                 download: options.download ? options.download.filename || true : false,
             });
         }
