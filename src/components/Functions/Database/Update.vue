@@ -85,7 +85,7 @@
                         @update:modelValue="setArgs({ autoSync: $event })"
                         :disabled="lockedAutoSync"
                     />
-                    <div class="label-3 ml-2">Auto update collections using {{ table }} table</div>
+                    <div class="label-3 ml-2">Auto update linked collections</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="It will use the returned data to update the collection without performing another request. Always `true` when realtime is enabled on the table but it will use data received from supabase events instead."
@@ -112,7 +112,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
-            isAdvancedOpen: false,
+            isAdvancedOpen: true,
             definitions: {},
             isLoading: false,
         };

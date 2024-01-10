@@ -67,7 +67,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
-            isAdvancedOpen: false,
+            isAdvancedOpen: true,
             definitions: {},
             isLoading: false,
             fieldsModeChoices: [

@@ -183,7 +183,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
-            isAdvancedOpen: false,
+            isAdvancedOpen: true,
             isLoading: false,
         };
     },
