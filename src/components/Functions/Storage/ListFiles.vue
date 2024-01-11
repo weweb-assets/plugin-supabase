@@ -16,14 +16,6 @@
         :model-value="path"
         @update:modelValue="setArgs({ path: $event })"
     />
-    <wwEditorInputRow
-        label="File"
-        type="query"
-        required
-        bindable
-        :model-value="file"
-        @update:modelValue="setArgs({ file: $event })"
-    />
     <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
             <wwEditorIcon class="ww-dropdown__header-icon" name="chevron-right" small />
@@ -33,60 +25,85 @@
             <div class="mt-3">
                 <div class="flex items-center mb-2">
                     <wwEditorInputRow
-                        label="Cache Control"
-                        type="query"
+                        label="Limit"
+                        type="number"
+                        placeholder="100"
                         bindable
                         small
-                        :model-value="options.cacheControl"
-                        @update:modelValue="setOptions('cacheControl', $event)"
+                        :model-value="options.limit"
+                        @update:modelValue="setOptions('limit', $event)"
                     />
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The number of seconds the asset is cached in the browser and in the Supabase CDN. This is set in the `Cache-Control: max-age=<seconds>` header. Defaults to 3600 seconds. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
+                        forced-content="The number of files you want to be returned. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
                     />
                 </div>
 
                 <div class="flex items-center mb-2">
                     <wwEditorInputRow
-                        label="Content Type"
-                        type="query"
+                        label="Offset"
+                        type="number"
+                        placeholder="0"
                         bindable
                         small
-                        :model-value="options.contentType"
-                        @update:modelValue="setOptions('contentType', $event)"
+                        :model-value="options.offset"
+                        @update:modelValue="setOptions('offset', $event)"
                     />
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="the `Content-Type` header value. Should be specified if using a `fileBody` that is neither `Blob` nor `File` nor `FormData`, otherwise will default to `text/plain;charset=UTF-8`. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
+                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
                     />
                 </div>
                 <div class="flex items-center mb-2">
                     <wwEditorInputRow
-                        label="Duplex"
+                        label="Search"
                         type="query"
                         bindable
                         small
-                        :model-value="options.duplex"
-                        @update:modelValue="setOptions('duplex', $event)"
+                        :model-value="options.search"
+                        @update:modelValue="setOptions('search', $event)"
                     />
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The duplex option is a string parameter that enables or disables duplex streaming, allowing for both reading and writing data in the same stream. It can be passed as an option to the fetch() method. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
+                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
                     />
                 </div>
                 <div class="flex items-center mb-2">
                     <wwEditorInputSwitch
-                        :model-value="options.upsert"
-                        @update:modelValue="setOptions('upsert', $event)"
+                        :model-value="options.sortBy"
+                        @update:modelValue="toggleOptions('sortBy', { order: '', limit: '' })"
+                        :disabled="mode === 'multiple'"
                     />
-                    <div class="label-3 ml-2">Upsert</div>
+                    <div class="label-3 ml-2">Sort By</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="When upsert is set to true, the file is overwritten if it exists. When set to false, an error is thrown if the object already exists. Defaults to false. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
+                        forced-content="The column to sort by. Can be any column inside a FileObject. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
+                    />
+                </div>
+                <div
+                    v-if="options.sortBy"
+                    class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0"
+                    style="box-shadow: unset"
+                >
+                    <wwEditorInputRow
+                        label="Column"
+                        type="query"
+                        bindable
+                        small
+                        :model-value="options.sortBy.column"
+                        @update:modelValue="setOptions('sortBy', { column: $event, order: options.sortBy.order })"
+                    />
+                    <wwEditorInputRow
+                        label="Order"
+                        type="query"
+                        bindable
+                        small
+                        :model-value="options.sortBy.order"
+                        @update:modelValue="setOptions('sortBy', { column: options.sortBy.column, order: $event })"
                     />
                 </div>
             </div>
@@ -118,9 +135,6 @@ export default {
         path() {
             return this.args.path || '';
         },
-        file() {
-            return this.args.file;
-        },
         options() {
             return this.args.options || {};
         },
@@ -128,6 +142,12 @@ export default {
     methods: {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
+        },
+        toggleOptions(option, defaultValue) {
+            this.$emit('update:args', {
+                ...this.args,
+                options: { ...this.options, [option]: this.options[option] ? false : defaultValue },
+            });
         },
         setOptions(option, value) {
             this.$emit('update:args', {

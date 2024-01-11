@@ -12,6 +12,7 @@ import './components/Functions/Database/Upsert.vue';
 import './components/Functions/Database/Delete.vue';
 import './components/Functions/Storage/CreateSignedUrl.vue';
 import './components/Functions/Storage/GetPublicUrl.vue';
+import './components/Functions/Storage/ListFiles.vue';
 import './components/Functions/Storage/UploadFile.vue';
 import './components/Functions/Storage/DownloadFile.vue';
 import './components/Functions/Storage/UpdateFile.vue';
@@ -311,6 +312,17 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         }
+        return data;
+    },
+    async listFiles({ bucket, path, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] List all files`, { type: 'request', preview: { bucket, path, options } });
+        const { data, error } = await this.instance.storage.from(bucket).list(path, {
+            ...(options.limit ? { limit: options.limit } : {}),
+            ...(options.offset ? { offset: options.offset } : {}),
+            ...(options.search ? { search: options.search } : {}),
+            ...(options.sortBy ? { sortBy: options.sortBy } : {}),
+        });
+        if (error) throw new Error(error.message, { cause: error });
         return data;
     },
     async uploadFile({ bucket, path, file, options = {} }, wwUtils) {

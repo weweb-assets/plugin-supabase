@@ -132,6 +132,17 @@ export default {
             /* wwEditor:end */
         },
         {
+            name: 'Storage | List all files',
+            code: 'listFiles',
+            getIsValid({ bucket, path }) {
+                return !!bucket && !!path;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/ListFiles.vue'),
+            /* wwEditor:end */
+        },
+        {
             name: 'Storage | Upload a file',
             code: 'uploadFile',
             getIsValid({ bucket, path, file }) {
