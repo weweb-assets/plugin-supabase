@@ -11,6 +11,13 @@ import './components/Functions/Database/Update.vue';
 import './components/Functions/Database/Upsert.vue';
 import './components/Functions/Database/Delete.vue';
 import './components/Functions/Storage/CreateSignedUrl.vue';
+import './components/Functions/Storage/GetPublicUrl.vue';
+import './components/Functions/Storage/UploadFile.vue';
+import './components/Functions/Storage/DownloadFile.vue';
+import './components/Functions/Storage/UpdateFile.vue';
+import './components/Functions/Storage/MoveFile.vue';
+import './components/Functions/Storage/CopyFile.vue';
+import './components/Functions/Storage/DeleteFiles.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -282,12 +289,15 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return this.formatReturn(data, count);
     },
-    async invokeEdgeFunction({ functionName, body, headers = [], method = 'POST' }, wwUtils) {
+    async invokeEdgeFunction({ functionName, body, headers = [], queries = [], method = 'POST' }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
             type: 'request',
             preview: { body, headers, method },
         });
-        const { data, error } = await this.instance.functions.invoke(functionName, {
+        const query = queries.length
+            ? queries.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
+            : '';
+        const { data, error } = await this.instance.functions.invoke(functionName + query, {
             body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
@@ -301,6 +311,61 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         }
+        return data;
+    },
+    async uploadFile({ bucket, path, file, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Upload a file`, {
+            type: 'request',
+            preview: { bucket, path, file, options },
+        });
+        const { data, error } = await this.instance.storage.from(bucket).upload(path, file, {
+            ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
+            ...(options.upsert ? { upsert: options.upsert } : {}),
+            ...(options.contentType ? { contentType: options.contentType } : {}),
+            ...(options.duplex ? { duplex: options.duplex } : {}),
+        });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async downloadFile({ bucket, path, options = { transform: null } }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Download a file`, { type: 'request', preview: { bucket, path, options } });
+        return this.instance.storage.from(bucket).download(path, {
+            transform: options.transform
+                ? {
+                      width: options.transform.width,
+                      height: options.transform.height,
+                  }
+                : null,
+        });
+    },
+    async updateFile({ bucket, path, file, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Update a file`, {
+            type: 'request',
+            preview: { bucket, path, file, options },
+        });
+        return this.instance.storage.from(bucket).update(path, file, {
+            ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
+            ...(options.upsert ? { upsert: options.upsert } : {}),
+            ...(options.contentType ? { contentType: options.contentType } : {}),
+            ...(options.duplex ? { duplex: options.duplex } : {}),
+        });
+    },
+    async moveFile({ bucket, path, newPath }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Move a file`, { type: 'request', preview: { bucket, path, newPath } });
+        const { data, error } = await this.instance.storage.from(bucket).move(path, newPath);
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async copyFile({ bucket, path, newPath }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Copy a file`, { type: 'request', preview: { bucket, path, newPath } });
+        const { data, error } = await this.instance.storage.from(bucket).copy(path, newPath);
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async deleteFiles({ bucket, paths }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Delete files`, { type: 'request', preview: { bucket, paths } });
+        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(path) ? paths : [paths]);
+        if (error) throw new Error(error.message, { cause: error });
         return data;
     },
     async createSignedUrl(
@@ -328,6 +393,23 @@ export default {
             });
         }
         const { data, error } = await query;
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    getPublicUrl({ bucket, path, options = { download: false, transform: null } }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Retrieve a public URL`, {
+            type: 'request',
+            preview: { bucket, path, options },
+        });
+        const { data, error } = this.instance.storage.from(bucket).getPublicUrl(path, {
+            download: options.download ? options.download.filename || true : false,
+            transform: options.transform
+                ? {
+                      width: options.transform.width,
+                      height: options.transform.height,
+                  }
+                : null,
+        });
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },

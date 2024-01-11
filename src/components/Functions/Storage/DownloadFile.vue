@@ -8,61 +8,13 @@
         :model-value="bucket"
         @update:modelValue="setArgs({ bucket: $event })"
     />
-    <wwEditorFormRow label="Mode">
-        <wwEditorInputRadio
-            :model-value="mode"
-            :choices="[
-                { label: 'Single', value: 'single', default: true },
-                { label: 'Multiple', value: 'multiple' },
-            ]"
-            small
-            @update:modelValue="
-                setArgs({
-                    mode: $event,
-                    path: $event === 'single' ? '' : [''],
-                    options: {},
-                })
-            "
-        />
-    </wwEditorFormRow>
     <wwEditorInputRow
-        v-if="mode === 'multiple'"
-        label="Paths"
-        type="array"
-        required
-        bindable
-        :model-value="path"
-        @update:modelValue="setArgs({ path: $event })"
-        @add-item="setArgs({ path: [...path, ''] })"
-    >
-        <template #default="{ item, setItem }">
-            <wwEditorInputRow
-                label="Url"
-                type="query"
-                placeholder="Enter a path"
-                small
-                bindable
-                :model-value="item"
-                @update:modelValue="setItem"
-            />
-        </template>
-    </wwEditorInputRow>
-    <wwEditorInputRow
-        v-else
         label="Path"
         type="query"
         required
         bindable
         :model-value="path"
         @update:modelValue="setArgs({ path: $event })"
-    />
-    <wwEditorInputRow
-        label="Expires In (seconds)"
-        type="number"
-        bindable
-        required
-        :model-value="expiresIn"
-        @update:modelValue="setArgs({ expiresIn: $event })"
     />
     <Expandable class="mt-3" :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
         <template #header>
@@ -73,32 +25,6 @@
             <div class="mt-3">
                 <div class="flex items-center mb-2">
                     <wwEditorInputSwitch
-                        :model-value="options.download"
-                        @update:modelValue="toggleOptions('download')"
-                    />
-                    <div class="label-3 ml-2">Download</div>
-                    <wwEditorQuestionMark
-                        tooltip-position="top-left"
-                        forced-content="Triggers the file as a download if set to true. Set a custom filename if you want to trigger the download with a different filename. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
-                        class="ml-auto"
-                    />
-                </div>
-                <div
-                    v-if="options.download && mode === 'single'"
-                    class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0"
-                    style="box-shadow: unset"
-                >
-                    <wwEditorInputRow
-                        label="Custom filename"
-                        type="query"
-                        bindable
-                        small
-                        :model-value="options.download.filename"
-                        @update:modelValue="setOptions('download', { filename: $event })"
-                    />
-                </div>
-                <div class="flex items-center mb-2" :class="{ 'text-stale-400': mode === 'multiple' }">
-                    <wwEditorInputSwitch
                         :model-value="options.transform"
                         @update:modelValue="toggleOptions('transform')"
                         :disabled="mode === 'multiple'"
@@ -106,7 +32,7 @@
                     <div class="label-3 ml-2">Transform</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="Transform the asset before serving it to the client. Only available with single mode. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
+                        forced-content="Transform the asset before serving it to the client. Only available with single mode. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
                     />
                 </div>
@@ -190,14 +116,8 @@ export default {
         bucket() {
             return this.args.bucket;
         },
-        mode() {
-            return this.args.mode || 'single';
-        },
         path() {
             return this.args.path || '';
-        },
-        expiresIn() {
-            return this.args.expiresIn;
         },
         options() {
             return this.args.options || {};

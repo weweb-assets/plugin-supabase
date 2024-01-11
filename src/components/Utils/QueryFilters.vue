@@ -68,7 +68,7 @@
                 type="query"
                 :model-value="filter.column"
                 label="Column"
-                placeholder="name"
+                placeholder="column or linkedColumn(column)"
                 bindable
                 small
                 required

@@ -52,6 +52,35 @@
         </template>
     </wwEditorInputRow>
     <wwEditorInputRow
+        label="Queries"
+        type="array"
+        :model-value="queries"
+        bindable
+        @update:modelValue="setArgs({ queries: $event })"
+        @add-item="setArgs({ queries: [...(queries || []), {}] })"
+    >
+        <template #default="{ item, setItem }">
+            <wwEditorInputRow
+                type="query"
+                :model-value="item.key"
+                label="Key"
+                placeholder="Query key"
+                bindable
+                small
+                @update:modelValue="setItem({ ...item, key: $event })"
+            />
+            <wwEditorInputRow
+                type="query"
+                :model-value="item.value"
+                label="Value"
+                placeholder="Query value"
+                bindable
+                small
+                @update:modelValue="setItem({ ...item, value: $event })"
+            />
+        </template>
+    </wwEditorInputRow>
+    <wwEditorInputRow
         label="Body"
         type="code"
         bindable
@@ -86,6 +115,9 @@ export default {
         },
         headers() {
             return this.args.headers || [];
+        },
+        queries() {
+            return this.args.queries || [];
         },
         body() {
             return this.args.body;
