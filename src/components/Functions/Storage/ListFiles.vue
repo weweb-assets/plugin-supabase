@@ -37,7 +37,7 @@
                     </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The number of files you want to be returned. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
+                        forced-content="The number of files you want to be returned. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
                         class="ml-auto"
                     />
                 </div>
@@ -56,7 +56,7 @@
                     </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
+                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
                         class="ml-auto"
                     />
                 </div>
@@ -73,7 +73,7 @@
                     </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
+                        forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
                         class="ml-auto"
                     />
                 </div>
@@ -86,7 +86,7 @@
                     <div class="label-3 ml-2">Sort By</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="The column to sort by. Can be any column inside a FileObject. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
+                        forced-content="The column to sort by. Can be any column inside a FileObject. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
                         class="ml-auto"
                     />
                 </div>
