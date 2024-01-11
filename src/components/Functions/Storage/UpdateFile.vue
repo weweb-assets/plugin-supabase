@@ -31,53 +31,59 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Cache Control"
-                        type="query"
-                        bindable
-                        small
-                        :model-value="options.cacheControl"
-                        @update:modelValue="setOptions('cacheControl', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Cache Control"
+                            type="query"
+                            bindable
+                            small
+                            :model-value="options.cacheControl"
+                            @update:modelValue="setOptions('cacheControl', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The number of seconds the asset is cached in the browser and in the Supabase CDN. This is set in the `Cache-Control: max-age=<seconds>` header. Defaults to 3600 seconds. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
 
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Content Type"
-                        type="query"
-                        bindable
-                        small
-                        :model-value="options.contentType"
-                        @update:modelValue="setOptions('contentType', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Content Type"
+                            type="query"
+                            bindable
+                            small
+                            :model-value="options.contentType"
+                            @update:modelValue="setOptions('contentType', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="the `Content-Type` header value. Should be specified if using a `fileBody` that is neither `Blob` nor `File` nor `FormData`, otherwise will default to `text/plain;charset=UTF-8`. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Duplex"
-                        type="query"
-                        bindable
-                        small
-                        :model-value="options.duplex"
-                        @update:modelValue="setOptions('duplex', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Duplex"
+                            type="query"
+                            bindable
+                            small
+                            :model-value="options.duplex"
+                            @update:modelValue="setOptions('duplex', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The duplex option is a string parameter that enables or disables duplex streaming, allowing for both reading and writing data in the same stream. It can be passed as an option to the fetch() method. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
-                <div class="flex items-center mb-2">
+                <div class="flex items-center">
                     <wwEditorInputSwitch
                         :model-value="options.upsert"
                         @update:modelValue="setOptions('upsert', $event)"

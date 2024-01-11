@@ -23,16 +23,18 @@
         </template>
         <template #content>
             <div class="mt-3">
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Limit"
-                        type="number"
-                        placeholder="100"
-                        bindable
-                        small
-                        :model-value="options.limit"
-                        @update:modelValue="setOptions('limit', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Limit"
+                            type="number"
+                            placeholder="100"
+                            bindable
+                            small
+                            :model-value="options.limit"
+                            @update:modelValue="setOptions('limit', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The number of files you want to be returned. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
@@ -40,31 +42,35 @@
                     />
                 </div>
 
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Offset"
-                        type="number"
-                        placeholder="0"
-                        bindable
-                        small
-                        :model-value="options.offset"
-                        @update:modelValue="setOptions('offset', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Offset"
+                            type="number"
+                            placeholder="0"
+                            bindable
+                            small
+                            :model-value="options.offset"
+                            @update:modelValue="setOptions('offset', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
                         class="ml-auto"
                     />
                 </div>
-                <div class="flex items-center mb-2">
-                    <wwEditorInputRow
-                        label="Search"
-                        type="query"
-                        bindable
-                        small
-                        :model-value="options.search"
-                        @update:modelValue="setOptions('search', $event)"
-                    />
+                <div class="flex items-center">
+                    <div class="w-100 -full">
+                        <wwEditorInputRow
+                            label="Search"
+                            type="query"
+                            bindable
+                            small
+                            :model-value="options.search"
+                            @update:modelValue="setOptions('search', $event)"
+                        />
+                    </div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-download)"
