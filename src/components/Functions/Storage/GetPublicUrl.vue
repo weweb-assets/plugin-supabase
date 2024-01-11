@@ -11,6 +11,7 @@
     <wwEditorInputRow
         label="Path"
         type="query"
+        placeholder="Enter a file path"
         required
         bindable
         :model-value="path"

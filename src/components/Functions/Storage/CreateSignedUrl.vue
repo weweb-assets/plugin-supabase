@@ -39,7 +39,7 @@
             <wwEditorInputRow
                 label="Url"
                 type="query"
-                placeholder="Enter a path"
+                placeholder="Enter a file path"
                 small
                 bindable
                 :model-value="item"

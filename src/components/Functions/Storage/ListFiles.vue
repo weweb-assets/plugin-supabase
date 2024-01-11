@@ -11,6 +11,7 @@
     <wwEditorInputRow
         label="Path"
         type="query"
+        placeholder="Enter a folder path"
         required
         bindable
         :model-value="path"
@@ -38,7 +39,7 @@
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The number of files you want to be returned. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
 
@@ -57,7 +58,7 @@
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
                 <div class="flex items-center">
@@ -74,7 +75,7 @@
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The starting position. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
                 <div class="flex items-center mb-2">
@@ -87,7 +88,7 @@
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
                         forced-content="The column to sort by. Can be any column inside a FileObject. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-list)"
-                        class="ml-auto"
+                        class="ml-2"
                     />
                 </div>
                 <div

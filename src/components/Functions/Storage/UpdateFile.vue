@@ -11,6 +11,7 @@
     <wwEditorInputRow
         label="Path"
         type="query"
+        placeholder="Enter a file path"
         required
         bindable
         :model-value="path"
@@ -34,8 +35,9 @@
                 <div class="flex items-center">
                     <div class="w-100 -full">
                         <wwEditorInputRow
-                            label="Cache Control"
+                            label="Cache Control (seconds)"
                             type="query"
+                            placeholder="3600"
                             bindable
                             small
                             :model-value="options.cacheControl"

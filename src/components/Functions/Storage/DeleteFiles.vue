@@ -21,7 +21,7 @@
                 type="query"
                 :model-value="item"
                 label="Path"
-                placeholder="folder/avatar1.png"
+                placeholder="Enter a file path"
                 small
                 bindable
                 @update:modelValue="setItem"
