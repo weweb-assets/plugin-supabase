@@ -12,7 +12,6 @@
         label="Path"
         type="query"
         placeholder="Enter a folder path"
-        required
         bindable
         :model-value="path"
         @update:modelValue="setArgs({ path: $event })"
