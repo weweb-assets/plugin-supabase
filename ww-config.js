@@ -134,8 +134,8 @@ export default {
         {
             name: 'Storage | List all files',
             code: 'listFiles',
-            getIsValid({ bucket, path }) {
-                return !!bucket && !!path;
+            getIsValid({ bucket }) {
+                return !!bucket;
             },
             isAsync: true,
             /* wwEditor:start */
