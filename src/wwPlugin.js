@@ -317,7 +317,12 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         }
-        return data;
+
+        try {
+            return JSON.parse(data);
+        } catch (error) {
+            return data;
+        }
     },
     async listFiles({ bucket, path, options = {} }, wwUtils) {
         wwUtils?.log('info', `[Supabase] List all files`, { type: 'request', preview: { bucket, path, options } });
