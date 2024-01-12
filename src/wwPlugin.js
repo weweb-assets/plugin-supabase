@@ -295,10 +295,15 @@ export default {
             type: 'request',
             preview: { body, headers, method },
         });
-        const query = queries.length
-            ? queries.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
+        const query = Array.isArray(queries)
+            ? queries
+            : queries && typeof queries === 'object'
+            ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
+            : [];
+        const queryString = query.length
+            ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
-        const { data, error } = await this.instance.functions.invoke(functionName + query, {
+        const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
             body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
