@@ -82,6 +82,20 @@ export default {
             },
         },
     },
+    triggers: [
+        {
+            label: 'On realtime table update',
+            value: 'realtime-table-update',
+            icon: 'workflow',
+            event: { test: 'truc' },
+        },
+        {
+            label: 'On 401 error',
+            value: '401-error',
+            icon: 'workflow',
+            event: { error: 'unauthenticated' },
+        },
+    ],
     actions: [
         {
             name: 'Database | Select',
