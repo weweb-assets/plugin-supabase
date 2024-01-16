@@ -436,7 +436,7 @@ export default {
         return data;
     },
     onSubscribe(payload) {
-        if (wwLib.executeTrigger) wwLib.executeTrigger(this.id + 'realtime-table-update', payload);
+        if (wwLib.executeTrigger) wwLib.executeTrigger(wwLib.wwPlugins.supabase.id + 'realtime-table-update', payload);
 
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
             collection =>

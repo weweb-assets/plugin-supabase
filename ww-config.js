@@ -87,7 +87,15 @@ export default {
             label: 'On realtime table update',
             value: 'realtime-table-update',
             icon: 'workflow',
-            event: { test: 'truc' },
+            event: {
+                schema: 'public',
+                table: 'Messages',
+                commit_timestamp: '2024-01-16T14:54:17.656Z',
+                eventType: 'UPDATE',
+                new: {},
+                old: {},
+                errors: null,
+            },
         },
         {
             label: 'On 401 error',
