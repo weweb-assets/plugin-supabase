@@ -182,7 +182,13 @@ export default {
         });
 
         const { data, count, error } = await query;
-        if (error) throw new Error(error.message, { cause: error });
+        if (error)
+            throw new Error(
+                error.code === 'PGRST100'
+                    ? 'Mode minimal cannot be used on this postgres version, please update your supabase instance or use another mode.'
+                    : error.message,
+                { cause: error }
+            );
         if (autoSync) this.performAutoSync(table, 'INSERT', data);
         return this.formatReturn(data, count, mode === 'single');
     },
@@ -210,7 +216,13 @@ export default {
         });
 
         const { data, count, error } = await query;
-        if (error) throw new Error(error.message, { cause: error });
+        if (error)
+            throw new Error(
+                error.code === 'PGRST100'
+                    ? 'Mode minimal cannot be used on this postgres version, please update your supabase instance or use another mode.'
+                    : error.message,
+                { cause: error }
+            );
         if (autoSync) this.performAutoSync(table, 'UPDATE', data);
         return this.formatReturn(data, count, mode === 'single');
     },
@@ -245,7 +257,13 @@ export default {
         });
 
         const { data, count, error } = await query;
-        if (error) throw new Error(error.message, { cause: error });
+        if (error)
+            throw new Error(
+                error.code === 'PGRST100'
+                    ? 'Mode minimal cannot be used on this postgres version, please update your supabase instance or use another mode.'
+                    : error.message,
+                { cause: error }
+            );
         if (autoSync) this.performAutoSync(table, 'UPSERT', data);
         return this.formatReturn(data, count, mode === 'single');
     },
@@ -271,7 +289,13 @@ export default {
         });
 
         const { data, count, error } = await query;
-        if (error) throw new Error(error.message, { cause: error });
+        if (error)
+            throw new Error(
+                error.code === 'PGRST100'
+                    ? 'Mode minimal cannot be used on this postgres version, please update your supabase instance or use another mode.'
+                    : error.message,
+                { cause: error }
+            );
         if (autoSync) this.performAutoSync(table, 'DELETE', data);
         return this.formatReturn(data, count, mode === 'single');
     },

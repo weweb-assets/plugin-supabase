@@ -120,7 +120,8 @@ export default {
             return this.args.primaryData || {};
         },
         isRealtime() {
-            return this.plugin.settings.publicData.realtimeTables[this.table];
+            if (!this.table) return false;
+            return this.plugin.settings.publicData?.realtimeTables[this.table];
         },
         tablesOptions() {
             return Object.keys(this.definitions).map(tableName => ({
