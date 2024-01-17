@@ -86,7 +86,6 @@ export default {
         {
             label: 'On realtime table update',
             value: 'realtime-table-update',
-            icon: 'workflow',
             event: {
                 schema: 'public',
                 table: 'Messages',
@@ -100,7 +99,6 @@ export default {
         {
             label: 'On 401 error',
             value: '401-error',
-            icon: 'workflow',
             event: { error: 'unauthenticated' },
         },
     ],
