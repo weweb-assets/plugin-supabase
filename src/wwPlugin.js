@@ -538,9 +538,8 @@ const applyFilters = (query, filters = []) => {
 
 const applyModifiers = (query, { select, order, limit, range, single, maybeSingle, csv, explain } = {}) => {
     if (select) {
-        if (select.mode === 'minimal') query.select();
-        else if (select.mode === 'guided') query.select(select?.fields.length ? select.fields.join(', ') : '*');
-        else if (select.mode === 'advanced') query.select(select?.fieldsAdvanced);
+        if (select.mode === 'guided') query.select(select?.fields.length ? select.fields.join(', ') : '*');
+        else query.select(select?.fieldsAdvanced || '');
     }
 
     if (order && order.column)
