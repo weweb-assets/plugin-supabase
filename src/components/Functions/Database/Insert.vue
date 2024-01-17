@@ -142,7 +142,7 @@ export default {
     emits: ['update:args'],
     data() {
         return {
-            isAdvancedOpen: true,
+            isAdvancedOpen: false,
             definitions: {},
             isLoading: false,
         };
