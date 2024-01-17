@@ -5,17 +5,18 @@
             <div class="label-3 ml-2">{{ selectLabel || 'Return rows' }}</div>
             <wwEditorQuestionMark
                 tooltip-position="top-left"
-                forced-content="Select the returned data mode. `Guided` allow you to select columns from the table. `Advanced` allow you to write your own query, useful to embed relationship."
+                forced-content="Select the returned data mode. `Minimal` returns only rows ids. `Guided` allow you to select columns from the table. `Advanced` allow you to write your own query, useful to embed relationship."
                 class="ml-auto"
             />
         </div>
         <div v-if="modifiers.select" class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
             <wwEditorInputRow label="Returned fields">
                 <wwEditorInputRadio
-                    class="mb-2"
+                    :class="{ 'mb-2': modifiers?.select.mode !== 'minimal' }"
                     :model-value="modifiers?.select.mode"
                     :choices="[
-                        { label: 'Guided', value: 'guided', default: true },
+                        { label: 'Minimal', value: 'minimal', default: true },
+                        { label: 'Guided', value: 'guided' },
                         { label: 'Advanced', value: 'advanced' },
                     ]"
                     small
@@ -400,7 +401,7 @@ export default {
         },
         toggleSelect(value) {
             this.modifiers = value
-                ? { ...this.modifiers, select: { mode: 'guided', fields: [] } }
+                ? { ...this.modifiers, select: { mode: 'minimal' } }
                 : {
                       ...this.modifiers,
                       select: false,
