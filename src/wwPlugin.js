@@ -57,7 +57,9 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                let query = this.instance.from(collection.config.table).select(fields || undefined, { count: 'exact' });
+                let query = this.instance
+                    .from(collection.config.table)
+                    .select(fields || undefined, { count: collection.limit ? 'exact' : null });
                 const filter = generateFilter(collection.filter);
 
                 if (filter) query.or(filter);
@@ -71,7 +73,7 @@ export default {
                 }
 
                 const { data, error, count } = await query;
-                return { data, error, total: count };
+                return { data, error, total: count ?? data?.length };
             } catch (err) {
                 return {
                     data: [],

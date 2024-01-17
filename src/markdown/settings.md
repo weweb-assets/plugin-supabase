@@ -4,7 +4,7 @@
 
 To start working with Supabase data in WeWeb, paste your Supabase `Project URL` and `Public API key`:
 
-![Supabase](https://weweb-changelog.ghost.io/content/images/2022/08/CleanShot-2022-08-09-at-11.45.46@2x.png)
+![Supabase](https://docs.weweb.io/assets/supabase-data2-bb29d367.png)
 
 
 ## Realtime tables
