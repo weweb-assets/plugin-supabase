@@ -5,13 +5,24 @@ import './components/Realtime/SettingsEdit.vue';
 import './components/Realtime/SettingsSummary.vue';
 import './components/Collection/CollectionEdit.vue';
 import './components/Collection/CollectionSummary.vue';
-import './components/Functions/Select.vue';
-import './components/Functions/Insert.vue';
-import './components/Functions/Update.vue';
-import './components/Functions/Upsert.vue';
-import './components/Functions/Delete.vue';
+import './components/Functions/Database/Select.vue';
+import './components/Functions/Database/Insert.vue';
+import './components/Functions/Database/Update.vue';
+import './components/Functions/Database/Upsert.vue';
+import './components/Functions/Database/Delete.vue';
+// import './components/Functions/Storage/CreateSignedUrl.vue';
+// import './components/Functions/Storage/GetPublicUrl.vue';
+// import './components/Functions/Storage/ListFiles.vue';
+// import './components/Functions/Storage/UploadFile.vue';
+// import './components/Functions/Storage/DownloadFile.vue';
+// import './components/Functions/Storage/UpdateFile.vue';
+// import './components/Functions/Storage/MoveFile.vue';
+// import './components/Functions/Storage/CopyFile.vue';
+// import './components/Functions/Storage/DeleteFiles.vue';
+import './components/Functions/CallPostgres.vue';
+import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
-import { createClient } from '@supabase/supabase-js';
+import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
 
@@ -32,7 +43,6 @@ export default {
      */
     syncInstance() {
         if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
-            this.instance && this.instance.removeAllSubscriptions();
             this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
@@ -79,12 +89,40 @@ export default {
     \================================================================================================*/
     subscribeTables(realtimeTables) {
         if (!this.instance) return;
-        this.instance.removeAllSubscriptions();
+        // this.instance.removeAllChannels();
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
-            this.instance.from(tableName).on('*', this.onSubscribe).subscribe();
+            this.instance
+                .channel('public:' + tableName)
+                .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
+                .subscribe();
         }
+
+        // Experimental
+        // const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
+        //     collection =>
+        //         collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
+        //         Object.keys(realtimeTables).includes(collection.config.table)
+        // );
+        // for (const collection of collections) {
+        //     this.instance
+        //         .channel('public:' + collection.id)
+        //         .on(
+        //             'postgres_changes',
+        //             {
+        //                 event: '*',
+        //                 schema: 'public',
+        //                 table: collection.config.table,
+        //                 filter: generateFilter(collection.filter),
+        //             },
+        //             event => this.onCollectionUpdate(collection.id, event)
+        //         )
+        //         .subscribe();
+        // }
     },
+    // onCollectionUpdate(collectionId, event) {
+    //     console.log(collectionId, event);
+    // },
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
@@ -111,61 +149,293 @@ export default {
         this.doc = await getDoc(projectUrl, apiKey);
     },
     /* wwEditor:end */
-    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced }, wwUtils) {
+    async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
         wwUtils?.log('info', `[Supabase] Selecting ${table}`, { type: 'request' });
         const fields = fieldsMode === 'guided' ? (dataFields || []).join(', ') : dataFieldsAdvanced;
-        const { data: result, error } = await this.instance.from(table).select(fields || undefined);
+        const query = this.instance
+            .from(table)
+            .select(fields || undefined, { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly });
+        applyFilters(query, filters);
+        applyModifiers(query, modifiers);
+        const { data, count, error } = await query;
+
         if (error) throw new Error(error.message, { cause: error });
-        return result;
+        return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
-    async insert({ table, data = {} }, wwUtils) {
+    async insert(
+        { table, data: payload = {}, autoSync = true, mode = 'single', modifiers = {}, defaultToNull = true },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: data, type: 'request' });
-        const { data: result, error } = await this.instance.from(table).insert([data]);
+        wwUtils?.log('info', `[Supabase] Inserting inside ${table}`, { preview: payload, type: 'request' });
+
+        const query = this.instance.from(table).insert(payload, { count: modifiers?.count?.mode, defaultToNull });
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+        });
+
+        const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'INSERT', new: result[0] });
-        return result[0];
+        if (autoSync) this.performAutoSync(table, 'INSERT', data);
+        return this.formatReturn(data, count, mode === 'single');
     },
-    async update({ table, primaryData = {}, data = {} }, wwUtils) {
+    async update(
+        { table, primaryData = {}, data: payload = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'single' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'multiple' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Updating ${table}`, { type: 'request', preview: { primaryData, data } });
-        const { data: result, error } = await this.instance.from(table).update(data).match(primaryData);
+        wwUtils?.log('info', `[Supabase] Updating ${table}`, {
+            type: 'request',
+            preview: { primaryData, filters, data: payload },
+        });
+
+        const query = this.instance.from(table).update(payload, { count: modifiers?.count?.mode });
+        if (mode === 'single') query.match(primaryData);
+        else applyFilters(query, filters);
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+        });
+
+        const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'UPDATE', new: result[0] });
-        return result[0];
+        if (autoSync) this.performAutoSync(table, 'UPDATE', data);
+        return this.formatReturn(data, count, mode === 'single');
     },
-    async upsert({ table, data = {} }, wwUtils) {
+    async upsert(
+        {
+            table,
+            data: payload = {},
+            ignoreDuplicates = false,
+            onConflict = [],
+            defaultToNull = true,
+            autoSync = true,
+            mode = 'single',
+            modifiers = {},
+        },
+        wwUtils
+    ) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: data });
-        const { data: result, error } = await this.instance.from(table).upsert(data);
+        wwUtils?.log('info', `[Supabase] Upserting data inside ${table}`, { type: 'request', preview: payload });
+
+        const query = this.instance.from(table).upsert(payload, {
+            count: modifiers?.count?.mode,
+            ignoreDuplicates,
+            ...(onConflict.length ? { onConflict: onConflict.join(',') } : null),
+            defaultToNull,
+        });
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+        });
+
+        const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'UPSERT', new: result[0] });
-        return result[0];
+        if (autoSync) this.performAutoSync(table, 'UPSERT', data);
+        return this.formatReturn(data, count, mode === 'single');
     },
-    async delete({ table, primaryData = {} }, wwUtils) {
+    async delete({ table, primaryData = {}, autoSync = true, mode = 'single', filters = [], modifiers = {} }, wwUtils) {
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
-        if (!Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'single' && !Object.keys(primaryData).length) throw new Error('No primary key defined.');
+        if (mode === 'multiple' && !filters.length) throw new Error('No filters defined.');
         /* wwEditor:end */
-        wwUtils?.log('info', `[Supabase] Deleting from ${table}`, { type: 'request', preview: primaryData });
-        const { data: result, error } = await this.instance.from(table).delete().match(primaryData);
+        wwUtils?.log('info', `[Supabase] Deleting from ${table}`, {
+            type: 'request',
+            preview: mode === 'single' ? primaryData : filters,
+        });
+
+        const query = this.instance.from(table).delete({ count: modifiers?.count?.mode });
+
+        if (mode === 'single') query.match(primaryData);
+        else applyFilters(query, filters);
+
+        applyModifiers(query, {
+            select: { mode: 'guided', fields: [] },
+            ...modifiers,
+        });
+
+        const { data, count, error } = await query;
         if (error) throw new Error(error.message, { cause: error });
-        if (!this.settings.publicData.realtimeTables[table])
-            this.onSubscribe({ table, eventType: 'DELETE', old: result[0] });
-        return result;
+        if (autoSync) this.performAutoSync(table, 'DELETE', data);
+        return this.formatReturn(data, count, mode === 'single');
+    },
+    async callPostgresFunction({ functionName, params, modifiers }, wwUtils) {
+        const query = this.instance.rpc(
+            functionName,
+            Array.isArray(params)
+                ? params.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
+                : params,
+            { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly }
+        );
+        applyModifiers(query, modifiers);
+        wwUtils?.log('info', `[Supabase] Call a Postgres function - ${functionName}`, {
+            type: 'request',
+            preview: params,
+        });
+        const { data, count, error } = await query;
+        if (error) throw new Error(error.message, { cause: error });
+        return this.formatReturn(data, count);
+    },
+    async invokeEdgeFunction({ functionName, body, headers = [], queries = [], method = 'POST' }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
+            type: 'request',
+            preview: { body, headers, method },
+        });
+        const query = Array.isArray(queries)
+            ? queries
+            : queries && typeof queries === 'object'
+            ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
+            : [];
+        const queryString = query.length
+            ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
+            : '';
+        const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
+            body,
+            headers: Array.isArray(headers)
+                ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
+                : headers,
+            method,
+        });
+        if (error instanceof FunctionsHttpError) {
+            throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
+        } else if (error instanceof FunctionsRelayError) {
+            throw new Error('Relay error: ' + error.message, { cause: error });
+        } else if (error instanceof FunctionsFetchError) {
+            throw new Error('Fetch error: ' + error.message, { cause: error });
+        }
+
+        try {
+            return JSON.parse(data);
+        } catch (error) {
+            return data;
+        }
+    },
+    async listFiles({ bucket, path, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] List all files`, { type: 'request', preview: { bucket, path, options } });
+        const { data, error } = await this.instance.storage.from(bucket).list(path, {
+            ...(options.limit ? { limit: options.limit } : {}),
+            ...(options.offset ? { offset: options.offset } : {}),
+            ...(options.search ? { search: options.search } : {}),
+            ...(options.sortBy ? { sortBy: options.sortBy } : {}),
+        });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async uploadFile({ bucket, path, file, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Upload a file`, {
+            type: 'request',
+            preview: { bucket, path, file, options },
+        });
+        const { data, error } = await this.instance.storage.from(bucket).upload(path, file, {
+            ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
+            ...(options.upsert ? { upsert: options.upsert } : {}),
+            ...(options.contentType ? { contentType: options.contentType } : {}),
+            ...(options.duplex ? { duplex: options.duplex } : {}),
+        });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async downloadFile({ bucket, path, options = { transform: null } }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Download a file`, { type: 'request', preview: { bucket, path, options } });
+        return this.instance.storage.from(bucket).download(path, {
+            transform: options.transform
+                ? {
+                      width: options.transform.width,
+                      height: options.transform.height,
+                  }
+                : null,
+        });
+    },
+    async updateFile({ bucket, path, file, options = {} }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Update a file`, {
+            type: 'request',
+            preview: { bucket, path, file, options },
+        });
+        return this.instance.storage.from(bucket).update(path, file, {
+            ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
+            ...(options.upsert ? { upsert: options.upsert } : {}),
+            ...(options.contentType ? { contentType: options.contentType } : {}),
+            ...(options.duplex ? { duplex: options.duplex } : {}),
+        });
+    },
+    async moveFile({ bucket, path, newPath }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Move a file`, { type: 'request', preview: { bucket, path, newPath } });
+        const { data, error } = await this.instance.storage.from(bucket).move(path, newPath);
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async copyFile({ bucket, path, newPath }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Copy a file`, { type: 'request', preview: { bucket, path, newPath } });
+        const { data, error } = await this.instance.storage.from(bucket).copy(path, newPath);
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async deleteFiles({ bucket, paths }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Delete files`, { type: 'request', preview: { bucket, paths } });
+        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(path) ? paths : [paths]);
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    async createSignedUrl(
+        { mode = 'single', bucket, path, expiresIn, options = { download: false, transform: null } },
+        wwUtils
+    ) {
+        let query = this.instance.storage.from(bucket);
+        wwUtils?.log('info', `[Supabase] Create a signed URL`, {
+            type: 'request',
+            preview: { bucket, path, expiresIn, options },
+        });
+        if (mode === 'single') {
+            query = query.createSignedUrl(path, expiresIn, {
+                download: options.download ? options.download.filename || true : false,
+                transform: options.transform
+                    ? {
+                          width: options.transform.width,
+                          height: options.transform.height,
+                      }
+                    : null,
+            });
+        } else {
+            query = query.createSignedUrls(path, expiresIn, {
+                download: options.download ? options.download.filename || true : false,
+            });
+        }
+        const { data, error } = await query;
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
+    },
+    getPublicUrl({ bucket, path, options = { download: false, transform: null } }, wwUtils) {
+        wwUtils?.log('info', `[Supabase] Retrieve a public URL`, {
+            type: 'request',
+            preview: { bucket, path, options },
+        });
+        const { data, error } = this.instance.storage.from(bucket).getPublicUrl(path, {
+            download: options.download ? options.download.filename || true : false,
+            transform: options.transform
+                ? {
+                      width: options.transform.width,
+                      height: options.transform.height,
+                  }
+                : null,
+        });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
     },
     onSubscribe(payload) {
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
@@ -237,10 +507,60 @@ export default {
                 return;
         }
     },
+    performAutoSync(table, type, data) {
+        if (!data || this.settings.publicData.realtimeTables[table]) return;
+        if (typeof data === 'string') return; // csv case
+        const rows = Array.isArray(data) ? data : [data];
+        for (const row of rows) {
+            this.onSubscribe({ table, eventType: type, [type === 'DELETE' ? 'old' : 'new']: row });
+        }
+    },
+    formatReturn(rows, count, single = false) {
+        const data = single && Array.isArray(rows) ? rows[0] || null : rows;
+        return count !== null ? { data, count } : data;
+    },
     types: {
         integer: 'number',
         string: 'query',
     },
+};
+
+const applyFilters = (query, filters = []) => {
+    for (const filter of filters) {
+        if (!filter.isEnabled) continue;
+        if (filter.fn === 'textSearch') query[filter.fn](filter.column, filter.value, filter.options || {});
+        else if (filter.fn === 'or') query[filter.fn](filter.value);
+        else if (filter.fn === 'filter' || filter.fn === 'not')
+            query[filter.fn](filter.column, filter.operator, filter.value);
+        else query[filter.fn](filter.column, filter.value);
+    }
+};
+
+const applyModifiers = (query, { select, order, limit, range, single, maybeSingle, csv, explain } = {}) => {
+    if (select) {
+        query.select(
+            select.mode === 'minimal'
+                ? ''
+                : select.mode === 'guided'
+                ? select?.fields.length
+                    ? select.fields.join(', ')
+                    : '*'
+                : select?.fieldsAdvanced
+        );
+    }
+
+    if (order && order.column)
+        query.order(order.column, {
+            ascending: order.ascending,
+            foreignTable: order.foreignTable,
+            nullsFirst: order.nullsFirst,
+        });
+    if (limit && limit.count) query.limit(limit.count, { foreignTable: limit.foreignTable });
+    if (range && (range.from || range.to)) query.range(range.from, range.to, { foreignTable: limit.foreignTable });
+    if (single) query.limit(1).single();
+    if (maybeSingle) query.limit(1).maybeSingle();
+    if (csv) query.csv();
+    if (explain) query.explain(explain);
 };
 
 const findIndexFromPrimaryData = (data, obj, primaryData) => {
