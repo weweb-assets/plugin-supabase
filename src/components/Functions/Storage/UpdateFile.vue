@@ -56,6 +56,7 @@
                         <wwEditorInputRow
                             label="Content Type"
                             type="query"
+                            placeholder="auto"
                             bindable
                             small
                             :model-value="options.contentType"
@@ -85,7 +86,7 @@
                         class="ml-2"
                     />
                 </div>
-                <div class="flex items-center">
+                <!-- <div class="flex items-center">
                     <wwEditorInputSwitch
                         :model-value="options.upsert"
                         @update:modelValue="setOptions('upsert', $event)"
@@ -96,7 +97,7 @@
                         forced-content="When upsert is set to true, the file is overwritten if it exists. When set to false, an error is thrown if the object already exists. Defaults to false. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-upload)"
                         class="ml-auto"
                     />
-                </div>
+                </div> -->
             </div>
         </template>
     </Expandable>

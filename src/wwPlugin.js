@@ -377,7 +377,7 @@ export default {
     },
     async downloadFile({ bucket, path, options = { transform: null } }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Download a file`, { type: 'request', preview: { bucket, path, options } });
-        return this.instance.storage.from(bucket).download(path, {
+        const { data, error } = this.instance.storage.from(bucket).download(path, {
             transform: options.transform
                 ? {
                       width: options.transform.width,
@@ -385,18 +385,22 @@ export default {
                   }
                 : null,
         });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
     },
     async updateFile({ bucket, path, file, options = {} }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Update a file`, {
             type: 'request',
             preview: { bucket, path, file, options },
         });
-        return this.instance.storage.from(bucket).update(path, file, {
+        const { data, error } = this.instance.storage.from(bucket).update(path, file, {
             ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
             ...(options.upsert ? { upsert: options.upsert } : {}),
             ...(options.contentType ? { contentType: options.contentType } : {}),
             ...(options.duplex ? { duplex: options.duplex } : {}),
         });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
     },
     async moveFile({ bucket, path, newPath }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Move a file`, { type: 'request', preview: { bucket, path, newPath } });
