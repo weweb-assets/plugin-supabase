@@ -131,105 +131,105 @@ export default {
             edit: () => import('./src/components/Functions/Database/Delete.vue'),
             /* wwEditor:end */
         },
-        // {
-        //     name: 'Storage | List all files',
-        //     code: 'listFiles',
-        //     getIsValid({ bucket }) {
-        //         return !!bucket;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/ListFiles.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Upload a file',
-        //     code: 'uploadFile',
-        //     getIsValid({ bucket, path, file }) {
-        //         return !!bucket && !!path && !!file;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/UploadFile.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Download a file',
-        //     code: 'downloadFile',
-        //     getIsValid({ bucket, path }) {
-        //         return !!bucket && !!path;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/DownloadFile.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Replace a file',
-        //     code: 'updateFile',
-        //     getIsValid({ bucket, path, file }) {
-        //         return !!bucket && !!path && !!file;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/UpdateFile.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Move a file',
-        //     code: 'moveFile',
-        //     getIsValid({ bucket, path, newPath }) {
-        //         return !!bucket && !!path && !!newPath;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/MoveFile.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Copy a file',
-        //     code: 'moveFile',
-        //     getIsValid({ bucket, path, newPath }) {
-        //         return !!bucket && !!path && !!newPath;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/CopyFile.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Delete files',
-        //     code: 'deleteFile',
-        //     getIsValid({ path }) {
-        //         return !!path;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/DeleteFiles.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Create signed URL',
-        //     code: 'createSignedUrl',
-        //     getIsValid({ bucket, path, expiresIn }) {
-        //         return !!bucket && !!path && !!expiresIn;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
-        //     /* wwEditor:end */
-        // },
-        // {
-        //     name: 'Storage | Retrieve public URL',
-        //     code: 'getPublicUrl',
-        //     getIsValid({ bucket, path }) {
-        //         return !!bucket && !!path;
-        //     },
-        //     isAsync: false,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/GetPublicUrl.vue'),
-        //     /* wwEditor:end */
-        // },
+        {
+            name: 'Storage | List all files',
+            code: 'listFiles',
+            getIsValid({ bucket }) {
+                return !!bucket;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/ListFiles.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Upload a file',
+            code: 'uploadFile',
+            getIsValid({ bucket, path, file }) {
+                return !!bucket && !!path && !!file;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/UploadFile.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Download a file',
+            code: 'downloadFile',
+            getIsValid({ bucket, path }) {
+                return !!bucket && !!path;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/DownloadFile.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Replace a file',
+            code: 'updateFile',
+            getIsValid({ bucket, path, file }) {
+                return !!bucket && !!path && !!file;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/UpdateFile.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Move a file',
+            code: 'moveFile',
+            getIsValid({ bucket, path, newPath }) {
+                return !!bucket && !!path && !!newPath;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/MoveFile.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Copy a file',
+            code: 'copyFile',
+            getIsValid({ bucket, path, newPath }) {
+                return !!bucket && !!path && !!newPath;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/CopyFile.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Delete files',
+            code: 'deleteFiles',
+            getIsValid({ paths }) {
+                return !!paths;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/DeleteFiles.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Create signed URL',
+            code: 'createSignedUrl',
+            getIsValid({ bucket, path, expiresIn }) {
+                return !!bucket && !!path && !!expiresIn;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Storage | Retrieve public URL',
+            code: 'getPublicUrl',
+            getIsValid({ bucket, path }) {
+                return !!bucket && !!path;
+            },
+            isAsync: false,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Storage/GetPublicUrl.vue'),
+            /* wwEditor:end */
+        },
         {
             name: 'Call a Postgres function',
             code: 'callPostgresFunction',
