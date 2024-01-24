@@ -44,8 +44,11 @@
                 >
                     <wwEditorInputRow
                         label="Format"
-                        type="query"
-                        placeholder="Default: origin"
+                        type="select"
+                        :options="[
+                            { label: 'Optimized', value: null, default: true },
+                            { label: 'Original', value: 'origin' },
+                        ]"
                         bindable
                         small
                         :model-value="options.transform.format"
