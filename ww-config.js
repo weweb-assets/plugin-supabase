@@ -153,17 +153,18 @@ export default {
             edit: () => import('./src/components/Functions/Storage/UploadFile.vue'),
             /* wwEditor:end */
         },
-        {
-            name: 'Storage | Download a file',
-            code: 'downloadFile',
-            getIsValid({ bucket, path }) {
-                return !!bucket && !!path;
-            },
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Functions/Storage/DownloadFile.vue'),
-            /* wwEditor:end */
-        },
+        // DISABLED FOR NOW
+        // {
+        //     name: 'Storage | Download a file',
+        //     code: 'downloadFile',
+        //     getIsValid({ bucket, path }) {
+        //         return !!bucket && !!path;
+        //     },
+        //     isAsync: true,
+        //     /* wwEditor:start */
+        //     edit: () => import('./src/components/Functions/Storage/DownloadFile.vue'),
+        //     /* wwEditor:end */
+        // },
         {
             name: 'Storage | Replace a file',
             code: 'updateFile',
@@ -201,7 +202,7 @@ export default {
             name: 'Storage | Delete files',
             code: 'deleteFiles',
             getIsValid({ paths }) {
-                return !!paths;
+                return paths && paths.length;
             },
             isAsync: true,
             /* wwEditor:start */

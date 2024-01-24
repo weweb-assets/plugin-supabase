@@ -380,8 +380,11 @@ export default {
         const { data, error } = this.instance.storage.from(bucket).download(path, {
             transform: options.transform
                 ? {
-                      width: options.transform.width,
-                      height: options.transform.height,
+                      ...(options.transform.format ? { format: options.transform.format } : {}),
+                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                      ...(options.transform.width ? { width: options.transform.width } : {}),
+                      ...(options.transform.height ? { height: options.transform.height } : {}),
                   }
                 : null,
         });
@@ -416,7 +419,7 @@ export default {
     },
     async deleteFiles({ bucket, paths }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Delete files`, { type: 'request', preview: { bucket, paths } });
-        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(path) ? paths : [paths]);
+        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(paths) ? paths : [paths]);
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
@@ -434,8 +437,11 @@ export default {
                 download: options.download ? options.download.filename || true : false,
                 transform: options.transform
                     ? {
-                          width: options.transform.width,
-                          height: options.transform.height,
+                          ...(options.transform.format ? { format: options.transform.format } : {}),
+                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                          ...(options.transform.width ? { width: options.transform.width } : {}),
+                          ...(options.transform.height ? { height: options.transform.height } : {}),
                       }
                     : null,
             });
@@ -457,8 +463,11 @@ export default {
             download: options.download ? options.download.filename || true : false,
             transform: options.transform
                 ? {
-                      width: options.transform.width,
-                      height: options.transform.height,
+                      ...(options.transform.format ? { format: options.transform.format } : {}),
+                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                      ...(options.transform.width ? { width: options.transform.width } : {}),
+                      ...(options.transform.height ? { height: options.transform.height } : {}),
                   }
                 : null,
         });

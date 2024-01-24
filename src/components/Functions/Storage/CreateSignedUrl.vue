@@ -76,10 +76,10 @@
                         :model-value="options.download"
                         @update:modelValue="toggleOptions('download')"
                     />
-                    <div class="label-3 ml-2">Download</div>
+                    <div class="label-3 ml-2">Get a download link</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="Triggers the file as a download if set to true. Set a custom filename if you want to trigger the download with a different filename. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
+                        forced-content="Opening the link will download the file if set to true. Set a custom filename if you want to trigger the download with a different filename. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
                         class="ml-auto"
                     />
                 </div>
