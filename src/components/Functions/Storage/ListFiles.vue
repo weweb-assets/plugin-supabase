@@ -80,7 +80,7 @@
                 <div class="flex items-center mb-2">
                     <wwEditorInputSwitch
                         :model-value="options.sortBy"
-                        @update:modelValue="toggleOptions('sortBy', { order: '', limit: '' })"
+                        @update:modelValue="toggleOptions('sortBy', { order: 'asc', column: '' })"
                         :disabled="mode === 'multiple'"
                     />
                     <div class="label-3 ml-2">Sort By</div>
@@ -105,7 +105,11 @@
                     />
                     <wwEditorInputRow
                         label="Order"
-                        type="query"
+                        type="select"
+                        :options="[
+                            { label: 'ASC', value: 'asc', default: true },
+                            { label: 'DESC', value: 'desc' },
+                        ]"
                         bindable
                         small
                         :model-value="options.sortBy.order"

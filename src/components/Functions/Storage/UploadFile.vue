@@ -56,6 +56,7 @@
                         <wwEditorInputRow
                             label="Content Type"
                             type="query"
+                            placeholder="auto"
                             bindable
                             small
                             :model-value="options.contentType"
@@ -85,7 +86,7 @@
                         class="ml-2"
                     />
                 </div>
-                <div class="flex items-center">
+                <div class="flex items-center mt-2">
                     <wwEditorInputSwitch
                         :model-value="options.upsert"
                         @update:modelValue="setOptions('upsert', $event)"

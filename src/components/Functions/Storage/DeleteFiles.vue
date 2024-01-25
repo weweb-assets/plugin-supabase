@@ -12,6 +12,7 @@
         label="Paths"
         type="array"
         bindable
+        required
         :model-value="paths"
         @update:modelValue="setArgs({ paths: $event })"
         @add-item="setArgs({ paths: [...paths, ''] })"
@@ -22,6 +23,7 @@
                 :model-value="item"
                 label="Path"
                 placeholder="Enter a file path"
+                required
                 small
                 bindable
                 @update:modelValue="setItem"

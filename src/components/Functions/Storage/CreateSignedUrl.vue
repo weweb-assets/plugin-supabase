@@ -76,10 +76,10 @@
                         :model-value="options.download"
                         @update:modelValue="toggleOptions('download')"
                     />
-                    <div class="label-3 ml-2">Download</div>
+                    <div class="label-3 ml-2">Get a download link</div>
                     <wwEditorQuestionMark
                         tooltip-position="top-left"
-                        forced-content="Triggers the file as a download if set to true. Set a custom filename if you want to trigger the download with a different filename. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
+                        forced-content="Opening the link will download the file if set to true. Set a custom filename if you want to trigger the download with a different filename. [See documentation](https://supabase.com/docs/reference/javascript/storage-from-createsignedurl)"
                         class="ml-auto"
                     />
                 </div>
@@ -117,21 +117,15 @@
                 >
                     <wwEditorInputRow
                         label="Format"
-                        type="query"
-                        placeholder="Default: origin"
+                        type="select"
+                        :options="[
+                            { label: 'Optimized', value: null, default: true },
+                            { label: 'Original', value: 'origin' },
+                        ]"
                         bindable
                         small
                         :model-value="options.transform.format"
                         @update:modelValue="setOptions('transform', { format: $event })"
-                    />
-                    <wwEditorInputRow
-                        label="Quality (20-100)"
-                        type="number"
-                        placeholder="Default: 80"
-                        bindable
-                        small
-                        :model-value="options.transform.quality"
-                        @update:modelValue="setOptions('transform', { quality: $event })"
                     />
                     <wwEditorInputRow
                         label="Resize"
@@ -148,7 +142,16 @@
                         @update:modelValue="setOptions('transform', { resize: $event })"
                     />
                     <wwEditorInputRow
-                        label="Height (px)"
+                        label="Quality (20-100) | paid plan"
+                        type="number"
+                        placeholder="Default: 80"
+                        bindable
+                        small
+                        :model-value="options.transform.quality"
+                        @update:modelValue="setOptions('transform', { quality: $event })"
+                    />
+                    <wwEditorInputRow
+                        label="Height (px) | paid plan"
                         type="number"
                         bindable
                         small
@@ -156,7 +159,7 @@
                         @update:modelValue="setOptions('transform', { height: $event })"
                     />
                     <wwEditorInputRow
-                        label="Width (px)"
+                        label="Width (px) | paid plan"
                         type="number"
                         bindable
                         small

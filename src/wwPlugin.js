@@ -10,15 +10,15 @@ import './components/Functions/Database/Insert.vue';
 import './components/Functions/Database/Update.vue';
 import './components/Functions/Database/Upsert.vue';
 import './components/Functions/Database/Delete.vue';
-// import './components/Functions/Storage/CreateSignedUrl.vue';
-// import './components/Functions/Storage/GetPublicUrl.vue';
-// import './components/Functions/Storage/ListFiles.vue';
-// import './components/Functions/Storage/UploadFile.vue';
-// import './components/Functions/Storage/DownloadFile.vue';
-// import './components/Functions/Storage/UpdateFile.vue';
-// import './components/Functions/Storage/MoveFile.vue';
-// import './components/Functions/Storage/CopyFile.vue';
-// import './components/Functions/Storage/DeleteFiles.vue';
+import './components/Functions/Storage/CreateSignedUrl.vue';
+import './components/Functions/Storage/GetPublicUrl.vue';
+import './components/Functions/Storage/ListFiles.vue';
+import './components/Functions/Storage/UploadFile.vue';
+import './components/Functions/Storage/DownloadFile.vue';
+import './components/Functions/Storage/UpdateFile.vue';
+import './components/Functions/Storage/MoveFile.vue';
+import './components/Functions/Storage/CopyFile.vue';
+import './components/Functions/Storage/DeleteFiles.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -377,26 +377,33 @@ export default {
     },
     async downloadFile({ bucket, path, options = { transform: null } }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Download a file`, { type: 'request', preview: { bucket, path, options } });
-        return this.instance.storage.from(bucket).download(path, {
+        const { data, error } = this.instance.storage.from(bucket).download(path, {
             transform: options.transform
                 ? {
-                      width: options.transform.width,
-                      height: options.transform.height,
+                      ...(options.transform.format ? { format: options.transform.format } : {}),
+                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                      ...(options.transform.width ? { width: options.transform.width } : {}),
+                      ...(options.transform.height ? { height: options.transform.height } : {}),
                   }
                 : null,
         });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
     },
     async updateFile({ bucket, path, file, options = {} }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Update a file`, {
             type: 'request',
             preview: { bucket, path, file, options },
         });
-        return this.instance.storage.from(bucket).update(path, file, {
+        const { data, error } = this.instance.storage.from(bucket).update(path, file, {
             ...(options.cacheControl ? { cacheControl: options.cacheControl } : {}),
             ...(options.upsert ? { upsert: options.upsert } : {}),
             ...(options.contentType ? { contentType: options.contentType } : {}),
             ...(options.duplex ? { duplex: options.duplex } : {}),
         });
+        if (error) throw new Error(error.message, { cause: error });
+        return data;
     },
     async moveFile({ bucket, path, newPath }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Move a file`, { type: 'request', preview: { bucket, path, newPath } });
@@ -412,7 +419,7 @@ export default {
     },
     async deleteFiles({ bucket, paths }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Delete files`, { type: 'request', preview: { bucket, paths } });
-        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(path) ? paths : [paths]);
+        const { data, error } = await this.instance.storage.from(bucket).remove(Array.isArray(paths) ? paths : [paths]);
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
@@ -430,8 +437,11 @@ export default {
                 download: options.download ? options.download.filename || true : false,
                 transform: options.transform
                     ? {
-                          width: options.transform.width,
-                          height: options.transform.height,
+                          ...(options.transform.format ? { format: options.transform.format } : {}),
+                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                          ...(options.transform.width ? { width: options.transform.width } : {}),
+                          ...(options.transform.height ? { height: options.transform.height } : {}),
                       }
                     : null,
             });
@@ -453,8 +463,11 @@ export default {
             download: options.download ? options.download.filename || true : false,
             transform: options.transform
                 ? {
-                      width: options.transform.width,
-                      height: options.transform.height,
+                      ...(options.transform.format ? { format: options.transform.format } : {}),
+                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                      ...(options.transform.width ? { width: options.transform.width } : {}),
+                      ...(options.transform.height ? { height: options.transform.height } : {}),
                   }
                 : null,
         });
