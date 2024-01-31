@@ -475,6 +475,8 @@ export default {
         return data;
     },
     onSubscribe(payload) {
+        if (wwLib.executeTrigger) wwLib.executeTrigger(wwLib.wwPlugins.supabase.id + '-realtime-table-event', payload);
+
         const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
             collection =>
                 collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&

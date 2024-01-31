@@ -82,6 +82,21 @@ export default {
             },
         },
     },
+    triggers: [
+        {
+            label: 'On realtime table event',
+            value: 'realtime-table-event',
+            event: {
+                schema: 'public',
+                table: 'My table',
+                commit_timestamp: '2024-01-16T14:54:17.656Z',
+                eventType: 'UPDATE',
+                new: {},
+                old: {},
+                errors: null,
+            },
+        },
+    ],
     actions: [
         {
             name: 'Database | Select',
