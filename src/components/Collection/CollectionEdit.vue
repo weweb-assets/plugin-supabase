@@ -1,8 +1,7 @@
 <template>
-    <div class="flex items-center">
-        <div class="w-100 -full">
-            <wwEditorInputRow
-                label="Table"
+    <wwEditorFormRow label="Table" required class="-full">
+        <div class="flex items-center">
+            <wwEditorInput
                 type="select"
                 placeholder="Select a table"
                 required
@@ -10,9 +9,11 @@
                 :options="tablesOptions"
                 @update:modelValue="setProp('table', $event)"
             />
+            <button type="button" class="ww-editor-button -primary -small -icon m-left" @click="fetchTables">
+                <wwEditorIcon name="refresh" medium />
+            </button>
         </div>
-        <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
-    </div>
+    </wwEditorFormRow>
     <wwEditorFormRow label="Fields" required v-if="database.table">
         <wwEditorInputRadio
             class="mb-2"
