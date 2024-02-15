@@ -9,7 +9,7 @@
                 :options="tablesOptions"
                 @update:modelValue="setTable"
             />
-            <button type="button" class="ww-editor-button -primary -small -icon m-left" @click="fetchTables">
+            <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchTables">
                 <wwEditorIcon name="refresh" medium />
             </button>
         </div>
