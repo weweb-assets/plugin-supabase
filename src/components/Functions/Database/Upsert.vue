@@ -1,8 +1,8 @@
 <template>
     <wwEditorFormRow label="Table" required class="-full">
         <div class="flex items-center">
-            <wwEditorInput
-                type="select"
+            <wwEditorInputTextSelect
+                class="w-100"
                 placeholder="Select a table"
                 required
                 :model-value="table"
