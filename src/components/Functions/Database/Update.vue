@@ -1,18 +1,19 @@
 <template>
-    <div class="flex items-center">
-        <div class="w-100 -full">
-            <wwEditorInputRow
-                label="Table"
-                type="select"
+    <wwEditorFormRow label="Table" required class="-full">
+        <div class="flex items-center">
+            <wwEditorInputTextSelect
+                class="w-100"
                 placeholder="Select a table"
                 required
                 :model-value="table"
                 :options="tablesOptions"
                 @update:modelValue="setTable"
             />
+            <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchTables">
+                <wwEditorIcon name="refresh" medium />
+            </button>
         </div>
-        <button type="button" class="ww-editor-button -small -primary ml-2 mt-3" @click="fetchTables">refresh</button>
-    </div>
+    </wwEditorFormRow>
     <template v-if="table">
         <wwEditorFormRow label="Update by">
             <wwEditorInputRadio
