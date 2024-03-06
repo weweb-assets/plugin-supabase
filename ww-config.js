@@ -202,7 +202,7 @@ export default {
             name: 'Storage | Delete files',
             code: 'deleteFiles',
             getIsValid({ paths }) {
-                return paths && paths.length;
+                return !!paths;
             },
             isAsync: true,
             /* wwEditor:start */

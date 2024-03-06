@@ -39,19 +39,19 @@ export default {
             }));
         },
         realtimeTables() {
-            return this.settings.publicData.realtimeTables || {};
+            return this.settings.publicData?.realtimeTables || {};
         },
     },
     mounted() {
-        this.definitions = this.plugin.doc.definitions || {};
-        if (!this.settings.publicData.realtimeTables) this.changeRealtimeTables({});
+        this.definitions = this.plugin?.doc?.definitions || {};
+        if (!this.settings.publicData?.realtimeTables) this.changeRealtimeTables({});
     },
     methods: {
         async fetchTables() {
             try {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
-                this.definitions = this.plugin.doc.definitions || {};
+                this.definitions = this.plugin?.doc?.definitions || {};
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
