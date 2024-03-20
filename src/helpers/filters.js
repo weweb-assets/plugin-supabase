@@ -1,6 +1,7 @@
 export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     if (isEmptyIgnored && !value) return [];
-    if (typeof value === 'string') value = value.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    // Need to be escaped https://stackoverflow.com/a/76073575
+    if (typeof value === 'string') value = value.replace(/(\(|\)|,|\.|:)/g, '%22$1%22');
     switch (operator) {
         case '$eq':
             return [field, 'eq', value];
@@ -53,6 +54,6 @@ export function generateFilter(config) {
     if (!conditions.length) return '';
 
     const filter = `${config.link.slice(1)}(${conditions.join()})`;
-    // Need to be escaped https://stackoverflow.com/a/76073575
-    return filter.replace(/(\(|\)|,|\.|:)/g, '%22$1%22');
+
+    return filter;
 }
