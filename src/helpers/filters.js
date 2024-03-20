@@ -2,9 +2,9 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     if (isEmptyIgnored && !value) return [];
     switch (operator) {
         case '$eq':
-            return [field, 'eq', typeof value === 'string' ? `"${value}"` : value];
+            return [field, 'eq', typeof value === 'string' ? `"${value.replaceAll('"', '\\"')}"` : value];
         case '$ne':
-            return [field, 'neq', typeof value === 'string' ? `"${value}"` : value];
+            return [field, 'neq', typeof value === 'string' ? `"${value.replaceAll('"', '\\"')}"` : value];
         case '$lt':
             return [field, 'lt', value];
         case '$gt':
@@ -14,13 +14,13 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
         case '$gte':
             return [field, 'gte', value];
         case '$iLike:contains': // not possible on array
-            return [field, 'ilike', `"%${value}%"`];
+            return [field, 'ilike', `"%${value.replaceAll('"', '\\"')}%"`];
         case '$notILike:contains': // not possible on array
-            return [field, 'not.ilike', `"%${value}%"`];
+            return [field, 'not.ilike', `"%${value.replaceAll('"', '\\"')}%"`];
         case '$iLike:startsWith':
-            return [field, 'ilike', `"${value}%"`];
+            return [field, 'ilike', `"${value.replaceAll('"', '\\"')}%"`];
         case '$iLike:endsWith':
-            return [field, 'ilike', `"%${value}"`];
+            return [field, 'ilike', `"%${value.replaceAll('"', '\\"')}"`];
         case '$eq:null':
             return [field, 'is', 'null'];
         case '$ne:null':
