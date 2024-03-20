@@ -1,12 +1,10 @@
 export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     if (isEmptyIgnored && !value) return [];
-    // Need to be escaped https://stackoverflow.com/a/76073575
-    if (typeof value === 'string') value = value.replace(/(\(|\)|,|\.|:)/g, '%22$1%22');
     switch (operator) {
         case '$eq':
-            return [field, 'eq', value];
+            return [field, 'eq', typeof value === 'string' ? `"${value}"` : value];
         case '$ne':
-            return [field, 'neq', value];
+            return [field, 'neq', typeof value === 'string' ? `"${value}"` : value];
         case '$lt':
             return [field, 'lt', value];
         case '$gt':
@@ -16,13 +14,13 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
         case '$gte':
             return [field, 'gte', value];
         case '$iLike:contains': // not possible on array
-            return [field, 'ilike', `%${value}%`];
+            return [field, 'ilike', `"%${value}%"`];
         case '$notILike:contains': // not possible on array
-            return [field, 'not.ilike', `%${value}%`];
+            return [field, 'not.ilike', `"%${value}%"`];
         case '$iLike:startsWith':
-            return [field, 'ilike', `${value}%`];
+            return [field, 'ilike', `"${value}%"`];
         case '$iLike:endsWith':
-            return [field, 'ilike', `%${value}`];
+            return [field, 'ilike', `"%${value}"`];
         case '$eq:null':
             return [field, 'is', 'null'];
         case '$ne:null':
