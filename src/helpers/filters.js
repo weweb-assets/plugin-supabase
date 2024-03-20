@@ -1,55 +1,58 @@
-export function convertCondition({field, operator, value, isEmptyIgnored}) {
-    if (isEmptyIgnored && !value) return []
+export function convertCondition({ field, operator, value, isEmptyIgnored }) {
+    if (isEmptyIgnored && !value) return [];
+    if (typeof value === 'string') value = value.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
     switch (operator) {
         case '$eq':
-            return [field, 'eq', value]
+            return [field, 'eq', value];
         case '$ne':
-            return [field, 'neq', value]
+            return [field, 'neq', value];
         case '$lt':
-            return [field, 'lt', value]
+            return [field, 'lt', value];
         case '$gt':
-            return [field, 'gt', value]
+            return [field, 'gt', value];
         case '$lte':
-            return [field, 'lte', value] 
+            return [field, 'lte', value];
         case '$gte':
-            return [field, 'gte', value] 
+            return [field, 'gte', value];
         case '$iLike:contains': // not possible on array
-            return [field, 'ilike', `%${value}%`]
+            return [field, 'ilike', `%${value}%`];
         case '$notILike:contains': // not possible on array
-            return [field, 'not.ilike', `%${value}%`]
+            return [field, 'not.ilike', `%${value}%`];
         case '$iLike:startsWith':
-            return [field, 'ilike', `${value}%`]
+            return [field, 'ilike', `${value}%`];
         case '$iLike:endsWith':
-            return [field, 'ilike', `%${value}`]
+            return [field, 'ilike', `%${value}`];
         case '$eq:null':
-            return [field, 'is', 'null']
+            return [field, 'is', 'null'];
         case '$ne:null':
-            return [field, 'not.is', 'null']
+            return [field, 'not.is', 'null'];
         case '$in':
-            return [field, 'in', `(${value})`]
+            return [field, 'in', `(${value})`];
         case '$notIn':
-            return [field, 'not.in', `(${value})`]
+            return [field, 'not.in', `(${value})`];
         case '$overlap':
-            return [field, 'ov', `{${value}}`]
+            return [field, 'ov', `{${value}}`];
         case '$notOverlap':
-            return [field, 'not.ov', `{${value}}`]
+            return [field, 'not.ov', `{${value}}`];
         case '$contains':
-            return [field, 'cs', `{${value}}`]
+            return [field, 'cs', `{${value}}`];
         default:
             break;
     }
 }
 
 export function generateFilter(config) {
-    if(!config) return ''
-    if(!config.link || !config.conditions || config.if === false) return ''
-    const conditions = config.conditions.map(condition => {
-        return condition.link ? generateFilter(condition) : convertCondition(condition).join('.')
-    }).filter(condition => condition)
-    
-    if(!conditions.length) return ''
+    if (!config) return '';
+    if (!config.link || !config.conditions || config.if === false) return '';
+    const conditions = config.conditions
+        .map(condition => {
+            return condition.link ? generateFilter(condition) : convertCondition(condition).join('.');
+        })
+        .filter(condition => condition);
 
-    const filter = `${config.link.slice(1)}(${conditions.join()})`
+    if (!conditions.length) return '';
 
-    return filter
+    const filter = `${config.link.slice(1)}(${conditions.join()})`;
+    // Need to be escaped https://stackoverflow.com/a/76073575
+    return filter.replace(/(\(|\)|,|\.|:)/g, '%22$1%22');
 }
