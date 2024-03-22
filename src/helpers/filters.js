@@ -2,9 +2,9 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     if (isEmptyIgnored && !value) return [];
     switch (operator) {
         case '$eq':
-            return [field, 'eq', typeof value === 'string' ? `"${value.replaceAll('"', '\\"')}"` : value];
+            return [field, 'eq', typeof value === 'string' ? `"${escape(value)}"` : value];
         case '$ne':
-            return [field, 'neq', typeof value === 'string' ? `"${value.replaceAll('"', '\\"')}"` : value];
+            return [field, 'neq', typeof value === 'string' ? `"${escape(value)}"` : value];
         case '$lt':
             return [field, 'lt', value];
         case '$gt':
@@ -14,13 +14,13 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
         case '$gte':
             return [field, 'gte', value];
         case '$iLike:contains': // not possible on array
-            return [field, 'ilike', `"%${value.replaceAll('"', '\\"')}%"`];
+            return [field, 'ilike', `"%${escape(value)}%"`];
         case '$notILike:contains': // not possible on array
-            return [field, 'not.ilike', `"%${value.replaceAll('"', '\\"')}%"`];
+            return [field, 'not.ilike', `"%${escape(value)}%"`];
         case '$iLike:startsWith':
-            return [field, 'ilike', `"${value.replaceAll('"', '\\"')}%"`];
+            return [field, 'ilike', `"${escape(value)}%"`];
         case '$iLike:endsWith':
-            return [field, 'ilike', `"%${value.replaceAll('"', '\\"')}"`];
+            return [field, 'ilike', `"%${escape(value)}"`];
         case '$eq:null':
             return [field, 'is', 'null'];
         case '$ne:null':
@@ -54,4 +54,9 @@ export function generateFilter(config) {
     const filter = `${config.link.slice(1)}(${conditions.join()})`;
 
     return filter;
+}
+
+function escape(value) {
+    // weird but it's how back slash match
+    return value.replaceAll('\\', '\\\\\\\\').replaceAll('"', '\\"');
 }
