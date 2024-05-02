@@ -336,12 +336,15 @@ export default {
                 : headers,
             method,
         });
+
         if (error instanceof FunctionsHttpError) {
             throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
         } else if (error instanceof FunctionsRelayError) {
             throw new Error('Relay error: ' + error.message, { cause: error });
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
+        } else if (error) {
+            throw new Error(error.message, { cause: error });
         }
 
         try {
