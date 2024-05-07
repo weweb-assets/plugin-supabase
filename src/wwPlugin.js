@@ -344,7 +344,7 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         } else if (error) {
-            throw new Error(data?.error || error.message, { cause: error });
+            throw new Error(error.message, { cause: error });
         }
 
         try {
