@@ -380,17 +380,20 @@ export default {
     },
     async downloadFile({ bucket, path, options = { transform: null } }, wwUtils) {
         wwUtils?.log('info', `[Supabase] Download a file`, { type: 'request', preview: { bucket, path, options } });
-        const { data, error } = this.instance.storage.from(bucket).download(path, {
-            transform: options.transform
+        const { data, error } = this.instance.storage.from(bucket).download(
+            path,
+            options.transform
                 ? {
-                      ...(options.transform.format ? { format: options.transform.format } : {}),
-                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
-                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
-                      ...(options.transform.width ? { width: options.transform.width } : {}),
-                      ...(options.transform.height ? { height: options.transform.height } : {}),
+                      transform: {
+                          ...(options.transform.format ? { format: options.transform.format } : {}),
+                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                          ...(options.transform.width ? { width: options.transform.width } : {}),
+                          ...(options.transform.height ? { height: options.transform.height } : {}),
+                      },
                   }
-                : null,
-        });
+                : {}
+        );
         if (error) throw new Error(error.message, { cause: error });
         return data;
     },
@@ -464,15 +467,17 @@ export default {
         });
         const { data, error } = this.instance.storage.from(bucket).getPublicUrl(path, {
             download: options.download ? options.download.filename || true : false,
-            transform: options.transform
+            ...(options.transform
                 ? {
-                      ...(options.transform.format ? { format: options.transform.format } : {}),
-                      ...(options.transform.quality ? { quality: options.transform.quality } : {}),
-                      ...(options.transform.resize ? { resize: options.transform.resize } : {}),
-                      ...(options.transform.width ? { width: options.transform.width } : {}),
-                      ...(options.transform.height ? { height: options.transform.height } : {}),
+                      transform: {
+                          ...(options.transform.format ? { format: options.transform.format } : {}),
+                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                          ...(options.transform.width ? { width: options.transform.width } : {}),
+                          ...(options.transform.height ? { height: options.transform.height } : {}),
+                      },
                   }
-                : null,
+                : {}),
         });
         if (error) throw new Error(error.message, { cause: error });
         return data;
