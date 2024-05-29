@@ -5,6 +5,9 @@
         "url": "https://github.com/weweb-assets/plugin-supabase"
     },
     "version": "3.1.0",
+    "features": {
+        "datasource": true
+    },
     "license": "MIT",
     "scripts": {
         "build": "weweb build",
