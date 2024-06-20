@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-3 label-sm text-blue-500 flex items-center">
+    <div class="mb-3 label-sm content-brand flex items-center">
         <wwEditorIcon class="mr-1" name="information-circle" small />
         You must enable realtime on your tables both in WeWeb and in Supabase in order to use this feature.
     </div>

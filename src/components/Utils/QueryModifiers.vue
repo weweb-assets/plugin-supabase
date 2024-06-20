@@ -47,7 +47,7 @@
             </wwEditorInputRow>
         </div>
     </template>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.count }">
+    <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.count }">
         <wwEditorInputSwitch
             :model-value="!!modifiers.count"
             @update:modelValue="toggleModifier('count', { mode: 'exact' })"
@@ -89,7 +89,7 @@
         />
     </div>
     <template v-if="type === 'SELECT'">
-        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.order }">
+        <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.order }">
             <wwEditorInputSwitch
                 :model-value="!!modifiers.order"
                 @update:modelValue="toggleModifier('order', { ascending: true })"
@@ -139,7 +139,7 @@
                 @update:modelValue="setModifierSettings('order', { nullsFirst: $event })"
             />
         </div>
-        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.limit }">
+        <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.limit }">
             <wwEditorInputSwitch
                 :model-value="modifiers.limit && !disabled.limit"
                 @update:modelValue="toggleModifier('limit')"
@@ -176,7 +176,7 @@
                 @update:modelValue="setModifierSettings('limit', { foreignTable: $event })"
             />
         </div>
-        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.range }">
+        <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.range }">
             <wwEditorInputSwitch
                 :model-value="modifiers.range && !disabled.range"
                 @update:modelValue="toggleModifier('range')"
@@ -231,7 +231,7 @@ Set a foreign table to limit rows of foreign tables instead of the current table
                 @update:modelValue="setModifierSettings('range', { foreignTable: $event })"
             />
         </div>
-        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.single }">
+        <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.single }">
             <wwEditorInputSwitch
                 :model-value="modifiers.single && !disabled.single"
                 @update:modelValue="toggleModifier('single')"
@@ -244,7 +244,7 @@ Set a foreign table to limit rows of foreign tables instead of the current table
                 class="ml-auto"
             />
         </div>
-        <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.maybeSingle }">
+        <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.maybeSingle }">
             <wwEditorInputSwitch
                 :model-value="modifiers.maybeSingle && !disabled.maybeSingle"
                 @update:modelValue="toggleModifier('maybeSingle')"
@@ -258,7 +258,7 @@ Set a foreign table to limit rows of foreign tables instead of the current table
             />
         </div>
     </template>
-    <div class="flex items-center mb-2" :class="{ 'text-stale-400': disabled.csv }">
+    <div class="flex items-center mb-2" :class="{ 'content-tertiary': disabled.csv }">
         <wwEditorInputSwitch
             :model-value="!!modifiers.csv"
             @update:modelValue="toggleModifier('csv')"

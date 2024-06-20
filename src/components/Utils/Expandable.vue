@@ -61,13 +61,13 @@ export default {
         align-items: center;
         cursor: pointer;
         &-icon {
-            color: var(--ww-color-theme-dark-400);
+            color: var(--ww-color-content-tertiary);
             transition: transform 0.2s ease;
             will-change: transform, color;
         }
         &.active {
             .ww-dropdown__header-icon {
-                color: var(--ww-color-theme-dark-700);
+                color: var(--ww-color-content-secondary);
                 transform: rotate(90deg);
             }
         }

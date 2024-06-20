@@ -80,7 +80,7 @@
                     :model-value="modifiers"
                     @update:modelValue="setArgs({ modifiers: $event })"
                 />
-                <div class="flex items-center mb-2" :class="{ 'text-stale-400': lockedAutoSync }">
+                <div class="flex items-center mb-2" :class="{ 'content-tertiary': lockedAutoSync }">
                     <wwEditorInputSwitch
                         :model-value="isRealtime || (autoSync && modifiers.select && !modifiers.csv)"
                         @update:modelValue="setArgs({ autoSync: $event })"

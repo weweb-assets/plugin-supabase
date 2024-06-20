@@ -97,7 +97,7 @@
                         @update:modelValue="setOptions('download', { filename: $event })"
                     />
                 </div>
-                <div class="flex items-center mb-2" :class="{ 'text-stale-400': mode === 'multiple' }">
+                <div class="flex items-center mb-2" :class="{ 'content-tertiary': mode === 'multiple' }">
                     <wwEditorInputSwitch
                         :model-value="options.transform"
                         @update:modelValue="toggleOptions('transform')"

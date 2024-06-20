@@ -188,7 +188,7 @@ export default {
 
 <style scoped lang="scss">
 .error-message {
-    color: var(--ww-color-yellow-500);
+    color: var(--ww-color-content-warning);
     > * {
         display: inline;
     }
