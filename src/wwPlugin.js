@@ -34,7 +34,7 @@ export default {
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
-    async onLoad(settings) {
+    async _onLoad(settings) {
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
@@ -50,7 +50,7 @@ export default {
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
     \================================================================================================*/
-    async fetchCollection(collection) {
+    async _fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
                 const fields =
@@ -344,7 +344,7 @@ export default {
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, { cause: error });
         } else if (error) {
-            throw new Error(error.message, { cause: error });
+            throw new Error(error.message, { cause: error, data });
         }
 
         try {
