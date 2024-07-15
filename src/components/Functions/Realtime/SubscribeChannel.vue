@@ -140,7 +140,14 @@ export default {
             this.$emit('update:args', { ...this.args, channel });
         },
         setType(type) {
-            this.$emit('update:args', { ...this.args, type, event: null, schema: null, table: null, filter: null });
+            this.$emit('update:args', {
+                ...this.args,
+                type,
+                event: type === 'postgres_changes' ? '*' : type === 'presence' ? 'sync' : '',
+                schema: null,
+                table: null,
+                filter: null,
+            });
         },
         setEvent(event) {
             this.$emit('update:args', { ...this.args, event });
