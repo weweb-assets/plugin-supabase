@@ -19,6 +19,9 @@ import './components/Functions/Storage/UpdateFile.vue';
 import './components/Functions/Storage/MoveFile.vue';
 import './components/Functions/Storage/CopyFile.vue';
 import './components/Functions/Storage/DeleteFiles.vue';
+import './components/Functions/Realtime/RealtimeSubscribeChannel.vue';
+import './components/Functions/Realtime/RealtimeUnsubscribeChannel.vue';
+import './components/Functions/Realtime/RealtimeBroadcastMessage.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -28,6 +31,7 @@ import { generateFilter } from './helpers/filters';
 
 export default {
     instance: null,
+    channels: {},
     /* wwEditor:start */
     doc: null,
     /* wwEditor:end */
@@ -93,36 +97,11 @@ export default {
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
             this.instance
-                .channel('public:' + tableName)
+                .channel('ww:public:' + tableName)
                 .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
                 .subscribe();
         }
-
-        // Experimental
-        // const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
-        //     collection =>
-        //         collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
-        //         Object.keys(realtimeTables).includes(collection.config.table)
-        // );
-        // for (const collection of collections) {
-        //     this.instance
-        //         .channel('public:' + collection.id)
-        //         .on(
-        //             'postgres_changes',
-        //             {
-        //                 event: '*',
-        //                 schema: 'public',
-        //                 table: collection.config.table,
-        //                 filter: generateFilter(collection.filter),
-        //             },
-        //             event => this.onCollectionUpdate(collection.id, event)
-        //         )
-        //         .subscribe();
-        // }
     },
-    // onCollectionUpdate(collectionId, event) {
-    //     console.log(collectionId, event);
-    // },
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
@@ -551,6 +530,34 @@ export default {
                 }
                 return;
         }
+    },
+    subscribeToChannel(channel, type = 'postgres_changes', event = '*', schema = '*', table, filter, self = false) {
+        this.instance
+            .channel(channel)
+            .on(
+                type,
+                {
+                    event: event || '*',
+                    ...(type === 'postgres_cbanges' ? { schema: schema || '*' } : {}),
+                    ...(table === 'postgres_changes' && table ? { table } : {}),
+                    ...(filter ? { filter } : {}),
+                    config: { broadcast: { self } },
+                },
+                payload =>
+                    wwLib.wwWorkflow.triggerEvent(
+                        { trigger: this.id + '-realtime:' + type, conditions: { channel, event } },
+                        payload
+                    )
+            )
+            .subscribe();
+    },
+    unsubscribeFromChannel(channel) {
+        this.instance.removeChannel(channel);
+    },
+    sendMessageToChannel(channel, type = 'broadcast', event, payload) {
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
+        _channel.send({ type, event, payload });
     },
     performAutoSync(table, type, data) {
         if (!data || this.settings.publicData.realtimeTables[table]) return;

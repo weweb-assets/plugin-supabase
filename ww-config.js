@@ -85,6 +85,74 @@ export default {
             },
         },
     },
+    triggers: [
+        {
+            label: 'On realtime database changes',
+            value: 'realtime:postgres_changes',
+            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            conditions: [
+                {
+                    name: 'Event',
+                    key: 'event',
+                    type: 'TextSelect',
+                    options: [
+                        { label: 'All', value: null },
+                        { label: 'INSERT', value: 'INSERT' },
+                        { label: 'UPDATE', value: 'UPDATE' },
+                        { label: 'DELETE', value: 'DELETE' },
+                    ],
+                },
+                {
+                    name: 'Channel',
+                    key: 'channel',
+                    type: 'Text',
+                    placeholder: 'Channel name',
+                },
+            ],
+        },
+        {
+            label: 'On realtime presence',
+            value: 'realtime:presence',
+            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            conditions: [
+                {
+                    name: 'Event',
+                    key: 'event',
+                    type: 'TextSelect',
+                    options: [
+                        { label: 'Sync', value: 'sync' },
+                        { label: 'Join', value: 'join' },
+                        { label: 'Leave', value: 'leave' },
+                    ],
+                },
+                {
+                    name: 'Channel',
+                    key: 'channel',
+                    type: 'Text',
+                    placeholder: 'Channel name',
+                },
+            ],
+        },
+        {
+            label: 'On realtime broadcast',
+            value: 'realtime:broadcast',
+            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            conditions: [
+                {
+                    name: 'Event',
+                    key: 'event',
+                    type: 'Text',
+                    placeholder: 'Event name',
+                },
+                {
+                    name: 'Channel',
+                    key: 'channel',
+                    type: 'Text',
+                    placeholder: 'Channel name',
+                },
+            ],
+        },
+    ],
     actions: [
         {
             name: 'Database | Select',
@@ -254,6 +322,39 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/InvokeEdge.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Subscribe to channel',
+            code: 'subscribeToChannel',
+            getIsValid({ channel, type }) {
+                return !!channel && !!type;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/RealtimeSubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Unsubscribe from channel',
+            code: 'unsubscribeFromChannel',
+            getIsValid({ channel }) {
+                return !!channel;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/RealtimeUnsubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Broadcast a message',
+            code: 'sendMessageToChannel',
+            getIsValid({ channel, type }) {
+                return !!channel && !!type;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/RealtimeBroadcastMessage.vue'),
             /* wwEditor:end */
         },
     ],
