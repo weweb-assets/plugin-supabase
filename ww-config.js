@@ -303,6 +303,39 @@ export default {
             /* wwEditor:end */
         },
         {
+            name: 'Realtime | Subscribe to channel',
+            code: 'subscribeToChannel',
+            getIsValid({ channel, type }) {
+                return !!channel && !!type;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/SubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Unsubscribe from channel',
+            code: 'unsubscribeFromChannel',
+            getIsValid({ channel }) {
+                return !!channel;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/UnsubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Broadcast a message',
+            code: 'sendMessageToChannel',
+            getIsValid({ channel, type }) {
+                return !!channel && !!type;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/BroadcastMessage.vue'),
+            /* wwEditor:end */
+        },
+        {
             name: 'Call a Postgres function',
             code: 'callPostgresFunction',
             getIsValid({ functionName }) {
@@ -322,39 +355,6 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/InvokeEdge.vue'),
-            /* wwEditor:end */
-        },
-        {
-            name: 'Realtime | Subscribe to channel',
-            code: 'subscribeToChannel',
-            getIsValid({ channel, type }) {
-                return !!channel && !!type;
-            },
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Functions/RealtimeSubscribeChannel.vue'),
-            /* wwEditor:end */
-        },
-        {
-            name: 'Realtime | Unsubscribe from channel',
-            code: 'unsubscribeFromChannel',
-            getIsValid({ channel }) {
-                return !!channel;
-            },
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Functions/RealtimeUnsubscribeChannel.vue'),
-            /* wwEditor:end */
-        },
-        {
-            name: 'Realtime | Broadcast a message',
-            code: 'sendMessageToChannel',
-            getIsValid({ channel, type }) {
-                return !!channel && !!type;
-            },
-            isAsync: true,
-            /* wwEditor:start */
-            edit: () => import('./src/components/Functions/RealtimeBroadcastMessage.vue'),
             /* wwEditor:end */
         },
     ],

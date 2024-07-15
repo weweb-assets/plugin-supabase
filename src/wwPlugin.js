@@ -19,9 +19,9 @@ import './components/Functions/Storage/UpdateFile.vue';
 import './components/Functions/Storage/MoveFile.vue';
 import './components/Functions/Storage/CopyFile.vue';
 import './components/Functions/Storage/DeleteFiles.vue';
-import './components/Functions/Realtime/RealtimeSubscribeChannel.vue';
-import './components/Functions/Realtime/RealtimeUnsubscribeChannel.vue';
-import './components/Functions/Realtime/RealtimeBroadcastMessage.vue';
+import './components/Functions/Realtime/SubscribeChannel.vue';
+import './components/Functions/Realtime/UnsubscribeChannel.vue';
+import './components/Functions/Realtime/BroadcastMessage.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
