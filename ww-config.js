@@ -89,34 +89,33 @@ export default {
         {
             label: 'On realtime database changes',
             value: 'realtime:postgres_changes',
-            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            event: { channel: '', data: {} },
             conditions: [
                 {
-                    name: 'Event',
+                    name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
                     options: [
-                        { label: 'All', value: null },
+                        { label: 'ALL', value: null },
                         { label: 'INSERT', value: 'INSERT' },
                         { label: 'UPDATE', value: 'UPDATE' },
                         { label: 'DELETE', value: 'DELETE' },
                     ],
                 },
                 {
-                    name: 'Channel',
+                    name: 'Channel name',
                     key: 'channel',
                     type: 'Text',
-                    placeholder: 'Channel name',
                 },
             ],
         },
         {
             label: 'On realtime presence',
             value: 'realtime:presence',
-            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            event: { channel: '', data: {} },
             conditions: [
                 {
-                    name: 'Event',
+                    name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
                     options: [
@@ -126,29 +125,27 @@ export default {
                     ],
                 },
                 {
-                    name: 'Channel',
+                    name: 'Channel name',
                     key: 'channel',
                     type: 'Text',
-                    placeholder: 'Channel name',
                 },
             ],
         },
         {
             label: 'On realtime broadcast',
             value: 'realtime:broadcast',
-            event: { channel: '', type: 'message', event: { client: null, action: '', options: {}, payload: null } },
+            event: { channel: '', data: {} },
             conditions: [
                 {
-                    name: 'Event',
+                    name: 'Event type',
                     key: 'event',
                     type: 'Text',
                     placeholder: 'Event name',
                 },
                 {
-                    name: 'Channel',
+                    name: 'Channel name',
                     key: 'channel',
                     type: 'Text',
-                    placeholder: 'Channel name',
                 },
             ],
         },

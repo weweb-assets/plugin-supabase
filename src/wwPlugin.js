@@ -546,7 +546,7 @@ export default {
                 payload =>
                     wwLib.wwWorkflow.triggerEvent(
                         { trigger: this.id + '-realtime:' + type, conditions: { channel, event } },
-                        payload
+                        { channel, data: payload }
                     )
             )
             .subscribe();
