@@ -544,7 +544,7 @@ export default {
                     config: { broadcast: { self } },
                 },
                 payload =>
-                    wwLib.wwWorkflow.triggerEvent(
+                    wwLib.wwWorkflow.executeTrigger(
                         { trigger: this.id + '-realtime:' + type, conditions: { channel, event } },
                         { channel, data: payload }
                     )
