@@ -324,8 +324,8 @@ export default {
         {
             name: 'Realtime | Broadcast a message',
             code: 'sendMessageToChannel',
-            getIsValid({ channel, type }) {
-                return !!channel && !!type;
+            getIsValid({ channel, event }) {
+                return !!channel && !!event;
             },
             isAsync: true,
             /* wwEditor:start */
