@@ -126,7 +126,7 @@ export default {
             return this.args.schema ?? '*';
         },
         table() {
-            return this.args.table ?? '*';
+            return this.args.table ?? '';
         },
         filter() {
             return this.args.filter ?? '';
@@ -134,6 +134,11 @@ export default {
         self() {
             return this.args.self ?? false;
         },
+    },
+    mounted() {
+        if (!this.args.type) {
+            this.setType('postgres_changes');
+        }
     },
     methods: {
         setChannel(channel) {
