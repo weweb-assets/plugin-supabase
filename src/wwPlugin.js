@@ -531,7 +531,7 @@ export default {
                 return;
         }
     },
-    subscribeToChannel(channel, type = 'postgres_changes', event = '*', schema = '*', table, filter, self = false) {
+    subscribeToChannel({ channel, type = 'postgres_changes', event = '*', schema = '*', table, filter, self = false }) {
         this.instance
             .channel(channel)
             .on(
@@ -551,10 +551,10 @@ export default {
             )
             .subscribe();
     },
-    unsubscribeFromChannel(channel) {
+    unsubscribeFromChannel({ channel }) {
         this.instance.removeChannel(channel);
     },
-    sendMessageToChannel(channel, type = 'broadcast', event, payload) {
+    sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
