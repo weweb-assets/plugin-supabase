@@ -22,6 +22,7 @@ import './components/Functions/Storage/DeleteFiles.vue';
 import './components/Functions/Realtime/SubscribeChannel.vue';
 import './components/Functions/Realtime/UnsubscribeChannel.vue';
 import './components/Functions/Realtime/BroadcastMessage.vue';
+import './components/Functions/Realtime/UpdateState.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -531,33 +532,62 @@ export default {
                 return;
         }
     },
-    subscribeToChannel({ channel, type = 'postgres_changes', event = '*', schema = '*', table, filter, self = false }) {
-        this.instance
-            .channel(channel)
-            .on(
-                type,
+    subscribeToChannel({
+        channel,
+        type = 'postgres_changes',
+        event = '*',
+        schema = '*',
+        table,
+        filter,
+        self = false,
+        presence = false,
+    }) {
+        const _channel = this.instance.channel(channel);
+        _channel.on(
+            type,
+            {
+                event: event || '*',
+                ...(type === 'postgres_changes' ? { schema: schema || '*' } : {}),
+                ...(table === 'postgres_changes' && table ? { table } : {}),
+                ...(filter ? { filter } : {}),
+                config: { broadcast: { self } },
+            },
+            e => {
+                wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:' + type, {
+                    event: { channel, data: e },
+                    conditions: { channel, event: e.event || e.eventType },
+                });
+            }
+        );
+        if (presence)
+            _channel.on(
+                'presence',
                 {
-                    event: event || '*',
-                    ...(type === 'postgres_cbanges' ? { schema: schema || '*' } : {}),
-                    ...(table === 'postgres_changes' && table ? { table } : {}),
-                    ...(filter ? { filter } : {}),
+                    event: '*',
                     config: { broadcast: { self } },
                 },
-                payload =>
-                    wwLib.wwWorkflow.executeTrigger(
-                        { trigger: this.id + '-realtime:' + type, conditions: { channel, event } },
-                        { channel, data: payload }
-                    )
-            )
-            .subscribe();
+                e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                        event: { channel, data: e },
+                        conditions: { channel, event: e.event },
+                    });
+                }
+            );
+        _channel.subscribe();
     },
     unsubscribeFromChannel({ channel }) {
         this.instance.removeChannel(channel);
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
+        debugger;
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
+    },
+    updateChannelState({ channel, state }) {
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before updating the state.');
+        _channel.track(state);
     },
     performAutoSync(table, type, data) {
         if (!data || this.settings.publicData.realtimeTables[table]) return;

@@ -20,7 +20,7 @@ export default {
     emits: ['update:args'],
     computed: {
         channel() {
-            return this.args.channel || [];
+            return this.args.channel || '';
         },
     },
     methods: {

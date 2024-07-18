@@ -12,22 +12,12 @@
     />
     <wwEditorInputRow
         type="query"
-        label="Event"
-        tooltip="The event name you want to define"
+        label="Presence state"
+        tooltip="The presence state you want to define. It can be anything (even an object), it will be shared with the channel members."
         bindable
         small
-        :model-value="event"
-        @update:modelValue="setEvent"
-    />
-    <wwEditorInputRow
-        type="query"
-        label="Payload"
-        placeholder="Payload"
-        bindable
-        small
-        required
-        :model-value="payload"
-        @update:modelValue="setPayload"
+        :model-value="state"
+        @update:modelValue="setState"
     />
 </template>
 
@@ -42,22 +32,16 @@ export default {
         channel() {
             return this.args.channel || '';
         },
-        event() {
-            return this.args.event || '';
-        },
-        payload() {
-            return this.args.payload || '';
+        state() {
+            return this.args.state || '';
         },
     },
     methods: {
         setChannel(channel) {
             this.$emit('update:args', { ...this.args, channel });
         },
-        setEvent(event) {
-            this.$emit('update:args', { ...this.args, event });
-        },
-        setPayload(payload) {
-            this.$emit('update:args', { ...this.args, payload });
+        setState(state) {
+            this.$emit('update:args', { ...this.args, state });
         },
     },
 };

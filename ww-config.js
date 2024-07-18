@@ -89,14 +89,25 @@ export default {
         {
             label: 'On realtime database changes',
             value: 'realtime:postgres_changes',
-            event: { channel: '', data: {} },
+            event: {
+                channel: '',
+                data: {
+                    schema: 'public',
+                    table: 'My Table',
+                    commit_timestamp: '2024-08-01T20:17:03.216Z',
+                    eventType: 'INSERT | UPDATE | DELETE',
+                    errors: null,
+                    new: {},
+                    old: {},
+                },
+            },
             conditions: [
                 {
                     name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
                     options: [
-                        { label: 'ALL', value: null },
+                        { label: 'All events', value: '*' },
                         { label: 'INSERT', value: 'INSERT' },
                         { label: 'UPDATE', value: 'UPDATE' },
                         { label: 'DELETE', value: 'DELETE' },
@@ -112,13 +123,23 @@ export default {
         {
             label: 'On realtime presence',
             value: 'realtime:presence',
-            event: { channel: '', data: {} },
+            event: {
+                channel: '',
+                data: {
+                    event: 'join',
+                    key: '9fe543c6-4530-11ef-a6c3-0a58a9feac02',
+                    currentPresences: [],
+                    leftPresences: [],
+                    newPresences: [],
+                },
+            },
             conditions: [
                 {
                     name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
                     options: [
+                        { label: 'All events', value: '*' },
                         { label: 'Sync', value: 'sync' },
                         { label: 'Join', value: 'join' },
                         { label: 'Leave', value: 'leave' },
@@ -134,13 +155,12 @@ export default {
         {
             label: 'On realtime broadcast',
             value: 'realtime:broadcast',
-            event: { channel: '', data: {} },
+            event: { channel: '', data: { event: '', payload: '' } },
             conditions: [
                 {
-                    name: 'Event type',
+                    name: 'Event name',
                     key: 'event',
                     type: 'Text',
-                    placeholder: 'Event name',
                 },
                 {
                     name: 'Channel name',
@@ -330,6 +350,17 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Realtime/BroadcastMessage.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Update presence state',
+            code: 'updateChannelState',
+            getIsValid({ channel, state }) {
+                return !!channel && !!state;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/UpdateState.vue'),
             /* wwEditor:end */
         },
         {
