@@ -563,31 +563,7 @@ export default {
             _channel.on(
                 'presence',
                 {
-                    event: 'sync',
-                },
-                e => {
-                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
-                        event: { channel, data: e },
-                        conditions: { channel, event: e.event },
-                    });
-                }
-            );
-            _channel.on(
-                'presence',
-                {
-                    event: 'join',
-                },
-                e => {
-                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
-                        event: { channel, data: e },
-                        conditions: { channel, event: e.event },
-                    });
-                }
-            );
-            _channel.on(
-                'presence',
-                {
-                    event: 'leave',
+                    event: '*',
                 },
                 e => {
                     wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {

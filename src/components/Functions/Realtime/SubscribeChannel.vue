@@ -84,15 +84,7 @@
         @update:modelValue="setFilter"
     />
     <wwEditorInputRow
-        type="onoff"
-        label="Listen presence"
-        tooltip="Define if you want to receive presence events"
-        bindable
-        small
-        :model-value="presence"
-        @update:modelValue="setPresence"
-    />
-    <wwEditorInputRow
+        v-if="type === 'broadcast'"
         type="onoff"
         label="Listen self"
         tooltip="Define if you want your own events to be received"
@@ -100,6 +92,15 @@
         small
         :model-value="self"
         @update:modelValue="setSelf"
+    />
+    <wwEditorInputRow
+        type="onoff"
+        label="Listen presence"
+        tooltip="Define if you want to receive presence events"
+        bindable
+        small
+        :model-value="presence"
+        @update:modelValue="setPresence"
     />
 </template>
 
@@ -153,6 +154,8 @@ export default {
                 schema: null,
                 table: null,
                 filter: null,
+                self: false,
+                presence: false,
             });
         },
         setEvent(event) {
