@@ -559,12 +559,11 @@ export default {
                 });
             }
         );
-        if (presence)
+        if (presence) {
             _channel.on(
                 'presence',
                 {
-                    event: '*',
-                    config: { broadcast: { self } },
+                    event: 'sync',
                 },
                 e => {
                     wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
@@ -573,6 +572,31 @@ export default {
                     });
                 }
             );
+            _channel.on(
+                'presence',
+                {
+                    event: 'join',
+                },
+                e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                        event: { channel, data: e },
+                        conditions: { channel, event: e.event },
+                    });
+                }
+            );
+            _channel.on(
+                'presence',
+                {
+                    event: 'leave',
+                },
+                e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                        event: { channel, data: e },
+                        conditions: { channel, event: e.event },
+                    });
+                }
+            );
+        }
         _channel.subscribe();
     },
     unsubscribeFromChannel({ channel }) {
