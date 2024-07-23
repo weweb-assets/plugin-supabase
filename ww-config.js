@@ -103,6 +103,11 @@ export default {
             },
             conditions: [
                 {
+                    name: 'Channel name',
+                    key: 'channel',
+                    type: 'Text',
+                },
+                {
                     name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
@@ -112,11 +117,6 @@ export default {
                         { label: 'UPDATE', value: 'UPDATE' },
                         { label: 'DELETE', value: 'DELETE' },
                     ],
-                },
-                {
-                    name: 'Channel name',
-                    key: 'channel',
-                    type: 'Text',
                 },
             ],
         },
@@ -135,6 +135,11 @@ export default {
             },
             conditions: [
                 {
+                    name: 'Channel name',
+                    key: 'channel',
+                    type: 'Text',
+                },
+                {
                     name: 'Event type',
                     key: 'event',
                     type: 'TextSelect',
@@ -145,11 +150,6 @@ export default {
                         { label: 'Leave', value: 'leave' },
                     ],
                 },
-                {
-                    name: 'Channel name',
-                    key: 'channel',
-                    type: 'Text',
-                },
             ],
         },
         {
@@ -158,13 +158,13 @@ export default {
             event: { channel: '', data: { event: '', payload: '' } },
             conditions: [
                 {
-                    name: 'Event name',
-                    key: 'event',
+                    name: 'Channel name',
+                    key: 'channel',
                     type: 'Text',
                 },
                 {
-                    name: 'Channel name',
-                    key: 'channel',
+                    name: 'Event name',
+                    key: 'event',
                     type: 'Text',
                 },
             ],
