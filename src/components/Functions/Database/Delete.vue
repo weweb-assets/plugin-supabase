@@ -189,12 +189,7 @@ export default {
             }
         },
         refreshFields() {
-            // clear removed fields
-            const primaryData = { ...this.args.primaryData };
-            for (const key in primaryData) {
-                if (!this.primaryProperties.includes(key)) delete primaryData[key];
-            }
-            this.setPrimaryData(primaryData);
+            this.setPrimaryData({ ...this.primaryData });
         },
     },
 };

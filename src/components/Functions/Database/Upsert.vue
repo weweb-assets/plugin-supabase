@@ -295,6 +295,7 @@ export default {
             this.setDataFields(
                 this.args.dataFields.filter(field => this.tableProperties.some(prop => prop.name === field))
             );
+            this.$nextTick(() => this.setPrimaryData({ ...this.primaryData }));
         },
     },
 };
