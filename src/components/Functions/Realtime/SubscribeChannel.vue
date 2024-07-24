@@ -62,17 +62,22 @@
         :model-value="schema"
         @update:modelValue="setSchema"
     />
-    <wwEditorInputRow
-        v-if="type === 'postgres_changes'"
-        type="query"
-        label="Table"
-        placeholder="*"
-        tooltip="The table name you want to listen to, default to all tables"
-        bindable
-        small
-        :model-value="table"
-        @update:modelValue="setTable"
-    />
+    <wwEditorFormRow v-if="type === 'postgres_changes'" label="Table" required>
+        <div class="flex items-center">
+            <wwEditorInputTextSelect
+                class="w-100"
+                placeholder="All tables (*)"
+                bindable
+                required
+                :model-value="table"
+                :options="tablesOptions"
+                @update:modelValue="setTable"
+            />
+            <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchTables">
+                <wwEditorIcon name="refresh" medium />
+            </button>
+        </div>
+    </wwEditorFormRow>
     <wwEditorInputRow
         v-if="type === 'postgres_changes'"
         type="query"
@@ -102,6 +107,7 @@
         :model-value="presence"
         @update:modelValue="setPresence"
     />
+    <wwLoader :loading="isLoading" />
 </template>
 
 <script>
@@ -111,6 +117,12 @@ export default {
         args: { type: Object, required: true },
     },
     emits: ['update:args'],
+    data() {
+        return {
+            isLoading: false,
+            definitions: {},
+        };
+    },
     computed: {
         channel() {
             return this.args.channel || '';
@@ -125,7 +137,7 @@ export default {
             return this.args.schema ?? '';
         },
         table() {
-            return this.args.table ?? '';
+            return this.args.table ?? null;
         },
         filter() {
             return this.args.filter ?? '';
@@ -135,6 +147,15 @@ export default {
         },
         presence() {
             return this.args.presence ?? false;
+        },
+        tablesOptions() {
+            return [
+                { label: 'All tables', value: null },
+                ...Object.keys(this.definitions).map(tableName => ({
+                    label: tableName,
+                    value: tableName,
+                })),
+            ];
         },
     },
     mounted() {
@@ -175,6 +196,17 @@ export default {
         },
         setPresence(presence) {
             this.$emit('update:args', { ...this.args, presence });
+        },
+        async fetchTables() {
+            try {
+                this.isLoading = true;
+                await this.plugin.fetchDoc();
+                this.definitions = this.plugin.doc?.definitions || {};
+            } catch (err) {
+                wwLib.wwLog.error(err);
+            } finally {
+                this.isLoading = false;
+            }
         },
     },
 };
