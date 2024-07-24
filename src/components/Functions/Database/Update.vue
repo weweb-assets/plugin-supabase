@@ -192,6 +192,7 @@ export default {
         },
     },
     mounted() {
+        console.log('mounted', this.args, this.definitions);
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
         if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
     },
@@ -215,6 +216,7 @@ export default {
             for (const field of this.primaryProperties) {
                 if (!primaryData[field.name]) delete primaryData[field.name];
             }
+            console.log('setPrimaryData', primaryData, this.primaryProperties);
             this.$emit('update:args', { ...this.args, primaryData });
         },
         setDataFields(dataFields) {
@@ -233,6 +235,7 @@ export default {
             this.$emit('update:args', { ...this.args, data });
         },
         async fetchTables() {
+            console.log('fetchTabless');
             try {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
@@ -245,11 +248,13 @@ export default {
             }
         },
         refreshFields() {
-            // clear removed fields
-            this.setDataFields(
-                this.args.dataFields.filter(field => this.tablePropertiesFiltered.some(prop => prop.name === field))
+            // clear removed fields in this order as setDataFields will trigger setData with next tick too
+            this.setPrimaryData({ ...this.primaryData });
+            this.$nextTick(() =>
+                this.setDataFields(
+                    this.args.dataFields.filter(field => this.tablePropertiesFiltered.some(prop => prop.name === field))
+                )
             );
-            this.$nextTick(() => this.setPrimaryData({ ...this.primaryData }));
         },
     },
 };
