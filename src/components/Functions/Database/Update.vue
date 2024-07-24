@@ -192,7 +192,6 @@ export default {
         },
     },
     mounted() {
-        console.log('mounted', this.args, this.definitions);
         this.definitions = (this.plugin.doc && this.plugin.doc.definitions) || {};
         if (!this.args.table) this.setArgs({ autoSync: false, modifiers: { select: false } });
     },
@@ -216,7 +215,6 @@ export default {
             for (const field of this.primaryProperties) {
                 if (!primaryData[field.name]) delete primaryData[field.name];
             }
-            console.log('setPrimaryData', primaryData, this.primaryProperties);
             this.$emit('update:args', { ...this.args, primaryData });
         },
         setDataFields(dataFields) {
@@ -235,7 +233,6 @@ export default {
             this.$emit('update:args', { ...this.args, data });
         },
         async fetchTables() {
-            console.log('fetchTabless');
             try {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
