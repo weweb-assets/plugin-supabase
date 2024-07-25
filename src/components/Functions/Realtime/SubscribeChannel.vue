@@ -62,22 +62,18 @@
         :model-value="schema"
         @update:modelValue="setSchema"
     />
-    <wwEditorFormRow v-if="type === 'postgres_changes'" label="Table" required>
-        <div class="flex items-center">
-            <wwEditorInputTextSelect
-                class="w-100"
-                placeholder="All tables (*)"
-                bindable
-                required
-                :model-value="table"
-                :options="tablesOptions"
-                @update:modelValue="setTable"
-            />
-            <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchTables">
-                <wwEditorIcon name="refresh" medium />
-            </button>
-        </div>
-    </wwEditorFormRow>
+    <wwEditorInputRow
+        v-if="type === 'postgres_changes'"
+        label="Table"
+        type="select"
+        placeholder="All tables"
+        bindable
+        small
+        tooltip="The table you want to listen to, default to all tables"
+        :model-value="table"
+        :options="tablesOptions"
+        @update:modelValue="setTable"
+    />
     <wwEditorInputRow
         v-if="type === 'postgres_changes'"
         type="query"
@@ -159,6 +155,7 @@ export default {
         },
     },
     mounted() {
+        this.fetchTables();
         if (!this.args.type) {
             this.setType('postgres_changes');
         }
