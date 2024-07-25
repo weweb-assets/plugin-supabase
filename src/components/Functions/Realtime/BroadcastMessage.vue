@@ -26,7 +26,6 @@
         placeholder="Payload"
         bindable
         small
-        required
         :model-value="payload"
         @update:modelValue="setPayload"
     />
