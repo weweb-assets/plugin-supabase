@@ -245,9 +245,12 @@ export default {
             }
         },
         refreshFields() {
-            // clear removed fields
-            this.setDataFields(
-                this.args.dataFields.filter(field => this.tablePropertiesFiltered.some(prop => prop.name === field))
+            // clear removed fields in this order as setDataFields will trigger setData with next tick too
+            this.setPrimaryData({ ...this.primaryData });
+            this.$nextTick(() =>
+                this.setDataFields(
+                    this.args.dataFields.filter(field => this.tablePropertiesFiltered.some(prop => prop.name === field))
+                )
             );
         },
     },
