@@ -14,6 +14,7 @@
         type="query"
         label="Event"
         tooltip="The event name you want to define"
+        required
         bindable
         small
         :model-value="event"

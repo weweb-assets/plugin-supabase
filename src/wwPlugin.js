@@ -576,6 +576,8 @@ export default {
         _channel.subscribe();
     },
     unsubscribeFromChannel({ channel }) {
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
         this.instance.removeChannel(channel);
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {

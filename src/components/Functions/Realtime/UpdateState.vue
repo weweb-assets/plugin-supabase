@@ -14,6 +14,7 @@
         type="query"
         label="Presence state"
         tooltip="The presence state you want to define. It can be anything (even an object), it will be shared with the channel members."
+        required
         bindable
         small
         :model-value="state"
