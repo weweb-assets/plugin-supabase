@@ -140,8 +140,18 @@ export default {
             .select(fields || undefined, { count: modifiers?.count?.mode, head: modifiers?.count?.countOnly });
         applyFilters(query, filters);
         applyModifiers(query, modifiers);
+        /* wwEditor:start */
+        const setResponse = wwLib.wwEditorNetwork.setRequest(this.id, 'SELECT ' + table, {
+            fields,
+            query,
+            filters,
+            modifiers,
+        });
+        /* wwEditor:end */
         const { data, count, error } = await query;
-
+        /* wwEditor:start */
+        setResponse({ data, count, error });
+        /* wwEditor:end */
         if (error) throw new Error(error.message, { cause: error });
         return modifiers?.count ? (modifiers.count.countOnly ? count : { data, count }) : data;
     },
@@ -553,6 +563,9 @@ export default {
                 config: { broadcast: { self } },
             },
             e => {
+                /* wwEditor:start */
+                wwLib.wwEditorNetwork.setEvent(this.id, channel, { type: 'in', payload: e });
+                /* wwEditor:end */
                 wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:' + type, {
                     event: { channel, data: e },
                     conditions: { channel, event: e.event || e.eventType },
@@ -566,6 +579,9 @@ export default {
                     event: '*',
                 },
                 e => {
+                    /* wwEditor:start */
+                    wwLib.wwEditorNetwork.setEvent(this.id, channel, { type: 'in', payload: e });
+                    /* wwEditor:end */
                     wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
                         event: { channel, data: e },
                         conditions: { channel, event: e.event },
@@ -574,22 +590,33 @@ export default {
             );
         }
         _channel.subscribe();
+        /* wwEditor:start */
+        wwLib.wwEditorNetwork.setChannel(this.id, channel);
+        /* wwEditor:end */
     },
     unsubscribeFromChannel({ channel }) {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
-        this.instance.removeChannel(channel);
+        this.instance.removeChannel(_channel);
+        /* wwEditor:start */
+        wwLib.wwEditorNetwork.removeChannel(this.id, channel);
+        /* wwEditor:end */
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
-        debugger;
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
+        /* wwEditor:start */
+        wwLib.wwEditorNetwork.setEvent(this.id, channel, { type: 'out', payload: { type, event, payload } });
+        /* wwEditor:end */
     },
     updateChannelState({ channel, state }) {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before updating the state.');
         _channel.track(state);
+        /* wwEditor:start */
+        wwLib.wwEditorNetwork.setEvent(this.id, channel, { type: 'out', payload: { track: state } });
+        /* wwEditor:end */
     },
     performAutoSync(table, type, data) {
         if (!data || this.settings.publicData.realtimeTables[table]) return;
