@@ -105,14 +105,16 @@ export default {
                 {
                     name: 'Channel name',
                     key: 'channel',
+                    placeholder: 'Default: All channels',
                     type: 'Text',
                 },
                 {
                     name: 'Event type',
                     key: 'event',
+                    placeholder: 'Default: All events',
                     type: 'TextSelect',
                     options: [
-                        { label: 'All events', value: '*' },
+                        { label: 'All events', value: null },
                         { label: 'INSERT', value: 'INSERT' },
                         { label: 'UPDATE', value: 'UPDATE' },
                         { label: 'DELETE', value: 'DELETE' },
@@ -137,14 +139,16 @@ export default {
                 {
                     name: 'Channel name',
                     key: 'channel',
+                    placeholder: 'Default: All channels',
                     type: 'Text',
                 },
                 {
                     name: 'Event type',
                     key: 'event',
+                    placeholder: 'Default: All events',
                     type: 'TextSelect',
                     options: [
-                        { label: 'All events', value: '*' },
+                        { label: 'All events', value: null },
                         { label: 'Sync', value: 'sync' },
                         { label: 'Join', value: 'join' },
                         { label: 'Leave', value: 'leave' },
@@ -160,10 +164,12 @@ export default {
                 {
                     name: 'Channel name',
                     key: 'channel',
+                    placeholder: 'Default: All channels',
                     type: 'Text',
                 },
                 {
                     name: 'Event name',
+                    placeholder: 'Default: All events',
                     key: 'event',
                     type: 'Text',
                 },
