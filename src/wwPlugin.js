@@ -548,8 +548,8 @@ export default {
             {
                 event: event || '*',
                 ...(type === 'postgres_changes' ? { schema: schema || '*' } : {}),
-                ...(table === 'postgres_changes' && table ? { table } : {}),
-                ...(filter ? { filter } : {}),
+                ...(type === 'postgres_changes' && table ? { table } : {}),
+                ...(type === 'postgres_changes' && filter ? { filter } : {}),
                 config: { broadcast: { self } },
             },
             e => {

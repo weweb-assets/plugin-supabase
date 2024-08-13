@@ -56,7 +56,7 @@
         type="query"
         label="Schema"
         placeholder="*"
-        tooltip="The schema you want to listen to, default to all schema"
+        tooltip="The schema you want to listen to, default to all schema. By default only the public schema can be listened to, [learn more](https://supabase.com/docs/guides/realtime/postgres-changes#private-schemas)."
         bindable
         small
         :model-value="schema"
