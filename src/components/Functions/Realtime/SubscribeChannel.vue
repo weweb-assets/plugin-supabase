@@ -75,7 +75,7 @@
         @update:modelValue="setTable"
     />
     <wwEditorInputRow
-        v-if="type === 'postgres_changes'"
+        v-if="type === 'postgres_changes' && table"
         type="query"
         label="Filter"
         tooltip="The filter you want to apply, [see supabase documentation](https://supabase.com/docs/guides/realtime/postgres-changes#available-filters)"

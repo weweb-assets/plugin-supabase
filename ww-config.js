@@ -14,7 +14,7 @@ export default {
                 },
             },
             {
-                label: 'Realtime tables',
+                label: 'Realtime collections',
                 icon: 'data',
                 edit: () => import('./src/components/Realtime/SettingsEdit.vue'),
                 summary: () => import('./src/components/Realtime/SettingsSummary.vue'),
