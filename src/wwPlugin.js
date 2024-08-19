@@ -19,6 +19,10 @@ import './components/Functions/Storage/UpdateFile.vue';
 import './components/Functions/Storage/MoveFile.vue';
 import './components/Functions/Storage/CopyFile.vue';
 import './components/Functions/Storage/DeleteFiles.vue';
+import './components/Functions/Realtime/SubscribeChannel.vue';
+import './components/Functions/Realtime/UnsubscribeChannel.vue';
+import './components/Functions/Realtime/BroadcastMessage.vue';
+import './components/Functions/Realtime/UpdateState.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
@@ -28,6 +32,7 @@ import { generateFilter } from './helpers/filters';
 
 export default {
     instance: null,
+    channels: {},
     /* wwEditor:start */
     doc: null,
     /* wwEditor:end */
@@ -93,36 +98,11 @@ export default {
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
             this.instance
-                .channel('public:' + tableName)
+                .channel('ww:public:' + tableName)
                 .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
                 .subscribe();
         }
-
-        // Experimental
-        // const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
-        //     collection =>
-        //         collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
-        //         Object.keys(realtimeTables).includes(collection.config.table)
-        // );
-        // for (const collection of collections) {
-        //     this.instance
-        //         .channel('public:' + collection.id)
-        //         .on(
-        //             'postgres_changes',
-        //             {
-        //                 event: '*',
-        //                 schema: 'public',
-        //                 table: collection.config.table,
-        //                 filter: generateFilter(collection.filter),
-        //             },
-        //             event => this.onCollectionUpdate(collection.id, event)
-        //         )
-        //         .subscribe();
-        // }
     },
-    // onCollectionUpdate(collectionId, event) {
-    //     console.log(collectionId, event);
-    // },
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
@@ -551,6 +531,64 @@ export default {
                 }
                 return;
         }
+    },
+    subscribeToChannel({
+        channel,
+        type = 'postgres_changes',
+        event = '*',
+        schema = '*',
+        table,
+        filter,
+        self = false,
+        presence = false,
+    }) {
+        const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
+        _channel.on(
+            type,
+            {
+                event: event || '*',
+                ...(type === 'postgres_changes' ? { schema: schema || '*' } : {}),
+                ...(type === 'postgres_changes' && table ? { table } : {}),
+                ...(type === 'postgres_changes' && filter ? { filter } : {}),
+            },
+            e => {
+                wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:' + type, {
+                    event: { channel, data: e },
+                    conditions: { channel, event: e.event || e.eventType },
+                });
+            }
+        );
+        if (presence) {
+            _channel.on(
+                'presence',
+                {
+                    event: '*',
+                },
+                e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                        event: { channel, data: e },
+                        conditions: { channel, event: e.event },
+                    });
+                }
+            );
+        }
+        _channel.subscribe();
+    },
+    unsubscribeFromChannel({ channel }) {
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
+        this.instance.removeChannel(_channel);
+    },
+    sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
+        debugger;
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
+        _channel.send({ type, event, payload });
+    },
+    updateChannelState({ channel, state }) {
+        const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
+        if (!_channel) throw new Error('Channel not found, please subscribe to the channel before updating the state.');
+        _channel.track(state);
     },
     performAutoSync(table, type, data) {
         if (!data || this.settings.publicData.realtimeTables[table]) return;

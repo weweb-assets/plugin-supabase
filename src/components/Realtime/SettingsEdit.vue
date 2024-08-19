@@ -1,7 +1,8 @@
 <template>
     <div class="mb-3 label-sm text-blue-500 flex items-center">
         <wwEditorIcon class="mr-1" name="information-circle" small />
-        You must enable realtime on your tables both in WeWeb and in Supabase in order to use this feature.
+        This feature allow your collections to be updated in realtime automcatically. You must enable realtime on your
+        tables both in WeWeb and in Supabase in order to use this feature.
     </div>
     <wwEditorFormRow label="Enable realtime table">
         <template #append-label>

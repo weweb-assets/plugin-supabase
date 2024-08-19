@@ -14,7 +14,7 @@ export default {
                 },
             },
             {
-                label: 'Realtime tables',
+                label: 'Realtime collections',
                 icon: 'data',
                 edit: () => import('./src/components/Realtime/SettingsEdit.vue'),
                 summary: () => import('./src/components/Realtime/SettingsSummary.vue'),
@@ -85,6 +85,97 @@ export default {
             },
         },
     },
+    triggers: [
+        {
+            label: 'On realtime database changes',
+            value: 'realtime:postgres_changes',
+            event: {
+                channel: '',
+                data: {
+                    schema: 'public',
+                    table: 'My Table',
+                    commit_timestamp: '2024-08-01T20:17:03.216Z',
+                    eventType: 'INSERT | UPDATE | DELETE',
+                    errors: null,
+                    new: {},
+                    old: {},
+                },
+            },
+            conditions: [
+                {
+                    name: 'Channel name',
+                    key: 'channel',
+                    placeholder: 'Default: All channels',
+                    type: 'Text',
+                },
+                {
+                    name: 'Event type',
+                    key: 'event',
+                    placeholder: 'Default: All events',
+                    type: 'TextSelect',
+                    options: [
+                        { label: 'All events', value: null },
+                        { label: 'INSERT', value: 'INSERT' },
+                        { label: 'UPDATE', value: 'UPDATE' },
+                        { label: 'DELETE', value: 'DELETE' },
+                    ],
+                },
+            ],
+        },
+        {
+            label: 'On realtime presence',
+            value: 'realtime:presence',
+            event: {
+                channel: '',
+                data: {
+                    event: 'join',
+                    key: '9fe543c6-4530-11ef-a6c3-0a58a9feac02',
+                    currentPresences: [],
+                    leftPresences: [],
+                    newPresences: [],
+                },
+            },
+            conditions: [
+                {
+                    name: 'Channel name',
+                    key: 'channel',
+                    placeholder: 'Default: All channels',
+                    type: 'Text',
+                },
+                {
+                    name: 'Event type',
+                    key: 'event',
+                    placeholder: 'Default: All events',
+                    type: 'TextSelect',
+                    options: [
+                        { label: 'All events', value: null },
+                        { label: 'Sync', value: 'sync' },
+                        { label: 'Join', value: 'join' },
+                        { label: 'Leave', value: 'leave' },
+                    ],
+                },
+            ],
+        },
+        {
+            label: 'On realtime broadcast',
+            value: 'realtime:broadcast',
+            event: { channel: '', data: { event: '', payload: '' } },
+            conditions: [
+                {
+                    name: 'Channel name',
+                    key: 'channel',
+                    placeholder: 'Default: All channels',
+                    type: 'Text',
+                },
+                {
+                    name: 'Event name',
+                    placeholder: 'Default: All events',
+                    key: 'event',
+                    type: 'Text',
+                },
+            ],
+        },
+    ],
     actions: [
         {
             name: 'Database | Select',
@@ -232,6 +323,50 @@ export default {
             isAsync: false,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/GetPublicUrl.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Subscribe to channel',
+            code: 'subscribeToChannel',
+            getIsValid({ channel, type }) {
+                return !!channel && !!type;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/SubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Unsubscribe from channel',
+            code: 'unsubscribeFromChannel',
+            getIsValid({ channel }) {
+                return !!channel;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/UnsubscribeChannel.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Broadcast a message',
+            code: 'sendMessageToChannel',
+            getIsValid({ channel, event }) {
+                return !!channel && !!event;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/BroadcastMessage.vue'),
+            /* wwEditor:end */
+        },
+        {
+            name: 'Realtime | Update presence state',
+            code: 'updateChannelState',
+            getIsValid({ channel, state }) {
+                return !!channel && !!state;
+            },
+            isAsync: true,
+            /* wwEditor:start */
+            edit: () => import('./src/components/Functions/Realtime/UpdateState.vue'),
             /* wwEditor:end */
         },
         {
