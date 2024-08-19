@@ -542,7 +542,7 @@ export default {
         self = false,
         presence = false,
     }) {
-        const _channel = this.instance.channel(channel);
+        const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
         _channel.on(
             type,
             {
@@ -550,7 +550,6 @@ export default {
                 ...(type === 'postgres_changes' ? { schema: schema || '*' } : {}),
                 ...(type === 'postgres_changes' && table ? { table } : {}),
                 ...(type === 'postgres_changes' && filter ? { filter } : {}),
-                config: { broadcast: { self } },
             },
             e => {
                 wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:' + type, {
