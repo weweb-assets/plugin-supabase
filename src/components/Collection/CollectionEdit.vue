@@ -107,14 +107,12 @@ export default {
             }));
         },
         tablePropertiesOptions() {
-            return this.tableProperties
-                .map(property => ({
-                    label:
-                        property.name +
-                        (this.primaryProperties.some(prop => prop.name === property.name) ? '#primary' : ''),
-                    value: property.name,
-                }))
-                .sort((a, b) => a.label.localeCompare(b.label));
+            return this.tableProperties.map(property => ({
+                label:
+                    property.name +
+                    (this.primaryProperties.some(prop => prop.name === property.name) ? '#primary' : ''),
+                value: property.name,
+            }));
         },
         isRealtime() {
             return this.plugin.settings.publicData.realtimeTables[this.database.table];
