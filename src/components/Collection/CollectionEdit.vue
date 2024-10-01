@@ -85,10 +85,12 @@ export default {
             };
         },
         tablesOptions() {
-            return Object.keys(this.definitions).map(tableName => ({
-                label: tableName,
-                value: tableName,
-            }));
+            return Object.keys(this.definitions)
+                .map(tableName => ({
+                    label: tableName,
+                    value: tableName,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label));
         },
         primaryProperties() {
             if (!this.definitions[this.database.table]) return [];
@@ -105,12 +107,14 @@ export default {
             }));
         },
         tablePropertiesOptions() {
-            return this.tableProperties.map(property => ({
-                label:
-                    property.name +
-                    (this.primaryProperties.some(prop => prop.name === property.name) ? '#primary' : ''),
-                value: property.name,
-            }));
+            return this.tableProperties
+                .map(property => ({
+                    label:
+                        property.name +
+                        (this.primaryProperties.some(prop => prop.name === property.name) ? '#primary' : ''),
+                    value: property.name,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label));
         },
         isRealtime() {
             return this.plugin.settings.publicData.realtimeTables[this.database.table];
