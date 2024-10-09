@@ -85,10 +85,12 @@ export default {
             };
         },
         tablesOptions() {
-            return Object.keys(this.definitions).map(tableName => ({
-                label: tableName,
-                value: tableName,
-            }));
+            return Object.keys(this.definitions)
+                .map(tableName => ({
+                    label: tableName,
+                    value: tableName,
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label));
         },
         primaryProperties() {
             if (!this.definitions[this.database.table]) return [];
