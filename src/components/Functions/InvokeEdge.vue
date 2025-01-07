@@ -145,6 +145,7 @@ export default {
                         this.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/edge`
                 );
+                console.log(data);
                 this.functionsOptions = data.map(func => ({ label: func.name, value: func.slug }));
                 this.isLoading = false;
             } catch (error) {
