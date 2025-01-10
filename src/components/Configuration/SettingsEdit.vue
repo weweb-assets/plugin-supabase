@@ -56,7 +56,7 @@
         <template #append-label>
             <a
                 class="ww-editor-link ml-2"
-                href="https://supabase.com/dashboard/project/_/settings/database"
+                :href="`https://supabase.com/dashboard/project/${projectRef}/settings/database`"
                 target="_blank"
             >
                 Find it here
@@ -65,6 +65,7 @@
         <wwEditorInputRow
             type="query"
             placeholder=""
+            :tooltip="`Required if you want Copilot to be able to update your database.`"
             :model-value="settings.privateData.databasePassword"
             @update:modelValue="changeDatabasePassword"
         ></wwEditorInputRow>
@@ -84,6 +85,11 @@ export default {
             projects: [],
             isLoading: false,
         };
+    },
+    computed: {
+        projectRef() {
+            return this.settings.publicData.projectUrl.replace('https://', '').replace('.supabase.co', '');
+        },
     },
     mounted() {
         if (this.settings.privateData.accessToken) {
