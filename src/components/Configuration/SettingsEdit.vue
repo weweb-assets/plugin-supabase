@@ -1,25 +1,4 @@
 <template>
-    <wwEditorFormRow required label="Project URL">
-        <template #append-label>
-            <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">
-                Find it here
-            </a>
-        </template>
-        <wwEditorInputRow
-            type="query"
-            placeholder="https://your-project.supabase.co"
-            :model-value="settings.publicData.projectUrl"
-            @update:modelValue="changeProjectUrl"
-        />
-    </wwEditorFormRow>
-    <wwEditorInputRow
-        label="Public API key"
-        required
-        type="query"
-        placeholder="ey********"
-        :model-value="settings.publicData.apiKey"
-        @update:modelValue="changeApiKey"
-    />
     <wwEditorFormRow label="Personal Access Token">
         <template #append-label>
             <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/account/tokens" target="_blank">
@@ -33,6 +12,36 @@
             @update:modelValue="changeAccessToken"
         ></wwEditorInputRow>
     </wwEditorFormRow>
+    <wwEditorFormRow required label="Project URL">
+        <template #append-label>
+            <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">
+                Find it here
+            </a>
+        </template>
+        <wwEditorInputRow
+            v-if="!settings.privateData.accessToken"
+            type="query"
+            placeholder="https://your-project.supabase.co"
+            :model-value="settings.publicData.projectUrl"
+            @update:modelValue="changeProjectUrl"
+        />
+        <wwEditorInputRow
+            v-else
+            type="select"
+            placeholder="https://your-project.supabase.co"
+            :model-value="settings.publicData.projectUrl"
+            :options="projects.map(project => ({ label: project.name, value: `https://${project.id}.supabase.co` }))"
+            @update:modelValue="changeProjectUrl"
+        />
+    </wwEditorFormRow>
+    <wwEditorInputRow
+        label="Public API key"
+        required
+        type="query"
+        placeholder="ey********"
+        :model-value="settings.publicData.apiKey"
+        @update:modelValue="changeApiKey"
+    />
     <wwEditorFormRow label="Database password">
         <template #append-label>
             <a
@@ -59,7 +68,15 @@ export default {
         settings: { type: Object, required: true },
     },
     emits: ['update:settings'],
+    data() {
+        return {
+            projects: [],
+        };
+    },
     mounted() {
+        if (this.settings.privateData.accessToken) {
+            this.fetchProjects();
+        }
         const isSettingsValid = this.settings.publicData.projectUrl && this.settings.publicData.apiKey;
         const isOtherPluginSettingsValid =
             wwLib.wwPlugins.supabaseAuth &&
@@ -113,6 +130,13 @@ export default {
         },
         loadInstance() {
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
+        },
+        async fetchProjects() {
+            this.projects = await wwAxios.get(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    this.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/projects`
+            );
         },
     },
 };
