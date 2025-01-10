@@ -30,7 +30,12 @@
             type="select"
             placeholder="https://your-project.supabase.co"
             :model-value="settings.publicData.projectUrl"
-            :options="projects.map(project => ({ label: project.name, value: `https://${project.id}.supabase.co` }))"
+            :options="
+                projects.map(project => ({
+                    label: `${project.name} (${project.id}) ${project.status === 'INACTIVE' ? '#PAUSED' : ''}`,
+                    value: `https://${project.id}.supabase.co`,
+                }))
+            "
             @update:modelValue="changeProjectUrl"
         />
     </wwEditorFormRow>
@@ -132,11 +137,12 @@ export default {
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
         async fetchProjects() {
-            this.projects = await wwAxios.get(
+            const { data } = await wwAxios.get(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     this.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase/projects`
             );
+            this.projects = data?.data;
         },
     },
 };
