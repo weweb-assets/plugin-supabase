@@ -14,7 +14,12 @@
     </wwEditorFormRow>
     <wwEditorFormRow required label="Project URL">
         <template #append-label>
-            <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/project/_/settings/api" target="_blank">
+            <a
+                v-if="!settings.privateData.accessToken"
+                class="ww-editor-link ml-2"
+                href="https://supabase.com/dashboard/project/_/settings/api"
+                target="_blank"
+            >
                 Find it here
             </a>
         </template>
@@ -102,6 +107,7 @@ export default {
                 privateData: {
                     ...this.settings.privateData,
                     accessToken: wwLib.wwPlugins.supabaseAuth.settings.privateData.accessToken,
+                    databasePassword: wwLib.wwPlugins.supabaseAuth.settings.privateData.databasePassword,
                 },
             });
         }
