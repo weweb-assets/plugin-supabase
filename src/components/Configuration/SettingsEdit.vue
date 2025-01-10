@@ -1,17 +1,4 @@
 <template>
-    <wwEditorFormRow label="Personal Access Token">
-        <template #append-label>
-            <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/account/tokens" target="_blank">
-                Find it here
-            </a>
-        </template>
-        <wwEditorInputRow
-            type="query"
-            placeholder="sbp_bdd0********4f23"
-            :model-value="settings.privateData.accessToken"
-            @update:modelValue="changeAccessToken"
-        ></wwEditorInputRow>
-    </wwEditorFormRow>
     <wwEditorFormRow required label="Project URL">
         <template #append-label>
             <a
@@ -142,13 +129,6 @@ export default {
                 publicData: { ...this.settings.publicData, apiKey },
             });
             this.$nextTick(this.loadInstance);
-        },
-        changeAccessToken(accessToken) {
-            this.$emit('update:settings', {
-                ...this.settings,
-                privateData: { ...this.settings.privateData, accessToken },
-            });
-            this.$nextTick(this.fetchProjects);
         },
         changeDatabasePassword(databasePassword) {
             this.$emit('update:settings', {
