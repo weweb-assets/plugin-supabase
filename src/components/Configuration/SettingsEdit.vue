@@ -113,7 +113,7 @@ export default {
                 const { apiKeys } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
-                apiKey = apiKeys.find(key => key.role === 'anon').api_key;
+                apiKey = apiKeys.find(key => key.name === 'anon').api_key;
             }
             this.$emit('update:settings', {
                 ...this.settings,
