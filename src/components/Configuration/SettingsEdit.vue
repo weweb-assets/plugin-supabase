@@ -69,6 +69,7 @@
             @update:modelValue="changeDatabasePassword"
         ></wwEditorInputRow>
     </wwEditorFormRow>
+    <wwLoader :loading="isLoading" />
 </template>
 
 <script>
@@ -81,6 +82,7 @@ export default {
     data() {
         return {
             projects: [],
+            isLoading: false,
         };
     },
     mounted() {
@@ -151,20 +153,34 @@ export default {
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
         async fetchProjects() {
-            const { data } = await wwAxios.get(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    this.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/projects`
-            );
-            this.projects = data?.data;
+            this.isLoading = true;
+            try {
+                const { data } = await wwAxios.get(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        this.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/projects`
+                );
+                this.projects = data?.data;
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+                throw error;
+            }
         },
         async fetchProject(projectId) {
-            const { data } = await wwAxios.get(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    this.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/projects/${projectId}`
-            );
-            return data?.data;
+            this.isLoading = true;
+            try {
+                const { data } = await wwAxios.get(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        this.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/projects/${projectId}`
+                );
+                this.isLoading = false;
+                return data?.data;
+            } catch (error) {
+                this.isLoading = false;
+                throw error;
+            }
         },
     },
 };
