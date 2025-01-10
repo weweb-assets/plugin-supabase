@@ -107,11 +107,19 @@ export default {
         }
     },
     methods: {
-        changeProjectUrl(projectUrl) {
+        async changeProjectUrl(projectUrl) {
+            let apiKey = this.settings.publicData.apiKey;
+            if (this.settings.privateData.accessToken) {
+                const { apiKeys } = await this.fetchProject(
+                    projectUrl.replace('https://', '').replace('.supabase.co', '')
+                );
+                apiKey = apiKeys.find(key => key.role === 'anon').api_key;
+            }
             this.$emit('update:settings', {
                 ...this.settings,
-                publicData: { ...this.settings.publicData, projectUrl },
+                publicData: { ...this.settings.publicData, projectUrl, apiKey },
             });
+
             this.$nextTick(this.loadInstance);
         },
         changeApiKey(apiKey) {
@@ -143,6 +151,14 @@ export default {
                 }/supabase/projects`
             );
             this.projects = data?.data;
+        },
+        async fetchProject(projectId) {
+            const { data } = await wwAxios.get(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    this.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/projects:${projectId}`
+            );
+            return data?.data;
         },
     },
 };
