@@ -156,7 +156,7 @@ export default {
             const { data } = await wwAxios.get(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     this.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/projects:${projectId}`
+                }/supabase/projects/${projectId}`
             );
             return data?.data;
         },
