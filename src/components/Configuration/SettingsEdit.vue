@@ -1,36 +1,43 @@
 <template>
-    <wwEditorFormRow required label="Project URL">
-        <template #append-label>
-            <a
+    <div class="flex items-center">
+        <wwEditorFormRow required label="Project URL" class="w-100">
+            <template #append-label>
+                <a
+                    v-if="!settings.privateData.accessToken"
+                    class="ww-editor-link ml-2"
+                    href="https://supabase.com/dashboard/project/_/settings/api"
+                    target="_blank"
+                >
+                    Find it here
+                </a>
+            </template>
+            <wwEditorInputRow
                 v-if="!settings.privateData.accessToken"
-                class="ww-editor-link ml-2"
-                href="https://supabase.com/dashboard/project/_/settings/api"
-                target="_blank"
-            >
-                Find it here
-            </a>
-        </template>
-        <wwEditorInputRow
-            v-if="!settings.privateData.accessToken"
-            type="query"
-            placeholder="https://your-project.supabase.co"
-            :model-value="settings.publicData.projectUrl"
-            @update:modelValue="changeProjectUrl"
-        />
-        <wwEditorInputRow
-            v-else
-            type="select"
-            placeholder="https://your-project.supabase.co"
-            :model-value="settings.publicData.projectUrl"
-            :options="
-                projects.map(project => ({
-                    label: `${project.name} (${project.id}) ${project.status === 'INACTIVE' ? '#PAUSED' : ''}`,
-                    value: `https://${project.id}.supabase.co`,
-                }))
-            "
-            @update:modelValue="changeProjectUrl"
-        />
-    </wwEditorFormRow>
+                type="query"
+                placeholder="https://your-project.supabase.co"
+                :model-value="settings.publicData.projectUrl"
+                @update:modelValue="changeProjectUrl"
+            />
+
+            <wwEditorInputRow
+                v-else
+                type="select"
+                placeholder="https://your-project.supabase.co"
+                :model-value="settings.publicData.projectUrl"
+                :options="projectsOptions"
+                @update:modelValue="changeProjectUrl"
+                class="-full"
+            />
+        </wwEditorFormRow>
+        <button
+            v-if="settings.privateData.accessToken"
+            type="button"
+            class="ww-editor-button -primary -small -icon ml-2"
+            @click="refreshProjects"
+        >
+            <wwEditorIcon name="refresh" medium />
+        </button>
+    </div>
     <wwEditorInputRow
         label="Public API key"
         required
@@ -77,10 +84,16 @@ export default {
         projectRef() {
             return this.settings?.publicData?.projectUrl?.replace('https://', '').replace('.supabase.co', '');
         },
+        projectsOptions() {
+            return this.projects.map(project => ({
+                label: `${project.name} (${project.id}) ${project.status === 'INACTIVE' ? '#PAUSED' : ''}`,
+                value: `https://${project.id}.supabase.co`,
+            }));
+        },
     },
     mounted() {
         if (this.settings.privateData.accessToken) {
-            this.fetchProjects();
+            this.refreshProjects();
         }
         const isSettingsValid = this.settings.publicData.projectUrl && this.settings.publicData.apiKey;
         const isOtherPluginSettingsValid =
@@ -139,13 +152,14 @@ export default {
         loadInstance() {
             this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
-        async fetchProjects() {
+        async refreshProjects() {
             this.isLoading = true;
             try {
-                const { data } = await wwAxios.get(
+                const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                         this.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/projects`
+                    }/supabase/projects/list`,
+                    { accessToken: this.settings.privateData.accessToken }
                 );
                 this.projects = data?.data;
                 this.isLoading = false;
