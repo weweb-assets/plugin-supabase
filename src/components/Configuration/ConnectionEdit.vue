@@ -1,22 +1,29 @@
 <template>
-    <button class="ww-editor-button -secondary" @click="connect">
+    <button v-if="!isOauth" class="ww-editor-button -secondary" @click="connect">
         <wwEditorIcon name="logos/supabase" class="ww-editor-button-icon -left" />
         Connect Supabase
     </button>
-    <span class="my-2">Or</span>
-    <wwEditorFormRow label="Personal Access Token">
-        <template #append-label>
-            <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/account/tokens" target="_blank">
-                Find it here
-            </a>
-        </template>
-        <wwEditorInputRow
-            type="query"
-            placeholder="sbp_bdd0********4f23"
-            :model-value="settings.privateData.accessToken"
-            @update:modelValue="changeAccessToken"
-        ></wwEditorInputRow>
-    </wwEditorFormRow>
+    <span v-if="!isOauth" class="my-4 border-top-primary"></span>
+    <div class="flex items-center">
+        <wwEditorFormRow :label="isOauth ? 'Access token' : 'Personal Access Token'" class="w-100">
+            <template #append-label>
+                <a class="ww-editor-link ml-2" href="https://supabase.com/dashboard/account/tokens" target="_blank">
+                    Find it here
+                </a>
+            </template>
+            <wwEditorInputRow
+                type="query"
+                placeholder="sbp_bdd0********4f23"
+                :model-value="settings.privateData.accessToken"
+                :tooltip="`You can enter it manually or auto fill it through the connect button.`"
+                :disabled="isOauth"
+                @update:modelValue="changeAccessToken"
+            ></wwEditorInputRow>
+        </wwEditorFormRow>
+        <button v-if="isOauth" type="button" class="ww-editor-button -secondary -small -icon ml-2" @click="unlink">
+            <wwEditorIcon name="unlink" medium />
+        </button>
+    </div>
 </template>
 
 <script>
@@ -33,6 +40,11 @@ export default {
             isLoading: false,
         };
     },
+    computed: {
+        isOauth() {
+            return this.settings.privateData.accessToken?.startsWith('sbp_oauth');
+        },
+    },
     methods: {
         changeAccessToken(accessToken) {
             this.$emit('update:settings', {
@@ -46,6 +58,9 @@ export default {
             const redirectUri = window.location.origin + window.location.pathname;
             window.localStorage.setItem('supabase_oauth', true);
             window.location.href = `https://api.supabase.com/v1/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+        },
+        unlink() {
+            this.changeAccessToken('');
         },
     },
 };

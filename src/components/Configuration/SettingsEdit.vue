@@ -58,7 +58,7 @@
         </template>
         <wwEditorInputRow
             type="query"
-            placeholder=""
+            placeholder="Enter your database password"
             :tooltip="`Required if you want Copilot to be able to update your database.`"
             :model-value="settings.privateData.databasePassword"
             @update:modelValue="changeDatabasePassword"

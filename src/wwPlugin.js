@@ -55,7 +55,7 @@ export default {
                 }/supabase/connect`,
                 { code, redirectUri: window.location.origin + window.location.pathname }
             );
-            wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'success' });
+            wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
         }
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
