@@ -11,14 +11,13 @@
                     Find it here
                 </a>
             </template>
-            <wwEditorInputRow
+            <wwEditorInput
                 type="query"
                 placeholder="sbp_bdd0********4f23"
                 :model-value="settings.privateData.accessToken"
-                :tooltip="`You can enter it manually or auto fill it through the connect button.`"
                 :disabled="isOauth"
                 @update:modelValue="changeAccessToken"
-            ></wwEditorInputRow>
+            ></wwEditorInput>
         </wwEditorFormRow>
         <button v-if="isOauth" type="button" class="ww-editor-button -secondary -small -icon ml-2" @click="unlink">
             <wwEditorIcon name="unlink" medium />
