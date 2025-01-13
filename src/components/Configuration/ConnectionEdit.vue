@@ -19,8 +19,8 @@
                 @update:modelValue="changeAccessToken"
             ></wwEditorInput>
         </wwEditorFormRow>
-        <button v-if="isOauth" type="button" class="ww-editor-button -secondary -small -icon ml-2" @click="unlink">
-            <wwEditorIcon name="unlink" medium />
+        <button v-if="isOauth" type="button" class="ww-editor-button -secondary -small -icon ml-2 mt-2" @click="unlink">
+            <wwEditorIcon name="unbind" medium />
         </button>
     </div>
 </template>
