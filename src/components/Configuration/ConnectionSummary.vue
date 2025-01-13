@@ -1,7 +1,9 @@
 <template>
     <div class="flex items-center body-2 mb-2">
         <wwEditorIcon name="link" class="mr-2" />
-        <div class="text-ellipsis">{{ settings.privateData.accessToken ? 'Linked' : 'Not linked' }}</div>
+        <div class="text-ellipsis" :class="{ 'content-success': accessToken }">
+            {{ settings.privateData.accessToken ? 'Account connected' : 'No account connected' }}
+        </div>
     </div>
 </template>
 

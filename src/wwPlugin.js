@@ -42,6 +42,21 @@ export default {
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        // check oauth in local storage
+        const isConnecting = window.localStorage.getItem('supabase_oauth');
+        // get code params from url
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (isConnecting && code) {
+            window.localStorage.removeItem('supabase_oauth');
+            await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/connect`,
+                { code, redirectUri: window.location.origin + window.location.pathname }
+            );
+            wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'success' });
+        }
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
