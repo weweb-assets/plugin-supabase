@@ -1,5 +1,5 @@
 <template>
-    <button v-if="!isOauth" class="ww-editor-button -secondary" @click="connect">
+    <button v-if="!isOauth" class="ww-editor-button -secondary" @click="connect" type="button">
         <wwEditorIcon name="logos/supabase" class="ww-editor-button-icon -left" />
         Connect Supabase
     </button>
