@@ -99,7 +99,7 @@ export default {
             }/supabase/schema`
         );
         this.projectInfo = data?.data;
-        return data;
+        return data?.data;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
