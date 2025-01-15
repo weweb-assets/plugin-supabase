@@ -61,7 +61,7 @@ export default {
         }
         /* wwEditor:end */
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
-        await this.fetchProjectInfo(settings.privateData.accessToken);
+        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /*  Called by supabase auth plugin
@@ -88,14 +88,17 @@ export default {
             }/supabase/install`
         );
     },
-    async fetchProjectInfo(accessToken) {
-        if (!accessToken) return;
+    async fetchProjectInfo(
+        projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
+        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
+    ) {
+        if (!accessToken || !projectUrl) return;
         const { data } = await wwAxios.get(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                this.$store.getters['websiteData/getDesignInfo'].id
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
             }/supabase/schema`
         );
-        this.projectInfo = data;
+        this.projectInfo = data?.data;
         return data;
     },
     async onSave(settings) {
