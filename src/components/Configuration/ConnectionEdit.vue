@@ -59,7 +59,7 @@ export default {
                 privateData: { ...this.settings.privateData, accessToken },
             });
         },
-        connect() {
+        async connect() {
             this.isLoading = true;
             const redirectUri = window.location.origin + window.location.pathname;
             window.localStorage.setItem('supabase_oauth', true);
@@ -69,7 +69,7 @@ export default {
                 }/supabase/authorize`,
                 { redirectUri, oauthRedirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
-            if (!data?.data) throw new Error ('No authorization URL returned');
+            if (!data?.data) throw new Error('No authorization URL returned');
             window.location.href = data?.data;
         },
         unlink() {
