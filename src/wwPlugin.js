@@ -99,6 +99,7 @@ export default {
             }/supabase/schema`
         );
         this.projectInfo = data?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
         return data?.data;
     },
     async onSave(settings) {
