@@ -156,6 +156,7 @@ export default {
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, projectUrl, apiKey },
+                privateData: { ...this.settings.privateData, apiKey: this.settings.privateData.apiKey },
             });
         },
         changeApiKey(apiKey) {
