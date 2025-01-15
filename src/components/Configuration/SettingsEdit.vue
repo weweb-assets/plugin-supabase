@@ -43,16 +43,17 @@
         :model-value="settings.publicData.apiKey"
         @update:modelValue="changeApiKey"
     />
-    <wwEditorFormRow label="Service role key">
+    <wwEditorFormRow label="Service role key" required>
         <div class="flex items-center">
             <wwEditorInputText
-                :type="isKeyVisible ? 'text' : 'password'"
+                type="password"
                 placeholder="ey********"
-                :model-value="settings.privateData.apiKey"
-                :style="{ '-webkit-text-security': isKeyVisible ? 'none' : 'disc' }"
                 large
-                @update:modelValue="changePrivateApiKey"
                 class="w-full"
+                :style="{ '-webkit-text-security': 'disc' }"
+                :disabled="settings.privateData.accessToken"
+                :model-value="settings.privateData.apiKey"
+                @update:modelValue="changePrivateApiKey"
             />
             <wwEditorQuestionMark
                 tooltip-position="top-left"
@@ -62,7 +63,7 @@
             />
         </div>
     </wwEditorFormRow>
-    <wwEditorFormRow label="Database password">
+    <wwEditorFormRow label="Database password" required>
         <template #append-label>
             <a
                 class="ww-editor-link ml-2"
@@ -79,7 +80,6 @@
                 :style="{ '-webkit-text-security': 'disc' }"
                 large
                 :tooltip="`Required if you want Copilot to be able to update your database.`"
-                :disabled="settings.privateData.accessToken"
                 :model-value="settings.privateData.databasePassword"
                 @update:modelValue="changeDatabasePassword"
                 class="w-full"
@@ -162,6 +162,12 @@ export default {
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, apiKey },
+            });
+        },
+        changePrivateApiKey(apiKey) {
+            this.$emit('update:settings', {
+                ...this.settings,
+                privateData: { ...this.settings.privateData, apiKey },
             });
         },
         changeDatabasePassword(databasePassword) {
