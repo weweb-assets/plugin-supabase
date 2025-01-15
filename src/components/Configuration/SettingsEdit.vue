@@ -76,7 +76,7 @@
         <div class="flex items-center">
             <wwEditorInputText
                 type="password"
-                placeholder="**********"
+                placeholder="Enter your database password"
                 :style="{ '-webkit-text-security': 'disc' }"
                 large
                 :tooltip="`Required if you want Copilot to be able to update your database.`"
