@@ -37,11 +37,13 @@ export default {
     channels: {},
     /* wwEditor:start */
     doc: null,
+    projectInfo: null,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
         // get code params from url
@@ -57,7 +59,9 @@ export default {
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
         }
+        /* wwEditor:end */
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        await this.fetchProjectInfo(settings.privateData.accessToken);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /*  Called by supabase auth plugin
@@ -83,6 +87,16 @@ export default {
                 wwLib.$store.getters['websiteData/getDesignInfo'].id
             }/supabase/install`
         );
+    },
+    async fetchProjectInfo(accessToken) {
+        if (!accessToken) return;
+        const { data } = await wwAxios.get(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                this.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/schema`
+        );
+        this.projectInfo = data;
+        return data;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
