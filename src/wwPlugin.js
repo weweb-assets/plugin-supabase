@@ -348,13 +348,27 @@ export default {
         });
 
         if (error instanceof FunctionsHttpError) {
-            throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
+            throw new Error('Function returned an error with status code ' + error.context.status, {
+                status: error?.context?.status,
+                data,
+                cause: error,
+            });
         } else if (error instanceof FunctionsRelayError) {
-            throw new Error('Relay error: ' + error.message, { cause: error });
+            throw new Error('Relay error: ' + error.message, {
+                status: error?.context?.status,
+                data,
+                cause: error,
+                data,
+            });
         } else if (error instanceof FunctionsFetchError) {
-            throw new Error('Fetch error: ' + error.message, { cause: error });
+            throw new Error('Fetch error: ' + error.message, {
+                status: error?.context?.status,
+                data,
+                cause: error,
+                data,
+            });
         } else if (error) {
-            throw new Error(error.message, { cause: error, data });
+            throw new Error(error.message, { status: error?.context?.status, data, cause: error });
         }
 
         try {
