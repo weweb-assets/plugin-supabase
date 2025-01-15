@@ -125,9 +125,6 @@ export default {
             wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey &&
             wwLib.wwPlugins.supabaseAuth.settings.privateData.apiKey;
         if (!isSettingsValid && isOtherPluginSettingsValid) {
-            this.changeProjectUrl(wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl);
-            this.changeApiKey(wwLib.wwPlugins.supabaseAuth.settings.publicData.apiKey);
-            this.changeAccessToken(wwLib.wwPlugins.supabaseAuth.settings.privateData.accessToken);
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: {
