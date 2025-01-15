@@ -147,16 +147,18 @@ export default {
     methods: {
         async changeProjectUrl(projectUrl) {
             let apiKey = this.settings.publicData.apiKey;
+            let privateApiKey = this.settings.privateData.apiKey;
             if (this.settings.privateData.accessToken) {
                 const { apiKeys } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 apiKey = apiKeys.find(key => key.name === 'anon').api_key;
+                privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
             }
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, projectUrl, apiKey },
-                privateData: { ...this.settings.privateData, apiKey: this.settings.privateData.apiKey },
+                privateData: { ...this.settings.privateData, apiKey: privateApiKey },
             });
         },
         changeApiKey(apiKey) {
