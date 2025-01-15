@@ -69,6 +69,19 @@ export default {
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
     },
+    async syncSettings(settings) {
+        await wwAxios.post(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/sync`,
+            { source: 'supabase', settings }
+        );
+    },
+    async onSave(settings) {
+        await this.syncSettings(settings);
+        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        this.subscribeTables(settings.publicData.realtimeTables || {});
+    },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
     \================================================================================================*/

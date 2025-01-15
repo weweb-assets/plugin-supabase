@@ -1,6 +1,6 @@
 <template>
     <div class="flex items-center body-2 mb-2">
-        <wwEditorIcon name="link" class="mr-2" />
+        <wwEditorIcon name="database" class="mr-2" />
         <div class="text-ellipsis">{{ settings.publicData.projectUrl }}</div>
     </div>
     <div class="flex items-center body-2">

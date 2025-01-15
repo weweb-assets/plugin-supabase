@@ -1,26 +1,14 @@
 <template>
-    <div class="flex items-center">
-        <wwEditorFormRow required label="Project URL" class="w-100">
-            <template #append-label>
-                <a
-                    v-if="!settings.privateData.accessToken"
-                    class="ww-editor-link ml-2"
-                    href="https://supabase.com/dashboard/project/_/settings/api"
-                    target="_blank"
-                >
-                    Find it here
-                </a>
-            </template>
-            <wwEditorInputRow
+    <div class="flex items-center" v-if="settings.privateData.accessToken">
+        <wwEditorFormRow required label="Project" class="w-100">
+            <wwEditorInput
                 v-if="!settings.privateData.accessToken"
                 type="query"
                 placeholder="https://your-project.supabase.co"
                 :model-value="settings.publicData.projectUrl"
                 @update:modelValue="changeProjectUrl"
             />
-
-            <wwEditorInputRow
-                v-else
+            <wwEditorInput
                 type="select"
                 placeholder="https://your-project.supabase.co"
                 :model-value="settings.publicData.projectUrl"
@@ -39,13 +27,41 @@
         </button>
     </div>
     <wwEditorInputRow
+        label="Project URL"
+        type="query"
+        placeholder="https://your-project.supabase.co"
+        :disabled="settings.privateData.accessToken"
+        :model-value="settings.publicData.projectUrl"
+        @update:modelValue="changeProjectUrl"
+    />
+    <wwEditorInputRow
         label="Public API key"
         required
         type="query"
         placeholder="ey********"
+        :disabled="settings.privateData.accessToken"
         :model-value="settings.publicData.apiKey"
         @update:modelValue="changeApiKey"
     />
+    <wwEditorFormRow label="Service role key">
+        <div class="flex items-center">
+            <wwEditorInputText
+                :type="isKeyVisible ? 'text' : 'password'"
+                placeholder="ey********"
+                :model-value="settings.privateData.apiKey"
+                :style="{ '-webkit-text-security': isKeyVisible ? 'none' : 'disc' }"
+                large
+                @update:modelValue="changePrivateApiKey"
+                class="w-full"
+            />
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
+                class="ml-2"
+                :class="{ 'text-yellow-500': !settings.privateData.apiKey }"
+            />
+        </div>
+    </wwEditorFormRow>
     <wwEditorFormRow label="Database password">
         <template #append-label>
             <a
@@ -56,13 +72,19 @@
                 Find it here
             </a>
         </template>
-        <wwEditorInputRow
-            type="query"
-            placeholder="Enter your database password"
-            :tooltip="`Required if you want Copilot to be able to update your database.`"
-            :model-value="settings.privateData.databasePassword"
-            @update:modelValue="changeDatabasePassword"
-        ></wwEditorInputRow>
+        <div class="flex items-center">
+            <wwEditorInputText
+                type="password"
+                placeholder="**********"
+                :style="{ '-webkit-text-security': 'disc' }"
+                large
+                :tooltip="`Required if you want Copilot to be able to update your database.`"
+                :disabled="settings.privateData.accessToken"
+                :model-value="settings.privateData.databasePassword"
+                @update:modelValue="changeDatabasePassword"
+                class="w-full"
+            />
+        </div>
     </wwEditorFormRow>
     <wwLoader :loading="isLoading" />
 </template>
@@ -95,7 +117,8 @@ export default {
         if (this.settings.privateData.accessToken) {
             this.refreshProjects();
         }
-        const isSettingsValid = this.settings.publicData.projectUrl && this.settings.publicData.apiKey;
+        const isSettingsValid =
+            this.settings.publicData.projectUrl && this.settings.publicData.apiKey && this.settings.privateData.apiKey;
         const isOtherPluginSettingsValid =
             wwLib.wwPlugins.supabaseAuth &&
             wwLib.wwPlugins.supabaseAuth.settings.publicData.projectUrl &&
@@ -114,6 +137,7 @@ export default {
                 },
                 privateData: {
                     ...this.settings.privateData,
+                    apiKey: wwLib.wwPlugins.supabaseAuth.settings.privateData.apiKey,
                     accessToken: wwLib.wwPlugins.supabaseAuth.settings.privateData.accessToken,
                     databasePassword: wwLib.wwPlugins.supabaseAuth.settings.privateData.databasePassword,
                 },
@@ -133,24 +157,18 @@ export default {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, projectUrl, apiKey },
             });
-
-            this.$nextTick(this.loadInstance);
         },
         changeApiKey(apiKey) {
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, apiKey },
             });
-            this.$nextTick(this.loadInstance);
         },
         changeDatabasePassword(databasePassword) {
             this.$emit('update:settings', {
                 ...this.settings,
                 privateData: { ...this.settings.privateData, databasePassword },
             });
-        },
-        loadInstance() {
-            this.plugin.load(this.settings.publicData.projectUrl, this.settings.publicData.apiKey);
         },
         async refreshProjects() {
             this.isLoading = true;

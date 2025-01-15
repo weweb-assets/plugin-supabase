@@ -44,6 +44,14 @@ export default {
             return this.settings.privateData.accessToken?.startsWith('sbp_oauth');
         },
     },
+    mounted() {
+        if (
+            !this.settings.privateData.accessToken &&
+            wwLib.wwPlugins?.supabaseAuth?.settings?.privateData?.accessToken
+        ) {
+            this.changeAccessToken(wwLib.wwPlugins.supabaseAuth.settings.privateData.accessToken);
+        }
+    },
     methods: {
         changeAccessToken(accessToken) {
             this.$emit('update:settings', {
