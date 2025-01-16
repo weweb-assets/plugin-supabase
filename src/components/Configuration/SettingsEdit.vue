@@ -176,7 +176,7 @@ export default {
         isComingUp(value, oldValue) {
             if (!oldValue && value) {
                 let interval = setInterval(async () => {
-                    const project = await this.fetchProject();
+                    const project = await this.fetchProject(value);
                     if (project.status !== 'COMING_UP') {
                         this.isComingUp = false;
                         clearInterval(interval);
@@ -238,7 +238,7 @@ export default {
                 privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
                 connectionString = pgbouncer.connection_string;
                 if (project.status === 'COMING_UP') {
-                    this.isComingUp = true;
+                    this.isComingUp = projectUrl;
                 }
             }
             this.$emit('update:settings', {
