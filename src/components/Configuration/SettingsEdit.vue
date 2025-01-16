@@ -190,10 +190,15 @@ export default {
             return this.settings?.publicData?.projectUrl?.replace('https://', '').replace('.supabase.co', '');
         },
         projectsOptions() {
-            return this.projects.map(project => ({
-                label: `${project.name} (${project.id}) ${project.status === 'INACTIVE' ? '#PAUSED' : ''}`,
-                value: `https://${project.id}.supabase.co`,
-            }));
+            return (
+                this.projects
+                    .map(project => ({
+                        label: `${project.name} (${project.id}) ${project.status === 'INACTIVE' ? '#PAUSED' : ''}`,
+                        value: `https://${project.id}.supabase.co`,
+                    }))
+                    // sort paused at the end
+                    .sort((a, b) => (a.label.includes('#PAUSED') ? 1 : 0) - (b.label.includes('#PAUSED') ? 1 : 0))
+            );
         },
     },
     mounted() {
@@ -231,15 +236,12 @@ export default {
             let privateApiKey = this.settings.privateData.apiKey;
             let connectionString = this.settings.privateData.connectionString;
             if (this.settings.privateData.accessToken) {
-                const { apiKeys, pgbouncer, project } = await this.fetchProject(
+                const { apiKeys, pgbouncer } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 apiKey = apiKeys.find(key => key.name === 'anon').api_key;
                 privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
                 connectionString = pgbouncer.connection_string;
-                if (project.status === 'COMING_UP') {
-                    this.isComingUp = projectUrl;
-                }
             }
             this.$emit('update:settings', {
                 ...this.settings,
@@ -335,9 +337,20 @@ export default {
                         db_pass: this.newProject.dbPass,
                     }
                 );
-                this.isLoading = false;
-                this.changeProjectUrl(`https://${data?.data.id}.supabase.co`);
-                this.mode = 'select';
+
+                let interval = setInterval(async () => {
+                    const { data: projectsData } = await wwAxios.post(
+                        `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                            wwLib.$store.getters['websiteData/getDesignInfo'].id
+                        }/supabase/projects/list`
+                    );
+                    if (projectsData?.data.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
+                        clearInterval(interval);
+                        this.isLoading = false;
+                        this.changeProjectUrl(`https://${data?.data.id}.supabase.co`);
+                        this.mode = 'select';
+                    }
+                }, 3000);
             } catch (error) {
                 this.isLoading = false;
                 throw error;
