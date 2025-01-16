@@ -100,7 +100,7 @@
             type="select"
             placeholder="us-east-1"
             v-model="newProject.organizationId"
-            :options="[{ label: 'Orga 1', value: 'id' }]"
+            :options="organizations.map(org => ({ label: org.name, value: org.id }))"
         />
         <wwEditorInputRow
             label="Region"
@@ -163,13 +163,13 @@ export default {
     watch: {
         async selectMode(mode) {
             if (mode === 'create') {
+                this.organizations = await this.fetchOrganizations();
                 this.newProject = {
                     name: 'WeWeb - ' + wwLib.$store.getters['websiteData/getDesignInfo'].name,
                     region: 'us-east-1',
                     organizationId: this.organizations[0]?.id,
                     dbPass: wwLib.wwUtils.getUid(),
                 };
-                this.organizations = await this.fetchOrganizations();
             }
         },
     },
