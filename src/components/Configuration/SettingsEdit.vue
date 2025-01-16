@@ -1,14 +1,7 @@
 <template>
-    <div class="flex items-center" v-if="settings.privateData.accessToken">
-        <wwEditorFormRow required label="Project" class="w-100">
-            <wwEditorInput
-                v-if="!settings.privateData.accessToken"
-                type="query"
-                placeholder="https://your-project.supabase.co"
-                :model-value="settings.publicData.projectUrl"
-                @update:modelValue="changeProjectUrl"
-            />
-            <wwEditorInput
+    <div class="flex items-center">
+        <wwEditorFormRow v-if="settings.privateData.accessToken" required label="Project URL" class="w-100">
+            <wwEditorInputRow
                 type="select"
                 placeholder="https://your-project.supabase.co"
                 :model-value="settings.publicData.projectUrl"
@@ -20,7 +13,7 @@
         <button
             v-if="settings.privateData.accessToken"
             type="button"
-            class="ww-editor-button -primary -small -icon ml-2"
+            class="ww-editor-button -primary -small -icon ml-2 mt-1"
             @click="refreshProjects"
         >
             <wwEditorIcon name="refresh" medium />
@@ -63,6 +56,15 @@
             />
         </div>
     </wwEditorFormRow>
+    <wwEditorInputRow
+        label="Connection string"
+        required
+        type="query"
+        placeholder="postgres://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres"
+        :disabled="settings.privateData.accessToken"
+        :model-value="settings.privateData.connectionString"
+        @update:modelValue="changeConnectionString"
+    />
     <wwEditorFormRow label="Database password" required>
         <template #append-label>
             <a
@@ -137,6 +139,7 @@ export default {
                     apiKey: wwLib.wwPlugins.supabaseAuth.settings.privateData.apiKey,
                     accessToken: wwLib.wwPlugins.supabaseAuth.settings.privateData.accessToken,
                     databasePassword: wwLib.wwPlugins.supabaseAuth.settings.privateData.databasePassword,
+                    connectionString: wwLib.wwPlugins.supabaseAuth.settings.privateData.connectionString,
                 },
             });
         }
@@ -145,17 +148,23 @@ export default {
         async changeProjectUrl(projectUrl) {
             let apiKey = this.settings.publicData.apiKey;
             let privateApiKey = this.settings.privateData.apiKey;
+            let connectionString = this.settings.privateData.connectionString;
             if (this.settings.privateData.accessToken) {
-                const { apiKeys } = await this.fetchProject(
+                const { apiKeys, pgbouncer } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 apiKey = apiKeys.find(key => key.name === 'anon').api_key;
                 privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
+                connectionString = pgbouncer.connection_string;
             }
             this.$emit('update:settings', {
                 ...this.settings,
                 publicData: { ...this.settings.publicData, projectUrl, apiKey },
-                privateData: { ...this.settings.privateData, apiKey: privateApiKey },
+                privateData: {
+                    ...this.settings.privateData,
+                    apiKey: privateApiKey,
+                    connectionString: connectionString,
+                },
             });
         },
         changeApiKey(apiKey) {
@@ -168,6 +177,12 @@ export default {
             this.$emit('update:settings', {
                 ...this.settings,
                 privateData: { ...this.settings.privateData, apiKey },
+            });
+        },
+        changeConnectionString(connectionString) {
+            this.$emit('update:settings', {
+                ...this.settings,
+                privateData: { ...this.settings.privateData, connectionString },
             });
         },
         changeDatabasePassword(databasePassword) {
