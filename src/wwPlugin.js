@@ -93,12 +93,18 @@ export default {
         accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
     ) {
         if (!accessToken || !projectUrl) return;
-        const { data } = await wwAxios.get(
+        const { data: schemaData } = await wwAxios.get(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                 wwLib.$store.getters['websiteData/getDesignInfo'].id
             }/supabase/schema`
         );
-        this.projectInfo = data?.data;
+        const { data: edgeData } = await wwAxios.get(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/edge`
+        );
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
         wwLib.$emit('wwTopBar:supabase:refresh');
         return data?.data;
     },
