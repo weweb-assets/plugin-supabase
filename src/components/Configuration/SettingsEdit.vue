@@ -186,17 +186,6 @@ export default {
                 };
             }
         },
-        isComingUp(value, oldValue) {
-            if (!oldValue && value) {
-                let interval = setInterval(async () => {
-                    const project = await this.fetchProject(value);
-                    if (project.status !== 'COMING_UP') {
-                        this.isComingUp = false;
-                        clearInterval(interval);
-                    }
-                }, 5000);
-            }
-        },
     },
     computed: {
         projectRef() {
@@ -362,19 +351,15 @@ export default {
                 );
                 this.isLoading = false;
                 this.isComingUp = true;
+                const projectId = data?.data.id;
+                const projectUrl = `https://${data?.data.id}.supabase.co`;
 
                 let interval = setInterval(async () => {
-                    const { data: projectsData } = await wwAxios.post(
-                        `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                            wwLib.$store.getters['websiteData/getDesignInfo'].id
-                        }/supabase/projects/list`
-                    );
-                    if (projectsData?.data.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
+                    await this.refreshProjects();
+                    if (this.projects.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
                         clearInterval(interval);
 
-                        const { apiKeys, pgbouncer } = await this.fetchProject(
-                            projectUrl.replace('https://', '').replace('.supabase.co', '')
-                        );
+                        const { apiKeys, pgbouncer } = await this.fetchProject(projectId);
                         const apiKey = apiKeys.find(key => key.name === 'anon').api_key;
                         const privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
                         const connectionString = pgbouncer.connection_string;
@@ -390,7 +375,7 @@ export default {
                             },
                         });
                         this.isComingUp = false;
-                        this.mode = 'select';
+                        this.selectMode = 'select';
                     }
                 }, 5000);
             } catch (error) {
