@@ -1,7 +1,9 @@
 <template>
     <wwEditorFormRow class="w-100">
         <wwEditorInputRadio
+            v-if="settings.privateData.accessToken"
             v-model="selectMode"
+            :disabled="isComingUp"
             :choices="[
                 { label: 'Select a project', value: 'select' },
                 { label: 'Create a project', value: 'create' },
@@ -94,49 +96,60 @@
         </wwEditorFormRow>
     </template>
     <template v-if="selectMode === 'create'">
-        <wwEditorInputRow label="Project name" type="query" placeholder="My new project" v-model="newProject.name" />
-        <wwEditorInputRow
-            label="Organization"
-            type="select"
-            placeholder="us-east-1"
-            v-model="newProject.organizationId"
-            :options="organizations.map(org => ({ label: org.name, value: org.id }))"
-        />
-        <wwEditorInputRow
-            label="Region"
-            type="select"
-            placeholder="us-east-1"
-            v-model="newProject.region"
-            :options="[
-                { label: 'us-east-1', value: 'us-east-1' },
-                { label: 'us-east-2', value: 'us-east-2' },
-                { label: 'us-west-1', value: 'us-west-1' },
-                { label: 'us-west-2', value: 'us-west-2' },
-                { label: 'ap-east-1', value: 'ap-east-1' },
-                { label: 'ap-southeast-1', value: 'ap-southeast-1' },
-                { label: 'ap-northeast-1', value: 'ap-northeast-1' },
-                { label: 'ap-northeast-2', value: 'ap-northeast-2' },
-                { label: 'ap-southeast-2', value: 'ap-southeast-2' },
-                { label: 'eu-west-1', value: 'eu-west-1' },
-                { label: 'eu-west-2', value: 'eu-west-2' },
-                { label: 'eu-west-3', value: 'eu-west-3' },
-                { label: 'eu-north-1', value: 'eu-north-1' },
-                { label: 'eu-central-1', value: 'eu-central-1' },
-                { label: 'eu-central-2', value: 'eu-central-2' },
-                { label: 'ca-central-1', value: 'ca-central-1' },
-                { label: 'ap-south-1', value: 'ap-south-1' },
-                { label: 'sa-east-1', value: 'sa-east-1' },
-            ]"
-        />
-        <wwEditorInputRow
-            label="Database password"
-            type="query"
-            placeholder="Enter a database password"
-            v-model="newProject.dbPass"
-        />
-        <button class="ww-editor-button -primary" @click="createProject" type="button">Create project</button>
+        <div v-if="isComingUp" class="body-md flex items-center">
+            <wwLoaderSmall loading class="mr-2" />
+            <div>We are preparing your database, please wait, it should take a couple of seconds</div>
+        </div>
+        <template v-else>
+            <wwEditorInputRow
+                label="Project name"
+                type="query"
+                placeholder="My new project"
+                v-model="newProject.name"
+            />
+            <wwEditorInputRow
+                label="Organization"
+                type="select"
+                placeholder="us-east-1"
+                v-model="newProject.organizationId"
+                :options="organizations.map(org => ({ label: org.name, value: org.id }))"
+            />
+            <wwEditorInputRow
+                label="Region"
+                type="select"
+                placeholder="us-east-1"
+                v-model="newProject.region"
+                :options="[
+                    { label: 'us-east-1', value: 'us-east-1' },
+                    { label: 'us-east-2', value: 'us-east-2' },
+                    { label: 'us-west-1', value: 'us-west-1' },
+                    { label: 'us-west-2', value: 'us-west-2' },
+                    { label: 'ap-east-1', value: 'ap-east-1' },
+                    { label: 'ap-southeast-1', value: 'ap-southeast-1' },
+                    { label: 'ap-northeast-1', value: 'ap-northeast-1' },
+                    { label: 'ap-northeast-2', value: 'ap-northeast-2' },
+                    { label: 'ap-southeast-2', value: 'ap-southeast-2' },
+                    { label: 'eu-west-1', value: 'eu-west-1' },
+                    { label: 'eu-west-2', value: 'eu-west-2' },
+                    { label: 'eu-west-3', value: 'eu-west-3' },
+                    { label: 'eu-north-1', value: 'eu-north-1' },
+                    { label: 'eu-central-1', value: 'eu-central-1' },
+                    { label: 'eu-central-2', value: 'eu-central-2' },
+                    { label: 'ca-central-1', value: 'ca-central-1' },
+                    { label: 'ap-south-1', value: 'ap-south-1' },
+                    { label: 'sa-east-1', value: 'sa-east-1' },
+                ]"
+            />
+            <wwEditorInputRow
+                label="Database password"
+                type="query"
+                placeholder="Enter a database password"
+                v-model="newProject.dbPass"
+            />
+            <button class="ww-editor-button -primary" @click="createProject" type="button">Create project</button>
+        </template>
     </template>
-    <wwLoader :loading="isLoading || isComingUp" />
+    <wwLoader :loading="isLoading && !isComingUp" />
 </template>
 
 <script>
@@ -326,6 +339,16 @@ export default {
         async createProject() {
             this.isLoading = true;
             try {
+                this.$emit('update:settings', {
+                    ...this.settings,
+                    publicData: { ...this.settings.publicData, projectUrl: '', apiKey: '' },
+                    privateData: {
+                        ...this.settings.privateData,
+                        apiKey: '',
+                        connectionString: '',
+                        databasePassword: '',
+                    },
+                });
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
@@ -337,6 +360,8 @@ export default {
                         db_pass: this.newProject.dbPass,
                     }
                 );
+                this.isLoading = false;
+                this.isComingUp = true;
 
                 let interval = setInterval(async () => {
                     const { data: projectsData } = await wwAxios.post(
@@ -346,11 +371,28 @@ export default {
                     );
                     if (projectsData?.data.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
                         clearInterval(interval);
-                        this.isLoading = false;
-                        this.changeProjectUrl(`https://${data?.data.id}.supabase.co`);
+
+                        const { apiKeys, pgbouncer } = await this.fetchProject(
+                            projectUrl.replace('https://', '').replace('.supabase.co', '')
+                        );
+                        const apiKey = apiKeys.find(key => key.name === 'anon').api_key;
+                        const privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
+                        const connectionString = pgbouncer.connection_string;
+                        const databasePassword = this.newProject.dbPass;
+                        this.$emit('update:settings', {
+                            ...this.settings,
+                            publicData: { ...this.settings.publicData, projectUrl, apiKey },
+                            privateData: {
+                                ...this.settings.privateData,
+                                apiKey: privateApiKey,
+                                connectionString: connectionString,
+                                databasePassword,
+                            },
+                        });
+                        this.isComingUp = false;
                         this.mode = 'select';
                     }
-                }, 3000);
+                }, 5000);
             } catch (error) {
                 this.isLoading = false;
                 throw error;
