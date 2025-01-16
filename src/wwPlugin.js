@@ -106,7 +106,7 @@ export default {
         this.projectInfo = schemaData?.data;
         this.projectInfo.edge = edgeData?.data;
         wwLib.$emit('wwTopBar:supabase:refresh');
-        return data?.data;
+        return this.projectInfo;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
