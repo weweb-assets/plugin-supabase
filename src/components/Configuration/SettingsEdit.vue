@@ -134,9 +134,9 @@
             placeholder="Enter a database password"
             v-model="newProject.dbPass"
         />
-        <button class="ww-editor-button -primary" @click="createProject">Create project</button>
+        <button class="ww-editor-button -primary" @click="createProject" type="button">Create project</button>
     </template>
-    <wwLoader :loading="isLoading" />
+    <wwLoader :loading="isLoading || isComingUp" />
 </template>
 
 <script>
@@ -150,6 +150,7 @@ export default {
         return {
             projects: [],
             isLoading: false,
+            isComingUp: false,
             selectMode: 'select',
             newProject: {
                 name: '',
@@ -170,6 +171,17 @@ export default {
                     organizationId: this.organizations[0]?.id,
                     dbPass: wwLib.wwUtils.getUid(),
                 };
+            }
+        },
+        isComingUp(value, oldValue) {
+            if (!oldValue && value) {
+                let interval = setInterval(async () => {
+                    const project = await this.fetchProject();
+                    if (project.status !== 'COMING_UP') {
+                        this.isComingUp = false;
+                        clearInterval(interval);
+                    }
+                }, 5000);
             }
         },
     },
@@ -219,12 +231,15 @@ export default {
             let privateApiKey = this.settings.privateData.apiKey;
             let connectionString = this.settings.privateData.connectionString;
             if (this.settings.privateData.accessToken) {
-                const { apiKeys, pgbouncer } = await this.fetchProject(
+                const { apiKeys, pgbouncer, project } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 apiKey = apiKeys.find(key => key.name === 'anon').api_key;
                 privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
                 connectionString = pgbouncer.connection_string;
+                if (project.status === 'COMING_UP') {
+                    this.isComingUp = true;
+                }
             }
             this.$emit('update:settings', {
                 ...this.settings,
