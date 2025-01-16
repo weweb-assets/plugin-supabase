@@ -1,93 +1,141 @@
 <template>
-    <div class="flex items-center">
-        <wwEditorFormRow v-if="settings.privateData.accessToken" required label="Project URL" class="w-100">
-            <wwEditorInputRow
-                type="select"
-                placeholder="https://your-project.supabase.co"
-                :model-value="settings.publicData.projectUrl"
-                :options="projectsOptions"
-                @update:modelValue="changeProjectUrl"
-                class="-full"
-            />
+    <wwEditorFormRow class="w-100">
+        <wwEditorInputRadio
+            v-model="selectMode"
+            :choices="[
+                { label: 'Select a project', value: 'select' },
+                { label: 'Create a project', value: 'create' },
+            ]"
+        />
+    </wwEditorFormRow>
+    <template v-if="selectMode === 'select'">
+        <div class="flex items-center" v-if="settings.privateData.accessToken">
+            <wwEditorFormRow required label="Project URL" class="w-100">
+                <wwEditorInput
+                    type="select"
+                    placeholder="https://your-project.supabase.co"
+                    :model-value="settings.publicData.projectUrl"
+                    :options="projectsOptions"
+                    @update:modelValue="changeProjectUrl"
+                    class="-full"
+                />
+            </wwEditorFormRow>
+            <button type="button" class="ww-editor-button -primary -small -icon ml-2 mt-1" @click="refreshProjects">
+                <wwEditorIcon name="refresh" medium />
+            </button>
+        </div>
+        <wwEditorInputRow
+            label="Project URL"
+            type="query"
+            placeholder="https://your-project.supabase.co"
+            :disabled="settings.privateData.accessToken"
+            :model-value="settings.publicData.projectUrl"
+            @update:modelValue="changeProjectUrl"
+        />
+        <wwEditorInputRow
+            label="Public API key"
+            required
+            type="query"
+            placeholder="ey********"
+            :disabled="settings.privateData.accessToken"
+            :model-value="settings.publicData.apiKey"
+            @update:modelValue="changeApiKey"
+        />
+        <wwEditorFormRow label="Service role key" required>
+            <div class="flex items-center">
+                <wwEditorInputText
+                    type="password"
+                    placeholder="ey********"
+                    large
+                    class="w-full"
+                    :style="{ '-webkit-text-security': 'disc' }"
+                    :disabled="settings.privateData.accessToken"
+                    :model-value="settings.privateData.apiKey"
+                    @update:modelValue="changePrivateApiKey"
+                />
+                <wwEditorQuestionMark
+                    tooltip-position="top-left"
+                    forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
+                    class="ml-2"
+                    :class="{ 'text-yellow-500': !settings.privateData.apiKey }"
+                />
+            </div>
         </wwEditorFormRow>
-        <button
-            v-if="settings.privateData.accessToken"
-            type="button"
-            class="ww-editor-button -primary -small -icon ml-2 mt-1"
-            @click="refreshProjects"
-        >
-            <wwEditorIcon name="refresh" medium />
-        </button>
-    </div>
-    <wwEditorInputRow
-        label="Project URL"
-        type="query"
-        placeholder="https://your-project.supabase.co"
-        :disabled="settings.privateData.accessToken"
-        :model-value="settings.publicData.projectUrl"
-        @update:modelValue="changeProjectUrl"
-    />
-    <wwEditorInputRow
-        label="Public API key"
-        required
-        type="query"
-        placeholder="ey********"
-        :disabled="settings.privateData.accessToken"
-        :model-value="settings.publicData.apiKey"
-        @update:modelValue="changeApiKey"
-    />
-    <wwEditorFormRow label="Service role key" required>
-        <div class="flex items-center">
-            <wwEditorInputText
-                type="password"
-                placeholder="ey********"
-                large
-                class="w-full"
-                :style="{ '-webkit-text-security': 'disc' }"
-                :disabled="settings.privateData.accessToken"
-                :model-value="settings.privateData.apiKey"
-                @update:modelValue="changePrivateApiKey"
-            />
-            <wwEditorQuestionMark
-                tooltip-position="top-left"
-                forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
-                class="ml-2"
-                :class="{ 'text-yellow-500': !settings.privateData.apiKey }"
-            />
-        </div>
-    </wwEditorFormRow>
-    <wwEditorInputRow
-        label="Connection string"
-        required
-        type="query"
-        placeholder="postgres://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres"
-        :disabled="settings.privateData.accessToken"
-        :model-value="settings.privateData.connectionString"
-        @update:modelValue="changeConnectionString"
-    />
-    <wwEditorFormRow label="Database password" required>
-        <template #append-label>
-            <a
-                class="ww-editor-link ml-2"
-                :href="`https://supabase.com/dashboard/project/${projectRef}/settings/database`"
-                target="_blank"
-            >
-                Find it here
-            </a>
-        </template>
-        <div class="flex items-center">
-            <wwEditorInputText
-                type="password"
-                placeholder="Enter your database password"
-                :style="{ '-webkit-text-security': 'disc' }"
-                large
-                :tooltip="`Required if you want Copilot to be able to update your database.`"
-                :model-value="settings.privateData.databasePassword"
-                @update:modelValue="changeDatabasePassword"
-                class="w-full"
-            />
-        </div>
-    </wwEditorFormRow>
+        <wwEditorInputRow
+            label="Connection string"
+            type="query"
+            placeholder="postgres://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres"
+            :disabled="settings.privateData.accessToken"
+            :model-value="settings.privateData.connectionString"
+            @update:modelValue="changeConnectionString"
+        />
+        <wwEditorFormRow label="Database password">
+            <template #append-label>
+                <a
+                    class="ww-editor-link ml-2"
+                    :href="`https://supabase.com/dashboard/project/${projectRef}/settings/database`"
+                    target="_blank"
+                >
+                    Find it here
+                </a>
+            </template>
+            <div class="flex items-center">
+                <wwEditorInputText
+                    type="password"
+                    placeholder="Enter your database password"
+                    :style="{ '-webkit-text-security': 'disc' }"
+                    large
+                    :tooltip="`Required if you want Copilot to be able to update your database.`"
+                    :model-value="settings.privateData.databasePassword"
+                    @update:modelValue="changeDatabasePassword"
+                    class="w-full"
+                />
+            </div>
+        </wwEditorFormRow>
+    </template>
+    <template v-if="selectMode === 'create'">
+        <wwEditorInputRow label="Project name" type="query" placeholder="My new project" v-model="newProject.name" />
+        <wwEditorInputRow
+            label="Organization"
+            type="select"
+            placeholder="us-east-1"
+            v-model="newProject.organizationId"
+            :options="[{ label: 'Orga 1', value: 'id' }]"
+        />
+        <wwEditorInputRow
+            label="Region"
+            type="select"
+            placeholder="us-east-1"
+            v-model="newProject.region"
+            :options="[
+                { label: 'us-east-1', value: 'us-east-1' },
+                { label: 'us-east-2', value: 'us-east-2' },
+                { label: 'us-west-1', value: 'us-west-1' },
+                { label: 'us-west-2', value: 'us-west-2' },
+                { label: 'ap-east-1', value: 'ap-east-1' },
+                { label: 'ap-southeast-1', value: 'ap-southeast-1' },
+                { label: 'ap-northeast-1', value: 'ap-northeast-1' },
+                { label: 'ap-northeast-2', value: 'ap-northeast-2' },
+                { label: 'ap-southeast-2', value: 'ap-southeast-2' },
+                { label: 'eu-west-1', value: 'eu-west-1' },
+                { label: 'eu-west-2', value: 'eu-west-2' },
+                { label: 'eu-west-3', value: 'eu-west-3' },
+                { label: 'eu-north-1', value: 'eu-north-1' },
+                { label: 'eu-central-1', value: 'eu-central-1' },
+                { label: 'eu-central-2', value: 'eu-central-2' },
+                { label: 'ca-central-1', value: 'ca-central-1' },
+                { label: 'ap-south-1', value: 'ap-south-1' },
+                { label: 'sa-east-1', value: 'sa-east-1' },
+            ]"
+        />
+        <wwEditorInputRow
+            label="Database password"
+            type="query"
+            placeholder="Enter a database password"
+            v-model="newProject.dbPass"
+        />
+        <button class="ww-editor-button -primary" @click="createProject">Create project</button>
+    </template>
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -102,7 +150,28 @@ export default {
         return {
             projects: [],
             isLoading: false,
+            selectMode: 'select',
+            newProject: {
+                name: '',
+                region: 'us-east-1',
+                organizationId: '',
+                dbPass: '',
+            },
+            organizations: [],
         };
+    },
+    watch: {
+        async selectMode(mode) {
+            if (mode === 'create') {
+                this.newProject = {
+                    name: 'WeWeb - ' + wwLib.$store.getters['websiteData/getDesignInfo'].name,
+                    region: 'us-east-1',
+                    organizationId: this.organizations[0]?.id,
+                    dbPass: wwLib.wwUtils.getUid(),
+                };
+                this.organizations = await this.fetchOrganizations();
+            }
+        },
     },
     computed: {
         projectRef() {
@@ -217,6 +286,43 @@ export default {
                 );
                 this.isLoading = false;
                 return data?.data;
+            } catch (error) {
+                this.isLoading = false;
+                throw error;
+            }
+        },
+        async fetchOrganizations() {
+            this.isLoading = true;
+            try {
+                const { data } = await wwAxios.get(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/organizations`
+                );
+                this.isLoading = false;
+                return data?.data;
+            } catch (error) {
+                this.isLoading = false;
+                throw error;
+            }
+        },
+        async createProject() {
+            this.isLoading = true;
+            try {
+                const { data } = await wwAxios.post(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/projects`,
+                    {
+                        name: this.newProject.name,
+                        organization_id: this.newProject.organizationId,
+                        region: this.newProject.region,
+                        db_pass: this.newProject.dbPass,
+                    }
+                );
+                this.isLoading = false;
+                this.changeProjectUrl(`https://${data?.data.id}.supabase.co`);
+                this.mode = 'select';
             } catch (error) {
                 this.isLoading = false;
                 throw error;
