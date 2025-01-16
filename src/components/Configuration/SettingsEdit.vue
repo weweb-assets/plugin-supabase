@@ -96,9 +96,9 @@
         </wwEditorFormRow>
     </template>
     <template v-if="selectMode === 'create'">
-        <div v-if="isComingUp" class="body-md flex items-center">
+        <div v-if="isComingUp" class="body-md flex items-center p-2">
             <wwLoaderSmall loading class="mr-2" />
-            <div>We are preparing your database, please wait, it should take a couple of seconds</div>
+            <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
         </div>
         <template v-else>
             <wwEditorInputRow
