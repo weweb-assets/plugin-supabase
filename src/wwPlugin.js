@@ -383,26 +383,20 @@ export default {
 
         if (error instanceof FunctionsHttpError) {
             throw new Error('Function returned an error with status code ' + error.context.status, {
-                status: error?.context?.status,
-                data,
-                cause: error,
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
             });
         } else if (error instanceof FunctionsRelayError) {
             throw new Error('Relay error: ' + error.message, {
-                status: error?.context?.status,
-                data,
-                cause: error,
-                data,
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
             });
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, {
-                status: error?.context?.status,
-                data,
-                cause: error,
-                data,
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
             });
         } else if (error) {
-            throw new Error(error.message, { status: error?.context?.status, data, cause: error });
+            throw new Error(error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
+            });
         }
 
         try {
