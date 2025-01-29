@@ -1,4 +1,6 @@
 /* wwEditor:start */
+import './components/Configuration/ConnectionEdit.vue';
+import './components/Configuration/ConnectionSummary.vue';
 import './components/Configuration/SettingsEdit.vue';
 import './components/Configuration/SettingsSummary.vue';
 import './components/Realtime/SettingsEdit.vue';
@@ -35,12 +37,31 @@ export default {
     channels: {},
     /* wwEditor:start */
     doc: null,
+    projectInfo: null,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        /* wwEditor:start */
+        // check oauth in local storage
+        const isConnecting = window.localStorage.getItem('supabase_oauth');
+        // get code params from url
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (isConnecting && code) {
+            window.localStorage.removeItem('supabase_oauth');
+            await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/connect`,
+                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
+            );
+            wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
+        }
+        /* wwEditor:end */
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /*  Called by supabase auth plugin
@@ -51,6 +72,49 @@ export default {
             this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
         }
+    },
+    async syncSettings(settings) {
+        await wwAxios.post(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/sync`,
+            { source: 'supabase', settings }
+        );
+    },
+    async install() {
+        await wwAxios.post(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/install`
+        );
+    },
+    async fetchProjectInfo(
+        projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
+        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
+    ) {
+        if (!accessToken || !projectUrl) return;
+        const { data: schemaData } = await wwAxios.get(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/schema`
+        );
+        const { data: edgeData } = await wwAxios.get(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/edge`
+        );
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
+        return this.projectInfo;
+    },
+    async onSave(settings) {
+        await this.syncSettings(settings);
+        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
+            await this.install();
+        }
+        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API
@@ -310,7 +374,7 @@ export default {
             ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
         const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
-            body,
+            body: method === 'GET' ? undefined : body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
                 : headers,
@@ -318,13 +382,21 @@ export default {
         });
 
         if (error instanceof FunctionsHttpError) {
-            throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
+            throw new Error('Function returned an error with status code ' + error.context.status, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error instanceof FunctionsRelayError) {
-            throw new Error('Relay error: ' + error.message, { cause: error });
+            throw new Error('Relay error: ' + error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error instanceof FunctionsFetchError) {
-            throw new Error('Fetch error: ' + error.message, { cause: error });
+            throw new Error('Fetch error: ' + error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error) {
-            throw new Error(error.message, { cause: error, data });
+            throw new Error(error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         }
 
         try {
