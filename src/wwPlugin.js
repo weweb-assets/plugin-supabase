@@ -374,7 +374,7 @@ export default {
             ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
         const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
-            body,
+            body: method === 'GET' ? undefined : body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
                 : headers,
@@ -383,19 +383,19 @@ export default {
 
         if (error instanceof FunctionsHttpError) {
             throw new Error('Function returned an error with status code ' + error.context.status, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
             });
         } else if (error instanceof FunctionsRelayError) {
             throw new Error('Relay error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
             });
         } else if (error instanceof FunctionsFetchError) {
             throw new Error('Fetch error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
             });
         } else if (error) {
             throw new Error(error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json() },
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
             });
         }
 
