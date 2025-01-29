@@ -87,6 +87,7 @@
         </template>
     </wwEditorInputRow>
     <wwEditorInputRow
+        v-if="method !== 'GET'"
         label="Body"
         type="code"
         bindable
