@@ -64,6 +64,15 @@ export default {
         await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
+    /* wwEditor:start */
+    _getCopilotContext() {
+        return {
+            tables: this.projectInfo?.schema?.tables.map(table => table.name),
+            edgeFunctions: this.projectInfo?.edge?.map(edge => edge.slug),
+            dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
+        };
+    },
+    /* wwEditor:end */
     /*  Called by supabase auth plugin
      *  Allow supabase to use the supabase auth instance when available
      */
