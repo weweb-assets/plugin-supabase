@@ -67,8 +67,12 @@ export default {
     /* wwEditor:start */
     _getCopilotContext() {
         return {
-            tables: this.projectInfo?.schema?.tables.map(table => table.name),
-            edgeFunctions: this.projectInfo?.edge?.map(edge => edge.slug),
+            tables: this.projectInfo?.schema?.tables.map(table => ({
+                name: table.name,
+                columns: table.columns,
+                foreignKeys: table.foreign_keys,
+            })),
+            edgeFunctions: this.projectInfo?.edge?.map(edge => this.settings.privateData.edgeFunctions[edge.slug]),
             dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
         };
     },

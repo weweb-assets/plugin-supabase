@@ -215,12 +215,13 @@ export default {
                     },
                     dataFields: {
                         type: 'array',
-                        description: 'Array of field names to select in guided mode',
+                        description: 'Array of column names to select in guided mode, default to all',
                         bindable: true,
                     },
                     dataFieldsAdvanced: {
                         type: 'string',
-                        description: 'Custom field selection query in advanced mode',
+                        description:
+                            'Custom field selection query in advanced mode using the supabase sdk syntax, example: "name, orchestral_sections(*)"',
                         bindable: true,
                     },
                     filters: {
@@ -811,7 +812,7 @@ export default {
                 schema: {
                     functionName: {
                         type: 'string',
-                        description: 'Name of the Edge Function',
+                        description: 'Slug of the Edge Function',
                         bindable: true,
                     },
                     method: {
