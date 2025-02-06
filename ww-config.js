@@ -205,7 +205,7 @@ export default {
                 schema: {
                     table: {
                         type: 'string',
-                        description: 'The table to select from',
+                        description: 'The table name to select from',
                         bindable: true,
                     },
                     fieldsMode: {
@@ -226,12 +226,61 @@ export default {
                     },
                     filters: {
                         type: 'array',
-                        description: 'Array of filter conditions',
+                        description: `Array of filter conditions. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
                         bindable: true,
                     },
                     modifiers: {
                         type: 'object',
-                        description: 'Query modifiers like ordering and pagination',
+                        description: `Query modifiers like ordering and pagination, eg: {
+    select: {
+        mode: "guided", // Options: 'minimal', 'guided', 'advanced'
+        fields: ["id", "name", "price"] // Only used if mode is 'guided'
+    },
+    order: {
+        column: "price",
+        ascending: false, // Sort by price in descending order
+        nullsFirst: true // Place NULL values first
+    },
+    limit: {
+        count: 10 // Limit results to 10
+    },
+    range: {
+        from: 0,
+        to: 9 // Equivalent to limit(10), but using range
+    },
+    single: false, // Don't force single result
+    maybeSingle: true, // Allow maybeSingle (returns single row or null)
+    csv: false, // Don't return results in CSV format
+}`,
                         bindable: true,
                     },
                 },
@@ -251,7 +300,7 @@ export default {
                 schema: {
                     table: {
                         type: 'string',
-                        description: 'The table to insert into',
+                        description: 'The table name to insert into',
                         bindable: true,
                     },
                     data: {
@@ -294,7 +343,7 @@ export default {
                 schema: {
                     table: {
                         type: 'string',
-                        description: 'The table to update',
+                        description: 'The table name to update',
                         bindable: true,
                     },
                     primaryData: {
@@ -314,7 +363,36 @@ export default {
                     },
                     filters: {
                         type: 'array',
-                        description: 'Filters for multiple update mode',
+                        description: `Array of filter conditions for multiple update mode. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
                         bindable: true,
                     },
                 },
@@ -334,7 +412,7 @@ export default {
                 schema: {
                     table: {
                         type: 'string',
-                        description: 'The table to upsert into',
+                        description: 'The table name to upsert into',
                         bindable: true,
                     },
                     data: {
@@ -369,7 +447,7 @@ export default {
                 schema: {
                     table: {
                         type: 'string',
-                        description: 'The table to delete from',
+                        description: 'The table name to delete from',
                         bindable: true,
                     },
                     primaryData: {
@@ -384,7 +462,36 @@ export default {
                     },
                     filters: {
                         type: 'array',
-                        description: 'Filters for multiple delete mode',
+                        description: `Array of filter conditions for multiple delete mode. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
                         bindable: true,
                     },
                 },
@@ -812,7 +919,7 @@ export default {
                 schema: {
                     functionName: {
                         type: 'string',
-                        description: 'Slug of the Edge Function',
+                        description: 'It must be the **slug** of the Edge Function',
                         bindable: true,
                     },
                     method: {
