@@ -115,6 +115,7 @@ export default {
         await this.syncSettings(settings);
         if (settings.privateData.accessToken && settings.publicData.projectUrl) {
             await this.install();
+            await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         }
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
