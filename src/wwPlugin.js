@@ -99,17 +99,12 @@ export default {
         accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
     ) {
         if (!accessToken || !projectUrl) return;
-        try {
-            const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
-            const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
-            this.projectInfo = schemaData?.data;
-            this.projectInfo.edge = edgeData?.data;
-            wwLib.$emit('wwTopBar:supabase:refresh');
-            return this.projectInfo;
-        } catch (err) {
-            wwLib.wwNotification.open({ text: 'Error while fetching supabase project info.', color: 'red' });
-            throw err;
-        }
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
+        return this.projectInfo;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
@@ -125,7 +120,7 @@ export default {
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    this.$store.getters['websiteData/getDesignInfo'].id
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase${path}`,
                 data,
             });
@@ -134,11 +129,12 @@ export default {
             if (retry && error.response?.status === 401 && isOauthToken) {
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        this.$store.getters['websiteData/getDesignInfo'].id
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
                 return await this.requestAPI({ method, path, data }, false);
             }
+            wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
             throw error;
         }
     },
