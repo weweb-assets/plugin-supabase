@@ -50,6 +50,7 @@ export default {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (isConnecting && code) {
+            wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
             window.localStorage.removeItem('supabase_oauth');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
@@ -110,6 +111,11 @@ export default {
     ) {
         if (!accessToken || !projectUrl) return;
         try {
+            const { data } = await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/refresh`
+            );
             // check validity
             const { data: schemaData } = await wwAxios.get(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
@@ -126,20 +132,18 @@ export default {
             wwLib.$emit('wwTopBar:supabase:refresh');
             return this.projectInfo;
         } catch (err) {
-            console.error(err);
-            if (!retry) {
-                wwLib.wwNotification.open({ text: 'Error while fetching supabase project info.', color: 'red' });
-                throw err;
-            }
-            // try refresh token
-            const { data } = await wwAxios.post(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/refresh`
-            );
+            if (retry && err.response?.status === 401) {
+                const { data } = await wwAxios.post(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/refresh`
+                );
 
-            // relaunch the request
-            await this.fetchProjectInfo(projectUrl, data?.data?.access_token, false);
+                // relaunch the request
+                return await this.fetchProjectInfo(projectUrl, data?.data?.access_token, false);
+            }
+            wwLib.wwNotification.open({ text: 'Error while fetching supabase project info.', color: 'red' });
+            throw err;
         }
     },
     async onSave(settings) {
