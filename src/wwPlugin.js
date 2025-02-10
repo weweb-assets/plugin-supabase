@@ -58,10 +58,12 @@ export default {
                 { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
+            wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
+            wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
         }
+        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         /* wwEditor:end */
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
-        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
@@ -103,23 +105,42 @@ export default {
     },
     async fetchProjectInfo(
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
-        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
+        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken,
+        retry = true
     ) {
         if (!accessToken || !projectUrl) return;
-        const { data: schemaData } = await wwAxios.get(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
-            }/supabase/schema`
-        );
-        const { data: edgeData } = await wwAxios.get(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
-            }/supabase/edge`
-        );
-        this.projectInfo = schemaData?.data;
-        this.projectInfo.edge = edgeData?.data;
-        wwLib.$emit('wwTopBar:supabase:refresh');
-        return this.projectInfo;
+        try {
+            // check validity
+            const { data: schemaData } = await wwAxios.get(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/schema`
+            );
+            const { data: edgeData } = await wwAxios.get(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/edge`
+            );
+            this.projectInfo = schemaData?.data;
+            this.projectInfo.edge = edgeData?.data;
+            wwLib.$emit('wwTopBar:supabase:refresh');
+            return this.projectInfo;
+        } catch (err) {
+            console.error(err);
+            if (!retry) {
+                wwLib.wwNotification.open({ text: 'Error while fetching supabase project info.', color: 'red' });
+                throw err;
+            }
+            // try refresh token
+            const { data } = await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/refresh`
+            );
+
+            // relaunch the request
+            await this.fetchProjectInfo(projectUrl, data?.data?.access_token, false);
+        }
     },
     async onSave(settings) {
         await this.syncSettings(settings);
