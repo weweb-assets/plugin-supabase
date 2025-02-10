@@ -303,12 +303,11 @@ export default {
         async refreshProjects() {
             this.isLoading = true;
             try {
-                const { data } = await wwAxios.post(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        this.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/projects/list`,
-                    { accessToken: this.settings.privateData.accessToken }
-                );
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'POST',
+                    path: '/projects/list',
+                    data: { accessToken: this.settings.privateData.accessToken },
+                });
                 this.projects = data?.data;
                 this.isLoading = false;
             } catch (error) {
@@ -319,11 +318,10 @@ export default {
         async fetchProject(projectId) {
             this.isLoading = true;
             try {
-                const { data } = await wwAxios.get(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        this.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/projects/${projectId}`
-                );
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'GET',
+                    path: '/projects/' + projectId,
+                });
                 this.isLoading = false;
                 return data?.data;
             } catch (error) {
@@ -334,11 +332,10 @@ export default {
         async fetchOrganizations() {
             this.isLoading = true;
             try {
-                const { data } = await wwAxios.get(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/organizations`
-                );
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'GET',
+                    path: '/organizations',
+                });
                 this.isLoading = false;
                 return data?.data;
             } catch (error) {
@@ -359,17 +356,16 @@ export default {
                         databasePassword: '',
                     },
                 });
-                const { data } = await wwAxios.post(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/projects`,
-                    {
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'POST',
+                    path: '/projects',
+                    data: {
                         name: this.newProject.name,
                         organization_id: this.newProject.organizationId,
                         region: this.newProject.region,
                         db_pass: this.newProject.dbPass,
-                    }
-                );
+                    },
+                });
                 this.isLoading = false;
                 this.isComingUp = true;
                 const projectId = data?.data.id;

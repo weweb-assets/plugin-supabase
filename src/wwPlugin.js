@@ -79,16 +79,6 @@ export default {
             dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
         };
     },
-    /* wwEditor:end */
-    /*  Called by supabase auth plugin
-     *  Allow supabase to use the supabase auth instance when available
-     */
-    syncInstance() {
-        if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
-            this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
-            this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
-        }
-    },
     async syncSettings(settings) {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
@@ -106,42 +96,17 @@ export default {
     },
     async fetchProjectInfo(
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
-        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken,
-        retry = true
+        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
     ) {
         if (!accessToken || !projectUrl) return;
         try {
-            const { data } = await wwAxios.post(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/refresh`
-            );
-            // check validity
-            const { data: schemaData } = await wwAxios.get(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/schema`
-            );
-            const { data: edgeData } = await wwAxios.get(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase/edge`
-            );
+            const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
+            const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
             this.projectInfo = schemaData?.data;
             this.projectInfo.edge = edgeData?.data;
             wwLib.$emit('wwTopBar:supabase:refresh');
             return this.projectInfo;
         } catch (err) {
-            if (retry && err.response?.status === 401) {
-                const { data } = await wwAxios.post(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/refresh`
-                );
-
-                // relaunch the request
-                return await this.fetchProjectInfo(projectUrl, data?.data?.access_token, false);
-            }
             wwLib.wwNotification.open({ text: 'Error while fetching supabase project info.', color: 'red' });
             throw err;
         }
@@ -153,6 +118,38 @@ export default {
         }
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
+    },
+    async requestAPI({ method, path, data }, retry = true) {
+        try {
+            return await wwAxios({
+                method,
+                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    this.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase${path}`,
+                data,
+            });
+        } catch (error) {
+            const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
+            if (retry && error.response?.status === 401 && isOauthToken) {
+                const { data } = await wwAxios.post(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        this.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/refresh`
+                );
+                return await this.requestAPI({ method, path, data }, false);
+            }
+            throw error;
+        }
+    },
+    /* wwEditor:end */
+    /*  Called by supabase auth plugin
+     *  Allow supabase to use the supabase auth instance when available
+     */
+    syncInstance() {
+        if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
+            this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
+            this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
+        }
     },
     /*=============================================m_ÔÔ_m=============================================\
         Collection API

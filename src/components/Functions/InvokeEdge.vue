@@ -141,12 +141,7 @@ export default {
         async fetchFunctions() {
             this.isLoading = true;
             try {
-                const { data } = await wwAxios.get(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        this.$store.getters['websiteData/getDesignInfo'].id
-                    }/supabase/edge`
-                );
-                console.log(data);
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({ method: 'GET', path: '/edge' });
                 this.functionsOptions = data?.data.map(func => ({ label: func.name, value: func.slug }));
                 this.isLoading = false;
             } catch (error) {
