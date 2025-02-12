@@ -128,7 +128,7 @@ export default {
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
-            if (retry && error.response?.status === 401 && isOauthToken) {
+            if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
