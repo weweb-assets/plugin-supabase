@@ -5,13 +5,28 @@ export default {
     editor: {
         settings: [
             {
+                label: 'Connection',
+                icon: 'advanced',
+                edit: () => import('./src/components/Configuration/ConnectionEdit.vue'),
+                summary: () => import('./src/components/Configuration/ConnectionSummary.vue'),
+                getIsValid(settings) {
+                    return !!settings.privateData.accessToken;
+                },
+                onSave: 'onSave',
+            },
+            {
                 label: 'Configuration',
                 icon: 'advanced',
                 edit: () => import('./src/components/Configuration/SettingsEdit.vue'),
                 summary: () => import('./src/components/Configuration/SettingsSummary.vue'),
                 getIsValid(settings) {
-                    return !!settings.publicData.projectUrl && !!settings.publicData.apiKey;
+                    return (
+                        !!settings.publicData.projectUrl &&
+                        !!settings.publicData.apiKey &&
+                        !!settings.privateData.apiKey
+                    );
                 },
+                onSave: 'onSave',
             },
             {
                 label: 'Realtime collections',
@@ -184,6 +199,92 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Select.vue'),
+            copilot: {
+                description: 'Select data from a Supabase table',
+                returns: 'array | object',
+                schema: {
+                    table: {
+                        type: 'string',
+                        description: 'The table name to select from',
+                        bindable: true,
+                    },
+                    fieldsMode: {
+                        type: 'string',
+                        description: 'Mode for selecting fields (guided or advanced)',
+                        bindable: false,
+                    },
+                    dataFields: {
+                        type: 'array',
+                        description: 'Array of column names to select in guided mode, default to all',
+                        bindable: true,
+                    },
+                    dataFieldsAdvanced: {
+                        type: 'string',
+                        description:
+                            'Custom field selection query in advanced mode using the supabase sdk syntax, example: "name, orchestral_sections(*)"',
+                        bindable: true,
+                    },
+                    filters: {
+                        type: 'array',
+                        description: `Array of filter conditions. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
+                        bindable: true,
+                    },
+                    modifiers: {
+                        type: 'object',
+                        description: `Query modifiers like ordering and pagination, eg: {
+    select: {
+        mode: "guided", // Options: 'minimal', 'guided', 'advanced'
+        fields: ["id", "name", "price"] // Only used if mode is 'guided'
+    },
+    order: {
+        column: "price",
+        ascending: false, // Sort by price in descending order
+        nullsFirst: true // Place NULL values first
+    },
+    limit: {
+        count: 10 // Limit results to 10
+    },
+    range: {
+        from: 0,
+        to: 9 // Equivalent to limit(10), but using range
+    },
+    single: false, // Don't force single result
+    maybeSingle: true, // Allow maybeSingle (returns single row or null)
+    csv: false, // Don't return results in CSV format
+}`,
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -193,6 +294,37 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Insert.vue'),
+            copilot: {
+                description: 'Insert new records into a Supabase table',
+                returns: 'object',
+                schema: {
+                    table: {
+                        type: 'string',
+                        description: 'The table name to insert into',
+                        bindable: true,
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'The data to insert',
+                        bindable: true,
+                    },
+                    mode: {
+                        type: 'string',
+                        description: 'Insert mode (single or multiple)',
+                        bindable: false,
+                    },
+                    autoSync: {
+                        type: 'boolean',
+                        description: 'Whether to automatically sync collections',
+                        bindable: true,
+                    },
+                    defaultToNull: {
+                        type: 'boolean',
+                        description: 'Whether to default missing fields to null',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -205,6 +337,66 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Update.vue'),
+            copilot: {
+                description: 'Update existing records in a Supabase table',
+                returns: 'object',
+                schema: {
+                    table: {
+                        type: 'string',
+                        description: 'The table name to update',
+                        bindable: true,
+                    },
+                    primaryData: {
+                        type: 'object',
+                        description: 'Primary key values to identify records',
+                        bindable: true,
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'The new data to update with',
+                        bindable: true,
+                    },
+                    mode: {
+                        type: 'string',
+                        description: 'Update mode (single or multiple)',
+                        bindable: false,
+                    },
+                    filters: {
+                        type: 'array',
+                        description: `Array of filter conditions for multiple update mode. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -214,6 +406,32 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Upsert.vue'),
+            copilot: {
+                description: 'Insert or update records in a Supabase table',
+                returns: 'object',
+                schema: {
+                    table: {
+                        type: 'string',
+                        description: 'The table name to upsert into',
+                        bindable: true,
+                    },
+                    data: {
+                        type: 'object',
+                        description: 'The data to upsert',
+                        bindable: true,
+                    },
+                    onConflict: {
+                        type: 'array',
+                        description: 'Fields to check for conflicts',
+                        bindable: true,
+                    },
+                    ignoreDuplicates: {
+                        type: 'boolean',
+                        description: 'Whether to ignore duplicate records',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -223,6 +441,61 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Database/Delete.vue'),
+            copilot: {
+                description: 'Delete records from a Supabase table',
+                returns: 'object',
+                schema: {
+                    table: {
+                        type: 'string',
+                        description: 'The table name to delete from',
+                        bindable: true,
+                    },
+                    primaryData: {
+                        type: 'object',
+                        description: 'Primary key values to identify records to delete',
+                        bindable: true,
+                    },
+                    mode: {
+                        type: 'string',
+                        description: 'Delete mode (single or multiple)',
+                        bindable: false,
+                    },
+                    filters: {
+                        type: 'array',
+                        description: `Array of filter conditions for multiple delete mode. eg: [
+    {
+        "fn": "eq", // Supabase filter method
+        "column": "status",
+        "value": "active",
+        "isEnabled": true
+    },
+    {
+        "fn": "textSearch",
+        "column": "description",
+        "value": {
+            "__wwtype": "f",
+            "code": "context.item.data?.['description']"
+        },
+        "options": { config: "english" }, // Optional search config
+        "isEnabled": false // This filter will be ignored
+    },
+    {
+        "fn": "or",
+        "value": "type.eq.car,type.eq.truck", // Postgrest syntax for OR
+        "isEnabled": true
+    },
+    {
+        "fn": "filter",
+        "column": "price",
+        "operator": "gte",
+        "value": 1000,
+        "isEnabled": true
+    }
+]`,
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -234,6 +507,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/ListFiles.vue'),
+            copilot: {
+                description: 'List files in a Supabase storage bucket',
+                returns: 'array',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Path prefix to filter files',
+                        bindable: true,
+                    },
+                    options: {
+                        type: 'object',
+                        description: 'Listing options like limit and search',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -245,20 +539,34 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/UploadFile.vue'),
+            copilot: {
+                description: 'Upload a file to Supabase storage',
+                returns: 'object',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Destination path for the file',
+                        bindable: true,
+                    },
+                    file: {
+                        type: 'file',
+                        description: 'The file to upload',
+                        bindable: true,
+                    },
+                    options: {
+                        type: 'object',
+                        description: 'Upload options like cacheControl and contentType',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
-        // DISABLED FOR NOW
-        // {
-        //     name: 'Storage | Download a file',
-        //     code: 'downloadFile',
-        //     getIsValid({ bucket, path }) {
-        //         return !!bucket && !!path;
-        //     },
-        //     isAsync: true,
-        //     /* wwEditor:start */
-        //     edit: () => import('./src/components/Functions/Storage/DownloadFile.vue'),
-        //     /* wwEditor:end */
-        // },
         {
             name: 'Storage | Replace a file',
             code: 'updateFile',
@@ -268,6 +576,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/UpdateFile.vue'),
+            copilot: {
+                description: 'Replace an existing file in Supabase storage',
+                returns: 'object',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Path of the file to replace',
+                        bindable: true,
+                    },
+                    file: {
+                        type: 'file',
+                        description: 'The new file',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -279,6 +608,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/MoveFile.vue'),
+            copilot: {
+                description: 'Move a file to a new location in Supabase storage',
+                returns: 'object',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Current path of the file',
+                        bindable: true,
+                    },
+                    newPath: {
+                        type: 'string',
+                        description: 'New path for the file',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -290,6 +640,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/CopyFile.vue'),
+            copilot: {
+                description: 'Copy a file to a new location in Supabase storage',
+                returns: 'object',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Path of the file to copy',
+                        bindable: true,
+                    },
+                    newPath: {
+                        type: 'string',
+                        description: 'Destination path for the copy',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -301,6 +672,22 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/DeleteFiles.vue'),
+            copilot: {
+                description: 'Delete one or more files from Supabase storage',
+                returns: 'object',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    paths: {
+                        type: 'array',
+                        description: 'Array of file paths to delete',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -312,6 +699,32 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/CreateSignedUrl.vue'),
+            copilot: {
+                description: 'Create a temporary signed URL for file access',
+                returns: 'string',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Path to the file',
+                        bindable: true,
+                    },
+                    expiresIn: {
+                        type: 'number',
+                        description: 'Expiration time in seconds',
+                        bindable: true,
+                    },
+                    options: {
+                        type: 'object',
+                        description: 'Options for download and transformation',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -323,6 +736,27 @@ export default {
             isAsync: false,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Storage/GetPublicUrl.vue'),
+            copilot: {
+                description: 'Get the public URL for a file',
+                returns: 'string',
+                schema: {
+                    bucket: {
+                        type: 'string',
+                        description: 'The storage bucket name',
+                        bindable: true,
+                    },
+                    path: {
+                        type: 'string',
+                        description: 'Path to the file',
+                        bindable: true,
+                    },
+                    options: {
+                        type: 'object',
+                        description: 'Options for download and transformation',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -334,6 +768,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Realtime/SubscribeChannel.vue'),
+            copilot: {
+                description: 'Subscribe to a realtime channel',
+                returns: 'void',
+                schema: {
+                    channel: {
+                        type: 'string',
+                        description: 'Channel name to subscribe to',
+                        bindable: true,
+                    },
+                    type: {
+                        type: 'string',
+                        description: 'Subscription type (postgres_changes or broadcast)',
+                        bindable: false,
+                    },
+                    event: {
+                        type: 'string',
+                        description: 'Event type to listen for',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -345,6 +800,17 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Realtime/UnsubscribeChannel.vue'),
+            copilot: {
+                description: 'Unsubscribe from a realtime channel',
+                returns: 'void',
+                schema: {
+                    channel: {
+                        type: 'string',
+                        description: 'Channel name to unsubscribe from',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -356,6 +822,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Realtime/BroadcastMessage.vue'),
+            copilot: {
+                description: 'Broadcast a message to a channel',
+                returns: 'void',
+                schema: {
+                    channel: {
+                        type: 'string',
+                        description: 'Channel to broadcast to',
+                        bindable: true,
+                    },
+                    event: {
+                        type: 'string',
+                        description: 'Event name',
+                        bindable: true,
+                    },
+                    payload: {
+                        type: 'any',
+                        description: 'Message payload',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -367,6 +854,22 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/Realtime/UpdateState.vue'),
+            copilot: {
+                description: 'Update presence state in a channel',
+                returns: 'void',
+                schema: {
+                    channel: {
+                        type: 'string',
+                        description: 'Channel to update state in',
+                        bindable: true,
+                    },
+                    state: {
+                        type: 'any',
+                        description: 'New presence state',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -378,6 +881,27 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/CallPostgres.vue'),
+            copilot: {
+                description: 'Call a Postgres database function',
+                returns: 'any',
+                schema: {
+                    functionName: {
+                        type: 'string',
+                        description: 'Name of the function to call',
+                        bindable: true,
+                    },
+                    params: {
+                        type: 'array',
+                        description: 'Function parameters',
+                        bindable: true,
+                    },
+                    modifiers: {
+                        type: 'object',
+                        description: 'Query modifiers',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
         {
@@ -389,6 +913,37 @@ export default {
             isAsync: true,
             /* wwEditor:start */
             edit: () => import('./src/components/Functions/InvokeEdge.vue'),
+            copilot: {
+                description: 'Invoke a Supabase Edge Function',
+                returns: 'any',
+                schema: {
+                    functionName: {
+                        type: 'string',
+                        description: 'It must be the **slug** of the Edge Function',
+                        bindable: true,
+                    },
+                    method: {
+                        type: 'string',
+                        description: 'HTTP method to use',
+                        bindable: true,
+                    },
+                    headers: {
+                        type: 'array',
+                        description: 'Request headers',
+                        bindable: true,
+                    },
+                    queries: {
+                        type: 'array',
+                        description: 'Query parameters',
+                        bindable: true,
+                    },
+                    body: {
+                        type: 'any',
+                        description: 'Request body',
+                        bindable: true,
+                    },
+                },
+            },
             /* wwEditor:end */
         },
     ],

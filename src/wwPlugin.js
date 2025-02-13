@@ -1,4 +1,6 @@
 /* wwEditor:start */
+import './components/Configuration/ConnectionEdit.vue';
+import './components/Configuration/ConnectionSummary.vue';
 import './components/Configuration/SettingsEdit.vue';
 import './components/Configuration/SettingsSummary.vue';
 import './components/Realtime/SettingsEdit.vue';
@@ -35,14 +37,110 @@ export default {
     channels: {},
     /* wwEditor:start */
     doc: null,
+    projectInfo: null,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        /* wwEditor:start */
+        // check oauth in local storage
+        const isConnecting = window.localStorage.getItem('supabase_oauth');
+        // get code params from url
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        if (isConnecting && code) {
+            wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
+            window.localStorage.removeItem('supabase_oauth');
+            await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/connect`,
+                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
+            );
+            wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
+            wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
+            wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
+        }
+        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+        /* wwEditor:end */
         await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
+    /* wwEditor:start */
+    _getCopilotContext() {
+        return {
+            tables: this.projectInfo?.schema?.tables.map(table => ({
+                name: table.name,
+                columns: table.columns,
+                foreignKeys: table.foreign_keys,
+            })),
+            edgeFunctions: this.projectInfo?.edge?.map(edge => this.settings.privateData.edgeFunctions[edge.slug]),
+            dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
+        };
+    },
+    async syncSettings(settings) {
+        await wwAxios.post(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/sync`,
+            { source: 'supabase', settings }
+        );
+    },
+    // driver: core, roles
+    async install(driver = 'core') {
+        await wwAxios.post(
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            }/supabase/install`,
+            { driver }
+        );
+    },
+    async fetchProjectInfo(
+        projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
+        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
+    ) {
+        if (!accessToken || !projectUrl) return;
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
+        return this.projectInfo;
+    },
+    async onSave(settings) {
+        await this.syncSettings(settings);
+        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
+            await this.install();
+            await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+        }
+        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+        this.subscribeTables(settings.publicData.realtimeTables || {});
+    },
+    async requestAPI({ method, path, data }, retry = true) {
+        try {
+            return await wwAxios({
+                method,
+                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase${path}`,
+                data,
+            });
+        } catch (error) {
+            const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
+            if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
+                const { data } = await wwAxios.post(
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase/refresh`
+                );
+                return await this.requestAPI({ method, path, data }, false);
+            }
+            wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
+            throw error;
+        }
+    },
+    /* wwEditor:end */
     /*  Called by supabase auth plugin
      *  Allow supabase to use the supabase auth instance when available
      */
@@ -310,7 +408,7 @@ export default {
             ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
         const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
-            body,
+            body: method === 'GET' ? undefined : body,
             headers: Array.isArray(headers)
                 ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
                 : headers,
@@ -318,13 +416,21 @@ export default {
         });
 
         if (error instanceof FunctionsHttpError) {
-            throw new Error('Function returned an error with status code ' + error.context.status, { cause: error });
+            throw new Error('Function returned an error with status code ' + error.context.status, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error instanceof FunctionsRelayError) {
-            throw new Error('Relay error: ' + error.message, { cause: error });
+            throw new Error('Relay error: ' + error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error instanceof FunctionsFetchError) {
-            throw new Error('Fetch error: ' + error.message, { cause: error });
+            throw new Error('Fetch error: ' + error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         } else if (error) {
-            throw new Error(error.message, { cause: error, data });
+            throw new Error(error.message, {
+                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
+            });
         }
 
         try {

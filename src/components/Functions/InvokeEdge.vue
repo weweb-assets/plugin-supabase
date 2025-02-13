@@ -1,13 +1,19 @@
 <template>
-    <wwEditorInputRow
-        label="Function name"
-        type="query"
-        placeholder="hello"
-        bindable
-        required
-        :model-value="functionName"
-        @update:modelValue="setArgs({ functionName: $event })"
-    />
+    <wwEditorFormRow label="Function" required>
+        <div class="flex items-center">
+            <wwEditorInputTextSelect
+                class="w-100"
+                placeholder="Select a function"
+                required
+                :model-value="functionName"
+                :options="functionsOptions"
+                @update:modelValue="setArgs({ functionName: $event })"
+            />
+            <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchFunctions">
+                <wwEditorIcon name="refresh" medium />
+            </button>
+        </div>
+    </wwEditorFormRow>
     <wwEditorInputRow
         label="Method"
         type="select"
@@ -81,6 +87,7 @@
         </template>
     </wwEditorInputRow>
     <wwEditorInputRow
+        v-if="method !== 'GET'"
         label="Body"
         type="code"
         bindable
@@ -104,6 +111,7 @@ export default {
         return {
             isAdvancedOpen: false,
             isLoading: false,
+            functionsOptions: [],
         };
     },
     computed: {
@@ -123,9 +131,22 @@ export default {
             return this.args.body;
         },
     },
+    mounted() {
+        this.fetchFunctions();
+    },
     methods: {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
+        },
+        async fetchFunctions() {
+            this.isLoading = true;
+            try {
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({ method: 'GET', path: '/edge' });
+                this.functionsOptions = data?.data.map(func => ({ label: func.name, value: func.slug }));
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+            }
         },
     },
 };
