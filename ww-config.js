@@ -10,7 +10,7 @@ export default {
                 edit: () => import('./src/components/Configuration/ConnectionEdit.vue'),
                 summary: () => import('./src/components/Configuration/ConnectionSummary.vue'),
                 getIsValid(settings) {
-                    return !!settings.privateData.accessToken;
+                    return !!settings.privateData.accessToken || settings.privateData.connectionMode === 'local';
                 },
                 onSave: 'onSave',
             },

@@ -26,10 +26,15 @@
                 <wwEditorIcon name="refresh" medium />
             </button>
         </div>
-        <button @click="showSettings = !showSettings" class="ww-editor-button -primary -small mb-2" type="button">
+        <button
+            v-if="settings.privateData?.connectionMode !== 'local'"
+            @click="showSettings = !showSettings"
+            class="ww-editor-button -primary -small mb-2"
+            type="button"
+        >
             {{ showSettings ? 'Close' : 'Edit' }} advanced settings
         </button>
-        <template v-if="showSettings">
+        <template v-if="showSettings || settings.privateData?.connectionMode === 'local'">
             <wwEditorInputRow
                 label="Project URL"
                 type="query"
