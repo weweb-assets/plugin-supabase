@@ -237,8 +237,7 @@ export default {
         "fn": "textSearch",
         "column": "description",
         "value": {
-            "__wwtype": "f",
-            "code": "context.item.data?.['description']"
+            "wwFormula": "context.item.data?.['description']"
         },
         "options": { config: "english" }, // Optional search config
         "isEnabled": false // This filter will be ignored
@@ -374,8 +373,7 @@ export default {
         "fn": "textSearch",
         "column": "description",
         "value": {
-            "__wwtype": "f",
-            "code": "context.item.data?.['description']"
+            "wwFormula": "context.item.data?.['description']"
         },
         "options": { config: "english" }, // Optional search config
         "isEnabled": false // This filter will be ignored
@@ -473,8 +471,7 @@ export default {
         "fn": "textSearch",
         "column": "description",
         "value": {
-            "__wwtype": "f",
-            "code": "context.item.data?.['description']"
+            "wwFormula": "context.item.data?.['description']"
         },
         "options": { config: "english" }, // Optional search config
         "isEnabled": false // This filter will be ignored
