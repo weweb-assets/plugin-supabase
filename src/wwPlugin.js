@@ -100,7 +100,6 @@ export default {
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
         accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
     ) {
-        if (wwLib.wwPlugins.supabase?.settings?.privateData?.connectionMode === 'local') return;
         if (!accessToken || !projectUrl) return;
         const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
         const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
@@ -111,11 +110,7 @@ export default {
     },
     async onSave(settings) {
         await this.syncSettings(settings);
-        if (
-            settings.privateData.accessToken &&
-            settings.publicData.projectUrl &&
-            settings.privateData.connectionMode !== 'local'
-        ) {
+        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
             await this.install();
             await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         }
