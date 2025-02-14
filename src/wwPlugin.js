@@ -114,8 +114,18 @@ export default {
             await this.install();
             await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         }
-        await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
-        this.subscribeTables(settings.publicData.realtimeTables || {});
+
+        if (wwLib.wwPlugins.supabaseAuth) {
+            // supabaseAuth will call syncInstance
+            await wwLib.wwPlugins.supabaseAuth.load(
+                settings.publicData.projectUrl,
+                settings.publicData.apiKey,
+                settings.privateData.apiKey
+            );
+        } else {
+            await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
+            this.subscribeTables(settings.publicData.realtimeTables || {});
+        }
     },
     async requestAPI({ method, path, data }, retry = true) {
         try {

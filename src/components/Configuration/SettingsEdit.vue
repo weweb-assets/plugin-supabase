@@ -1,7 +1,7 @@
 <template>
     <wwEditorFormRow class="w-100">
         <wwEditorInputRadio
-            v-if="settings.privateData.accessToken"
+            v-if="isConnected"
             v-model="selectMode"
             :disabled="isComingUp"
             :choices="[
@@ -10,8 +10,8 @@
             ]"
         />
     </wwEditorFormRow>
-    <template v-if="selectMode === 'select'">
-        <div class="flex items-center" v-if="settings.privateData.accessToken">
+    <template v-if="selectMode === 'select' || !isConnected">
+        <div class="flex items-center" v-if="isConnected">
             <wwEditorFormRow required label="Project URL" class="w-100">
                 <wwEditorInput
                     type="select"
@@ -26,10 +26,15 @@
                 <wwEditorIcon name="refresh" medium />
             </button>
         </div>
-        <button @click="showSettings = !showSettings" class="ww-editor-button -primary -small mb-2" type="button">
-            {{ showSettings ? 'Close' : 'Edit' }} advanced settings
+        <button
+            v-if="isConnected"
+            @click="showSettings = !showSettings"
+            class="ww-editor-button -secondary -small mb-2"
+            type="button"
+        >
+            {{ showSettings ? 'Close' : 'Open' }} settings
         </button>
-        <template v-if="showSettings">
+        <template v-if="showSettings || !isConnected">
             <wwEditorInputRow
                 label="Project URL"
                 type="query"
@@ -65,13 +70,14 @@
                 </div>
             </wwEditorFormRow>
             <wwEditorInputRow
+                v-show="false"
                 label="Connection string"
                 type="query"
                 placeholder="postgres://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres"
                 :model-value="settings.privateData.connectionString"
                 @update:modelValue="changeConnectionString"
             />
-            <wwEditorFormRow label="Database password">
+            <wwEditorFormRow label="Database password" v-show="false">
                 <template #append-label>
                     <a
                         class="ww-editor-link ml-2"
@@ -96,7 +102,7 @@
             </wwEditorFormRow>
         </template>
     </template>
-    <template v-if="selectMode === 'create'">
+    <template v-else-if="selectMode === 'create'">
         <div v-if="isComingUp" class="body-md flex items-center p-2">
             <wwLoaderSmall loading class="mr-2" />
             <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
@@ -221,9 +227,12 @@ export default {
                     .sort((a, b) => (a.label.includes('#PAUSED') ? 1 : 0) - (b.label.includes('#PAUSED') ? 1 : 0))
             );
         },
+        isConnected() {
+            return this.settings.privateData.accessToken;
+        },
     },
     mounted() {
-        if (this.settings.privateData.accessToken) {
+        if (this.isConnected) {
             this.refreshProjects();
         } else {
             this.showSettings = true;
@@ -258,7 +267,7 @@ export default {
             let apiKey = this.settings.publicData.apiKey;
             let privateApiKey = this.settings.privateData.apiKey;
             let connectionString = this.settings.privateData.connectionString;
-            if (this.settings.privateData.accessToken) {
+            if (this.isConnected) {
                 const { apiKeys, pgbouncer } = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
