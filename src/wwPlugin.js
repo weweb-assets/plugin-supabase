@@ -75,7 +75,9 @@ export default {
                 columns: table.columns,
                 foreignKeys: table.foreign_keys,
             })),
-            edgeFunctions: this.projectInfo?.edge?.map(edge => this.settings.privateData.edgeFunctions[edge.slug]),
+            edgeFunctions: this.projectInfo?.edge
+                ?.map(edge => this.settings.privateData?.edgeFunctions?.[edge.slug])
+                ?.filter(ef => ef),
             dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
         };
     },
