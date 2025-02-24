@@ -70,7 +70,7 @@ export default {
     /* wwEditor:start */
     _getCopilotContext() {
         return {
-            tables: this.projectInfo?.schema?.tables.map(table => ({
+            tables: this.projectInfo?.schema?.tables?.map(table => ({
                 name: table.name,
                 columns: table.columns,
                 foreignKeys: table.foreign_keys,
