@@ -105,6 +105,7 @@ export default {
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
+        action: { type: Object, default: () => ({}) },
     },
     emits: ['update:args'],
     data() {
