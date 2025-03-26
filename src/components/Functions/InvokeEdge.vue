@@ -149,5 +149,15 @@ export default {
             }
         },
     },
+    created() {
+        if (this.action.type && this.action.type.startsWith(wwLib.wwPlugins.supabase.id + 'invokeEdgeFunction-')) {
+            const edgeSlug = this.action.type.replace(wwLib.wwPlugins.supabase.id + 'invokeEdgeFunction-', '');
+            this.$emit('update:args', {
+                ...this.action,
+                type: wwLib.wwPlugins.supabase.id + 'invokeEdgeFunction',
+                functionName: edgeSlug,
+            });
+        }
+    },
 };
 </script>
