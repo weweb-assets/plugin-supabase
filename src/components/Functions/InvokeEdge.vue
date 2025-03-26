@@ -107,7 +107,7 @@ export default {
         args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
         action: { type: Object, default: () => ({}) },
     },
-    emits: ['update:args'],
+    emits: ['update:args', 'update:type'],
     data() {
         return {
             isAdvancedOpen: false,
@@ -150,14 +150,15 @@ export default {
             }
         },
     },
-    created() {
+    async created() {
         if (this.action.type && this.action.type.startsWith(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-')) {
             const edgeSlug = this.action.type.replace(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-', '');
             this.$emit('update:args', {
                 ...this.action,
-                type: wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction',
                 functionName: edgeSlug,
             });
+            await this.$nextTick();
+            this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
         }
     },
 };
