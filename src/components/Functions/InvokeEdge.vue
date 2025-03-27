@@ -222,6 +222,8 @@ export default {
             await this.setFunction(edgeSlug);
             await this.$nextTick();
             this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
+        } else {
+            await this.loadDefinition(value);
         }
     },
 };
