@@ -134,21 +134,6 @@ export default {
             return this.args.body;
         },
     },
-    watch: {
-        async functionName(value) {
-            if (value) {
-                await this.loadDefinition(value);
-                if (this.definition?.sample) {
-                    this.setArgs({
-                        method: this.definition.sample.method || 'POST',
-                        body: JSON.stringify(this.definition.sample.body) || '',
-                        headers: this.definition.sample.headers || [],
-                        queries: this.definition.sample.queries || [],
-                    });
-                }
-            }
-        },
-    },
     methods: {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
