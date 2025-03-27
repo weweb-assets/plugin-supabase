@@ -103,6 +103,7 @@
             v-for="(field, index) in fields"
             :key="index"
             :label="field.key"
+            :tooltip="field.description"
             :model-value="parsedBody[field.key]"
             type="query"
             bindable
@@ -136,7 +137,7 @@ export default {
             isAdvancedOpen: false,
             isLoading: false,
             functionsOptions: [],
-            definition: null,
+            config: null,
         };
     },
     computed: {
@@ -159,7 +160,7 @@ export default {
             return this.args.fieldsMode;
         },
         fields() {
-            return this.definition?.body?.fields || [];
+            return this.config?.definition?.body?.fields || [];
         },
         parsedBody() {
             try {
@@ -177,15 +178,15 @@ export default {
             this.setArgs({ body: JSON.stringify({ ...this.parsedBody, [key]: value }) });
         },
         async setFunction(value) {
-            await this.loadDefinition(value);
-            if (this.definition?.sample) {
+            await this.loadFunctionConfig(value);
+            if (this.config?.sample) {
                 this.setArgs({
                     functionName: value,
-                    method: this.definition.sample.method || 'POST',
-                    body: JSON.stringify(this.definition.sample.body) || '',
-                    headers: this.definition.sample.headers || [],
-                    queries: this.definition.sample.queries || [],
-                    fieldsMode: this.definition?.body?.fields?.length ? true : false,
+                    method: this.config.sample.method || 'POST',
+                    body: JSON.stringify(this.config.sample.body) || '',
+                    headers: this.config.sample.headers || [],
+                    queries: this.config.sample.queries || [],
+                    fieldsMode: this.config?.definition?.body?.fields?.length ? true : false,
                 });
             } else {
                 this.setArgs({ functionName: value });
@@ -205,13 +206,13 @@ export default {
                 this.isLoading = false;
             }
         },
-        async loadDefinition(slug) {
+        async loadFunctionConfig(slug) {
             this.isLoading = true;
             const { data } = await this.plugin.requestAPI({
                 method: 'GET',
                 path: `/edge/${slug}/versions/${this.functionsOptions.find(f => f.value === slug).version}`,
             });
-            this.definition = JSON.parse(data?.data?.['config.json'] || '{}');
+            this.config = JSON.parse(data?.data?.['config.json'] || '{}');
             this.isLoading = false;
         },
     },
@@ -223,7 +224,7 @@ export default {
             await this.$nextTick();
             this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
         } else {
-            await this.loadDefinition(this.functionName);
+            await this.loadFunctionConfig(this.functionName);
         }
     },
 };
