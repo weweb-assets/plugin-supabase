@@ -183,12 +183,12 @@ export default {
         await this.fetchFunctions();
         if (this.action.type && this.action.type.startsWith(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-')) {
             const edgeSlug = this.action.type.replace(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-', '');
-            this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
-            await this.$nextTick();
             this.$emit('update:args', {
                 ...this.action,
                 functionName: edgeSlug,
             });
+            await this.$nextTick();
+            this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
         }
     },
 };
