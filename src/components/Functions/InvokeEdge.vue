@@ -7,7 +7,7 @@
                 required
                 :model-value="functionName"
                 :options="functionsOptions"
-                @update:modelValue="setArgs({ functionName: $event })"
+                @update:modelValue="setFunction($event)"
             />
             <button type="button" class="ww-editor-button -primary -small -icon ml-2" @click="fetchFunctions">
                 <wwEditorIcon name="refresh" medium />
@@ -141,7 +141,7 @@ export default {
                 if (this.definition?.sample) {
                     this.setArgs({
                         method: this.definition.sample.method || 'POST',
-                        body: this.definition.sample.body || null,
+                        body: JSON.stringify(this.definition.sample.body) || '',
                         headers: this.definition.sample.headers || [],
                         queries: this.definition.sample.queries || [],
                     });
@@ -152,6 +152,20 @@ export default {
     methods: {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
+        },
+        async setFunction(value) {
+            await this.loadDefinition(value);
+            if (this.definition?.sample) {
+                this.setArgs({
+                    functionName: value,
+                    method: this.definition.sample.method || 'POST',
+                    body: JSON.stringify(this.definition.sample.body) || '',
+                    headers: this.definition.sample.headers || [],
+                    queries: this.definition.sample.queries || [],
+                });
+            } else {
+                this.setArgs({ functionName: value });
+            }
         },
         async fetchFunctions() {
             this.isLoading = true;
@@ -181,10 +195,7 @@ export default {
         await this.fetchFunctions();
         if (this.action.type && this.action.type.startsWith(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-')) {
             const edgeSlug = this.action.type.replace(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-', '');
-            this.$emit('update:args', {
-                ...this.action,
-                functionName: edgeSlug,
-            });
+            await this.setFunction(edgeSlug);
             await this.$nextTick();
             this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
         }
