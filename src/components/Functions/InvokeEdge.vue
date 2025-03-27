@@ -98,6 +98,7 @@
 </template>
 
 <script>
+import { version } from 'vue';
 import Expandable from '../Utils/Expandable.vue';
 
 export default {
@@ -113,6 +114,7 @@ export default {
             isAdvancedOpen: false,
             isLoading: false,
             functionsOptions: [],
+            definition: null,
         };
     },
     computed: {
@@ -132,8 +134,20 @@ export default {
             return this.args.body;
         },
     },
-    mounted() {
-        this.fetchFunctions();
+    watch: {
+        functionName(value) {
+            if(value) {
+                await this.loadDefinition(value);
+                if(this.definition?.sample) {
+                    this.setArgs({
+                        method: this.definition.sample.method || 'POST',
+                        body: this.definition.sample.body || null,
+                        headers: this.definition.sample.headers || [],
+                        queries: this.definition.sample.queries || [],
+                    });
+                }
+            }
+        },
     },
     methods: {
         setArgs(arg) {
@@ -143,22 +157,32 @@ export default {
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({ method: 'GET', path: '/edge' });
-                this.functionsOptions = data?.data.map(func => ({ label: func.name, value: func.slug }));
+                this.functionsOptions = data?.data.map(func => ({ label: func.name, value: func.slug, version: func.version }));
                 this.isLoading = false;
             } catch (error) {
                 this.isLoading = false;
             }
         },
+        async loadDefinition(slug) {
+            this.isLoading = true
+            const { data } = await this.plugin.requestAPI({
+                method: 'GET',
+                path: `/edge/${value}/versions/${this.functionsOptions.find(f => f.value === slug).version}/config.json`,
+            });
+            this.definition = JSON.parse(data?.data?.['config.json'] || '{}');
+            this.isLoading = false;
+        },
     },
     async created() {
+        await this.fetchFunctions();
         if (this.action.type && this.action.type.startsWith(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-')) {
             const edgeSlug = this.action.type.replace(wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction-', '');
+            this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
+            await this.$nextTick();
             this.$emit('update:args', {
                 ...this.action,
                 functionName: edgeSlug,
             });
-            await this.$nextTick();
-            this.$emit('update:type', wwLib.wwPlugins.supabase.id + '-invokeEdgeFunction');
         }
     },
 };
