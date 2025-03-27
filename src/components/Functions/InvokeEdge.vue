@@ -135,10 +135,10 @@ export default {
         },
     },
     watch: {
-        functionName(value) {
-            if(value) {
+        async functionName(value) {
+            if (value) {
                 await this.loadDefinition(value);
-                if(this.definition?.sample) {
+                if (this.definition?.sample) {
                     this.setArgs({
                         method: this.definition.sample.method || 'POST',
                         body: this.definition.sample.body || null,
@@ -157,17 +157,23 @@ export default {
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({ method: 'GET', path: '/edge' });
-                this.functionsOptions = data?.data.map(func => ({ label: func.name, value: func.slug, version: func.version }));
+                this.functionsOptions = data?.data.map(func => ({
+                    label: func.name,
+                    value: func.slug,
+                    version: func.version,
+                }));
                 this.isLoading = false;
             } catch (error) {
                 this.isLoading = false;
             }
         },
         async loadDefinition(slug) {
-            this.isLoading = true
+            this.isLoading = true;
             const { data } = await this.plugin.requestAPI({
                 method: 'GET',
-                path: `/edge/${value}/versions/${this.functionsOptions.find(f => f.value === slug).version}/config.json`,
+                path: `/edge/${value}/versions/${
+                    this.functionsOptions.find(f => f.value === slug).version
+                }/config.json`,
             });
             this.definition = JSON.parse(data?.data?.['config.json'] || '{}');
             this.isLoading = false;
