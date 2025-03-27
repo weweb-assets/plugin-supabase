@@ -92,7 +92,7 @@
             :model-value="fieldsMode"
             :choices="[
                 { label: 'Fields', value: true, disabled: !fields.length },
-                { label: 'Raw body', value: false },
+                { label: 'Raw body', value: false, default: true },
             ]"
             small
             @update:modelValue="setArgs({ fieldsMode: $event })"
@@ -156,7 +156,7 @@ export default {
             return this.args.body;
         },
         fieldsMode() {
-            return this.args.fieldsMode;
+            return this.args.fieldsMode || false;
         },
         fields() {
             return this.config?.definition?.body?.fields || [];
@@ -206,13 +206,18 @@ export default {
             }
         },
         async loadFunctionConfig(slug) {
+            if (!slug) return;
             this.isLoading = true;
-            const { data } = await this.plugin.requestAPI({
-                method: 'GET',
-                path: `/edge/${slug}/versions/${this.functionsOptions.find(f => f.value === slug).version}`,
-            });
-            this.config = JSON.parse(data?.data?.['config.json'] || '{}');
-            this.isLoading = false;
+            try {
+                const { data } = await this.plugin.requestAPI({
+                    method: 'GET',
+                    path: `/edge/${slug}/versions/${this.functionsOptions.find(f => f.value === slug)?.version}`,
+                });
+                this.config = JSON.parse(data?.data?.['config.json'] || '{}');
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+            }
         },
     },
     async created() {
