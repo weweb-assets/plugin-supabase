@@ -86,19 +86,41 @@
             />
         </template>
     </wwEditorInputRow>
-    <wwEditorInputRow
-        v-if="method !== 'GET'"
-        label="Body"
-        type="code"
-        bindable
-        :model-value="body"
-        @update:modelValue="setArgs({ body: $event })"
-    />
+    <template v-if="method !== 'GET'">
+        <wwEditorInputRadio
+            v-if="fields.length"
+            class="mb-2"
+            :model-value="fieldsMode"
+            :choices="[
+                { label: 'Guided', value: true },
+                { label: 'Raw body', value: false },
+            ]"
+            small
+            @update:modelValue="setArgs({ fieldsMode: $event })"
+        />
+        <wwEditorInputRow
+            v-if="fieldsMode"
+            v-for="(field, index) in fields"
+            :key="index"
+            :label="field.key"
+            :model-value="parsedBody[field.key]"
+            type="query"
+            bindable
+            @update:modelValue="setField(field.key, $event)"
+        />
+        <wwEditorInputRow
+            v-else-if="!fields.length || !fieldsMode"
+            label="Body"
+            type="code"
+            bindable
+            :model-value="body"
+            @update:modelValue="setArgs({ body: $event })"
+        />
+    </template>
     <wwLoader :loading="isLoading" />
 </template>
 
 <script>
-import { version } from 'vue';
 import Expandable from '../Utils/Expandable.vue';
 
 export default {
@@ -133,10 +155,26 @@ export default {
         body() {
             return this.args.body;
         },
+        fieldsMode() {
+            return this.args.fieldsMode;
+        },
+        fields() {
+            return this.definition?.body?.fields || [];
+        },
+        parsedBody() {
+            try {
+                return JSON.parse(this.body);
+            } catch (error) {
+                return {};
+            }
+        },
     },
     methods: {
         setArgs(arg) {
             this.$emit('update:args', { ...this.args, ...arg });
+        },
+        setField(key, value) {
+            this.setArgs({ body: JSON.stringify({ ...this.parsedBody, [key]: value }) });
         },
         async setFunction(value) {
             await this.loadDefinition(value);
@@ -147,6 +185,7 @@ export default {
                     body: JSON.stringify(this.definition.sample.body) || '',
                     headers: this.definition.sample.headers || [],
                     queries: this.definition.sample.queries || [],
+                    fieldsMode: this.definition?.body?.fields?.length ? true : false,
                 });
             } else {
                 this.setArgs({ functionName: value });
