@@ -171,9 +171,7 @@ export default {
             this.isLoading = true;
             const { data } = await this.plugin.requestAPI({
                 method: 'GET',
-                path: `/edge/${value}/versions/${
-                    this.functionsOptions.find(f => f.value === slug).version
-                }/config.json`,
+                path: `/edge/${slug}/versions/${this.functionsOptions.find(f => f.value === slug).version}/config.json`,
             });
             this.definition = JSON.parse(data?.data?.['config.json'] || '{}');
             this.isLoading = false;
