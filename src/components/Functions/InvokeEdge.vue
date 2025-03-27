@@ -88,11 +88,10 @@
     </wwEditorInputRow>
     <template v-if="method !== 'GET'">
         <wwEditorInputRadio
-            v-if="fields.length"
             class="mb-2"
             :model-value="fieldsMode"
             :choices="[
-                { label: 'Guided', value: true },
+                { label: 'Fields', value: true, disabled: !fields.length },
                 { label: 'Raw body', value: false },
             ]"
             small
@@ -110,7 +109,7 @@
             @update:modelValue="setField(field.key, $event)"
         />
         <wwEditorInputRow
-            v-else-if="!fields.length || !fieldsMode"
+            v-else
             label="Body"
             type="code"
             bindable
