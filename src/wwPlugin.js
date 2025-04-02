@@ -407,132 +407,238 @@ export default {
         return this.formatReturn(data, count);
     },
     async invokeEdgeFunction(
-        { functionName, body, headers = [], queries = [], method = 'POST', useStreaming = false, streamVariableId },
+        {
+            functionName,
+            body,
+            headers = [],
+            queries = [],
+            method = 'POST',
+            // NEW: Add streaming arguments
+            useStreaming = false,
+            streamVariableId = null,
+        },
         wwUtils
     ) {
-        wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
+        /* wwEditor:start */
+        if (!this.instance) throw new Error('Invalid Supabase configuration.');
+        if (!functionName) throw new Error('Edge function name is required.');
+        if (useStreaming && !streamVariableId)
+            throw new Error('Stream variable ID is required when streaming is enabled.');
+        /* wwEditor:end */
+
+        wwUtils?.log('info', `[Supabase] ${useStreaming ? 'Streaming' : 'Invoking'} Edge function - ${functionName}`, {
             type: 'request',
-            preview: { body, headers, method, useStreaming },
+            preview: { body, headers, method, queries, useStreaming, streamVariableId },
         });
+
+        // Prepare Query String
         const query = Array.isArray(queries)
             ? queries
             : queries && typeof queries === 'object'
             ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
             : [];
         const queryString = query.length
-            ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
+            ? query.reduce((result, item) => {
+                  // Ensure proper encoding for query parameters
+                  if (item.key) {
+                      // Check if key exists
+                      return `${result}${result === '?' ? '' : '&'}${encodeURIComponent(item.key)}=${encodeURIComponent(
+                          item.value ?? ''
+                      )}`;
+                  }
+                  return result;
+              }, '?')
             : '';
 
-        if (useStreaming && streamVariableId) {
+        // Prepare Headers
+        const headerObject = Array.isArray(headers)
+            ? headers.reduce((result, item) => {
+                  if (item.key) {
+                      // Check if key exists
+                      result[item.key] = item.value;
+                  }
+                  return result;
+              }, {})
+            : headers || {}; // Accept object directly too
+
+        // Prepare Options
+        const invokeOptions = {
+            body: method === 'GET' ? undefined : body,
+            headers: headerObject,
+            method,
+            ...(useStreaming ? { responseType: 'stream' } : {}), // Add responseType for streaming
+        };
+
+        // --- Streaming Logic ---
+        if (useStreaming) {
+            if (!streamVariableId) {
+                wwLib.wwLog.error('Stream variable ID missing for Supabase Edge Function stream.');
+                throw new Error('Stream Variable not provided for streaming response.');
+            }
+            const variable = wwLib.wwVariable.getVariable(streamVariableId);
+            if (!variable || variable.type !== 'array') {
+                wwLib.wwLog.error(`Variable ID ${streamVariableId} is not a valid array variable for streaming.`);
+                throw new Error(`Selected variable (${variable?.name || streamVariableId}) is not an Array type.`);
+            }
+
+            // Initialize/Clear the variable before starting
+            wwLib.wwVariable.updateValue(streamVariableId, []);
+
             try {
-                const response = await fetch(`${this.instance.functions.url}/${functionName}${queryString}`, {
-                    method,
-                    headers: Array.isArray(headers)
-                        ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {
-                              Authorization: `Bearer ${this.instance.supabaseKey}`,
-                              'Content-Type': 'application/json',
-                          })
-                        : {
-                              ...headers,
-                              Authorization: `Bearer ${this.instance.supabaseKey}`,
-                              'Content-Type': 'application/json',
-                          },
-                    body: method === 'GET' ? undefined : JSON.stringify(body),
-                });
+                // Use responseType: 'stream'
+                const response = await this.instance.functions.invoke(functionName + queryString, invokeOptions);
 
-                if (!response.ok) {
-                    let errorData = {};
-                    try {
-                        errorData = await response.json();
-                    } catch (e) {
-                        // If not JSON, try to get text
-                        try {
-                            errorData = { message: await response.text() };
-                        } catch (e2) {
-                            // If can't get text, use status text
-                            errorData = { message: response.statusText };
-                        }
-                    }
-
-                    throw new Error(`Function returned an error with status code ${response.status}`, {
-                        cause: {
-                            status: response.status,
-                            data: errorData,
-                        },
-                    });
+                if (!response.body || typeof response.body.getReader !== 'function') {
+                    throw new Error('Response does not contain a readable stream.');
                 }
 
                 const reader = response.body.getReader();
-                const decoder = new TextDecoder();
+                const decoder = new TextDecoder(); // To decode Uint8Array chunks
+                let buffer = ''; // Buffer for incomplete lines
 
+                // Read stream chunks
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    const text = decoder.decode(value);
-                    try {
-                        // Try to parse chunks as JSON
-                        const jsonChunks = text
-                            .split('\n')
-                            .filter(chunk => chunk.trim())
-                            .map(chunk => {
-                                try {
-                                    return JSON.parse(chunk);
-                                } catch (e) {
-                                    return chunk;
-                                }
-                            });
+                    const textChunk = decoder.decode(value, { stream: true }); // Decode chunk
+                    buffer += textChunk; // Add chunk to buffer
 
-                        // Update the stream variable with new chunks
-                        wwLib.wwVariable.updateValue(streamVariableId, [
-                            ...(wwLib.wwVariable.getValue(streamVariableId) || []),
-                            ...jsonChunks,
-                        ]);
-                    } catch (error) {
-                        // If JSON parsing fails, add raw text to the stream
-                        wwLib.wwVariable.updateValue(streamVariableId, [
-                            ...(wwLib.wwVariable.getValue(streamVariableId) || []),
-                            text,
-                        ]);
+                    // Process complete lines (assuming JSON Lines or similar newline-delimited format)
+                    let newlineIndex;
+                    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+                        const line = buffer.slice(0, newlineIndex).trim(); // Get line up to newline
+                        buffer = buffer.slice(newlineIndex + 1); // Remove processed line from buffer
+
+                        if (line) {
+                            // Process non-empty lines
+                            let parsedData = line;
+                            try {
+                                // Attempt to parse as JSON
+                                parsedData = JSON.parse(line);
+                            } catch (parseError) {
+                                // If JSON parsing fails, keep it as a string (or handle SSE format if needed)
+                                wwUtils?.log('warn', `[Supabase Stream] Non-JSON line received: ${line}`, {
+                                    parseError,
+                                });
+                            }
+
+                            // Update WeWeb variable by appending the data
+                            const currentData = wwLib.wwVariable.getValue(streamVariableId) || [];
+                            wwLib.wwVariable.updateValue(streamVariableId, [...currentData, parsedData]);
+                        }
                     }
                 }
 
-                return wwLib.wwVariable.getValue(streamVariableId);
+                // Process any remaining data in the buffer after stream ends
+                const remainingLine = buffer.trim();
+                if (remainingLine) {
+                    let parsedData = remainingLine;
+                    try {
+                        parsedData = JSON.parse(remainingLine);
+                    } catch (parseError) {
+                        wwUtils?.log('warn', `[Supabase Stream] Non-JSON remaining buffer: ${remainingLine}`, {
+                            parseError,
+                        });
+                    }
+                    const currentData = wwLib.wwVariable.getValue(streamVariableId) || [];
+                    wwLib.wwVariable.updateValue(streamVariableId, [...currentData, parsedData]);
+                }
+
+                // For streaming, the result is pushed to the variable, so return undefined or the final variable value.
+                // Returning undefined is often clearer as the action's side effect is updating the variable.
+                return undefined; // Or return wwLib.wwVariable.getValue(streamVariableId);
             } catch (error) {
-                throw error;
+                wwLib.wwLog.error('Supabase Edge Function stream error:', error);
+                // Rethrow or handle specific stream errors
+                if (error instanceof FunctionsHttpError) {
+                    throw new Error('Function returned an error with status code ' + error.context.status, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        }, // Added catch for json()
+                    });
+                } else if (error instanceof FunctionsRelayError) {
+                    throw new Error('Relay error: ' + error.message, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        },
+                    });
+                } else if (error instanceof FunctionsFetchError) {
+                    throw new Error('Fetch error: ' + error.message, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        },
+                    });
+                } else {
+                    throw new Error(error.message || 'An unknown error occurred during streaming.', {
+                        cause: error,
+                    });
+                }
             }
         }
+        // --- Non-Streaming Logic ---
+        else {
+            try {
+                const { data, error } = await this.instance.functions.invoke(functionName + queryString, invokeOptions);
 
-        const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
-            body: method === 'GET' ? undefined : body,
-            headers: Array.isArray(headers)
-                ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {})
-                : headers,
-            method,
-        });
+                if (error instanceof FunctionsHttpError) {
+                    throw new Error('Function returned an error with status code ' + error.context.status, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        },
+                    });
+                } else if (error instanceof FunctionsRelayError) {
+                    throw new Error('Relay error: ' + error.message, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        },
+                    });
+                } else if (error instanceof FunctionsFetchError) {
+                    throw new Error('Fetch error: ' + error.message, {
+                        cause: {
+                            ...error,
+                            status: error?.context?.status,
+                            data: await error?.context?.json?.().catch(() => null),
+                        },
+                    });
+                } else if (error) {
+                    // Attempt to parse error context if available, otherwise use error message
+                    const causeData = error.context ? await error.context.json?.().catch(() => null) : null;
+                    throw new Error(error.message || 'Unknown function invocation error', {
+                        cause: { ...error, status: error?.context?.status, data: causeData },
+                    });
+                }
 
-        if (error instanceof FunctionsHttpError) {
-            throw new Error('Function returned an error with status code ' + error.context.status, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error instanceof FunctionsRelayError) {
-            throw new Error('Relay error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error instanceof FunctionsFetchError) {
-            throw new Error('Fetch error: ' + error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        } else if (error) {
-            throw new Error(error.message, {
-                cause: { ...error, status: error?.context?.status, data: await error?.context?.json?.() },
-            });
-        }
-
-        try {
-            return JSON.parse(data);
-        } catch (error) {
-            return data;
+                // Try to parse JSON, return raw data if parsing fails
+                try {
+                    // If data is already an object/array, return it directly
+                    if (typeof data === 'object' && data !== null) return data;
+                    // If it's a string, try parsing
+                    if (typeof data === 'string') return JSON.parse(data);
+                    // Otherwise return as is
+                    return data;
+                } catch (e) {
+                    // If JSON parsing fails on a string, return the string
+                    if (typeof data === 'string') return data;
+                    // Otherwise re-throw unexpected parsing error
+                    throw new Error('Failed to parse function response', { cause: e });
+                }
+            } catch (error) {
+                // Catch errors thrown from the try block or from the error checks
+                wwLib.wwLog.error('Supabase Edge Function invocation error:', error);
+                // Re-throw the already structured error
+                throw error;
+            }
         }
     },
     async listFiles({ bucket, path, options = {} }, wwUtils) {
