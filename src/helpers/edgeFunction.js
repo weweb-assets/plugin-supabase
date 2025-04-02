@@ -225,11 +225,6 @@ export async function executeStreamingInvocation(
 
         if (invokeError) throw invokeError;
 
-        wwUtils?.log('debug', `[Supabase Stream] Response data:`, {
-            type: 'debug',
-            preview: responseData,
-        });
-
         if (!responseData || !responseData.body || typeof responseData.body.getReader !== 'function') {
             console.error('[Supabase Stream Debug] Failed response data object:', responseData);
             throw new Error('Response data does not contain a readable stream.');
@@ -264,7 +259,6 @@ export async function executeStreamingInvocation(
 
                     // Handle potential [DONE] signal in SSE
                     if (line === '[DONE]') {
-                        wwUtils?.log('info', '[Supabase Stream] Received [DONE] signal.');
                         break;
                     }
 
