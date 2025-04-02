@@ -406,10 +406,13 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return this.formatReturn(data, count);
     },
-    async invokeEdgeFunction({ functionName, body, headers = [], queries = [], method = 'POST' }, wwUtils) {
+    async invokeEdgeFunction(
+        { functionName, body, headers = [], queries = [], method = 'POST', useStreaming = false, streamVariableId },
+        wwUtils
+    ) {
         wwUtils?.log('info', `[Supabase] Invoke an Edge function - ${functionName}`, {
             type: 'request',
-            preview: { body, headers, method },
+            preview: { body, headers, method, useStreaming },
         });
         const query = Array.isArray(queries)
             ? queries
@@ -419,6 +422,71 @@ export default {
         const queryString = query.length
             ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
+
+        if (useStreaming && streamVariableId) {
+            try {
+                const response = await fetch(`${this.instance.functions.url}/${functionName}${queryString}`, {
+                    method,
+                    headers: Array.isArray(headers)
+                        ? headers.reduce((result, item) => ({ ...result, [item.key]: item.value }), {
+                              Authorization: `Bearer ${this.instance.supabaseKey}`,
+                              'Content-Type': 'application/json',
+                          })
+                        : {
+                              ...headers,
+                              Authorization: `Bearer ${this.instance.supabaseKey}`,
+                              'Content-Type': 'application/json',
+                          },
+                    body: method === 'GET' ? undefined : JSON.stringify(body),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Function returned an error with status code ${response.status}`, {
+                        cause: { status: response.status },
+                    });
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value);
+                    try {
+                        // Try to parse chunks as JSON
+                        const jsonChunks = text
+                            .split('\n')
+                            .filter(chunk => chunk.trim())
+                            .map(chunk => {
+                                try {
+                                    return JSON.parse(chunk);
+                                } catch (e) {
+                                    return chunk;
+                                }
+                            });
+
+                        // Update the stream variable with new chunks
+                        wwLib.wwVariable.updateValue(streamVariableId, [
+                            ...(wwLib.wwVariable.getValue(streamVariableId) || []),
+                            ...jsonChunks,
+                        ]);
+                    } catch (error) {
+                        // If JSON parsing fails, add raw text to the stream
+                        wwLib.wwVariable.updateValue(streamVariableId, [
+                            ...(wwLib.wwVariable.getValue(streamVariableId) || []),
+                            text,
+                        ]);
+                    }
+                }
+
+                return wwLib.wwVariable.getValue(streamVariableId);
+            } catch (error) {
+                throw error;
+            }
+        }
+
         const { data, error } = await this.instance.functions.invoke(functionName + queryString, {
             body: method === 'GET' ? undefined : body,
             headers: Array.isArray(headers)
