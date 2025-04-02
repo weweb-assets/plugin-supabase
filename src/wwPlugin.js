@@ -28,9 +28,16 @@ import './components/Functions/Realtime/UpdateState.vue';
 import './components/Functions/CallPostgres.vue';
 import './components/Functions/InvokeEdge.vue';
 /* wwEditor:end */
-import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+
+import {
+    buildQueryString,
+    buildHeaders,
+    executeRegularInvocation,
+    executeStreamingInvocation,
+} from './helpers/edgeFunction.js';
 
 export default {
     instance: null,
@@ -406,8 +413,8 @@ export default {
         if (error) throw new Error(error.message, { cause: error });
         return this.formatReturn(data, count);
     },
-    async invokeEdgeFunction(
-        {
+    async invokeEdgeFunction(args, wwUtils) {
+        const {
             functionName,
             body,
             headers = [],
@@ -415,13 +422,11 @@ export default {
             method = 'POST',
             useStreaming = false,
             streamVariableId = null,
-        },
-        wwUtils
-    ) {
+        } = args;
+
         /* wwEditor:start */
         if (!this.instance) throw new Error('Invalid Supabase configuration.');
         if (!functionName) throw new Error('Edge function name is required.');
-        // Keep this check: streamVariableId is mandatory if streaming is enabled
         if (useStreaming && !streamVariableId) {
             throw new Error('Stream variable ID is required when streaming is enabled.');
         }
@@ -429,200 +434,37 @@ export default {
 
         wwUtils?.log('info', `[Supabase] ${useStreaming ? 'Streaming' : 'Invoking'} Edge function - ${functionName}`, {
             type: 'request',
-            preview: { body, headers, method, queries, useStreaming, streamVariableId },
         });
 
-        // Prepare Query String
-        const query = Array.isArray(queries)
-            ? queries
-            : queries && typeof queries === 'object'
-            ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
-            : [];
-        const queryString = query.length
-            ? query.reduce((result, item) => {
-                  if (item.key) {
-                      return `${result}${result === '?' ? '' : '&'}${encodeURIComponent(item.key)}=${encodeURIComponent(
-                          item.value ?? ''
-                      )}`;
-                  }
-                  return result;
-              }, '?')
-            : '';
+        const queryString = buildQueryString(queries);
+        const headerObject = buildHeaders(headers);
 
-        // Prepare Headers
-        const headerObject = Array.isArray(headers)
-            ? headers.reduce((result, item) => {
-                  if (item.key) {
-                      result[item.key] = item.value;
-                  }
-                  return result;
-              }, {})
-            : headers || {};
-
-        // Prepare Options
-        const invokeOptions = {
-            body: method === 'GET' ? undefined : body,
-            headers: headerObject,
-            method,
-            ...(useStreaming ? { responseType: 'stream' } : {}),
-        };
-
-        // --- Streaming Logic ---
         if (useStreaming) {
-            // Removed the check using the non-existent wwLib.wwVariable.getVariable
-            // We rely on the UI having filtered the variable selection to arrays.
-
-            // Initialize/Clear the variable before starting
-            // Ensure the target variable exists before trying to update
-            if (streamVariableId) {
-                wwLib.wwVariable.updateValue(streamVariableId, []);
-            } else {
-                // This case should theoretically be caught by the editor check, but good practice
-                wwLib.wwLog.error('Stream variable ID missing for Supabase Edge Function stream.');
-                throw new Error('Stream Variable not provided for streaming response.');
-            }
-
-            try {
-                const response = await this.instance.functions.invoke(functionName + queryString, invokeOptions);
-
-                if (!response.body || typeof response.body.getReader !== 'function') {
-                    throw new Error('Response does not contain a readable stream.');
-                }
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let buffer = '';
-
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    const textChunk = decoder.decode(value, { stream: true });
-                    buffer += textChunk;
-
-                    let newlineIndex;
-                    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-                        const line = buffer.slice(0, newlineIndex).trim();
-                        buffer = buffer.slice(newlineIndex + 1);
-
-                        if (line) {
-                            let parsedData = line;
-                            try {
-                                parsedData = JSON.parse(line);
-                            } catch (parseError) {
-                                wwUtils?.log('warn', `[Supabase Stream] Non-JSON line received: ${line}`, {
-                                    parseError,
-                                });
-                            }
-
-                            // Update WeWeb variable using only existing functions
-                            const currentData = wwLib.wwVariable.getValue(streamVariableId) || [];
-                            // Ensure currentData is an array before spreading
-                            const arrayData = Array.isArray(currentData) ? currentData : [];
-                            wwLib.wwVariable.updateValue(streamVariableId, [...arrayData, parsedData]);
-                        }
-                    }
-                }
-
-                // Process any remaining data in the buffer
-                const remainingLine = buffer.trim();
-                if (remainingLine) {
-                    let parsedData = remainingLine;
-                    try {
-                        parsedData = JSON.parse(remainingLine);
-                    } catch (parseError) {
-                        wwUtils?.log('warn', `[Supabase Stream] Non-JSON remaining buffer: ${remainingLine}`, {
-                            parseError,
-                        });
-                    }
-                    const currentData = wwLib.wwVariable.getValue(streamVariableId) || [];
-                    const arrayData = Array.isArray(currentData) ? currentData : [];
-                    wwLib.wwVariable.updateValue(streamVariableId, [...arrayData, parsedData]);
-                }
-
-                return undefined; // Return undefined for async stream updates
-            } catch (error) {
-                wwLib.wwLog.error('Supabase Edge Function stream error:', error);
-                if (error instanceof FunctionsHttpError) {
-                    throw new Error('Function returned an error with status code ' + error.context.status, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else if (error instanceof FunctionsRelayError) {
-                    throw new Error('Relay error: ' + error.message, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else if (error instanceof FunctionsFetchError) {
-                    throw new Error('Fetch error: ' + error.message, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else {
-                    throw new Error(error.message || 'An unknown error occurred during streaming.', {
-                        cause: error,
-                    });
-                }
-            }
-        }
-        // --- Non-Streaming Logic ---
-        else {
-            // ... (Non-streaming logic remains the same as in the previous correct version) ...
-            try {
-                const { data, error } = await this.instance.functions.invoke(functionName + queryString, invokeOptions);
-
-                if (error instanceof FunctionsHttpError) {
-                    throw new Error('Function returned an error with status code ' + error.context.status, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else if (error instanceof FunctionsRelayError) {
-                    throw new Error('Relay error: ' + error.message, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else if (error instanceof FunctionsFetchError) {
-                    throw new Error('Fetch error: ' + error.message, {
-                        cause: {
-                            ...error,
-                            status: error?.context?.status,
-                            data: await error?.context?.json?.().catch(() => null),
-                        },
-                    });
-                } else if (error) {
-                    const causeData = error.context ? await error.context.json?.().catch(() => null) : null;
-                    throw new Error(error.message || 'Unknown function invocation error', {
-                        cause: { ...error, status: error?.context?.status, data: causeData },
-                    });
-                }
-
-                try {
-                    if (typeof data === 'object' && data !== null) return data;
-                    if (typeof data === 'string') return JSON.parse(data);
-                    return data;
-                } catch (e) {
-                    if (typeof data === 'string') return data;
-                    throw new Error('Failed to parse function response', { cause: e });
-                }
-            } catch (error) {
-                wwLib.wwLog.error('Supabase Edge Function invocation error:', error);
-                throw error;
-            }
+            return await executeStreamingInvocation(
+                {
+                    instance: this.instance,
+                    functionName,
+                    queryString,
+                    method,
+                    body,
+                    headerObject,
+                    streamVariableId,
+                    wwLib,
+                },
+                wwUtils
+            );
+        } else {
+            return await executeRegularInvocation(
+                {
+                    instance: this.instance,
+                    functionName,
+                    queryString,
+                    method,
+                    body,
+                    headerObject,
+                },
+                wwUtils
+            );
         }
     },
     async listFiles({ bucket, path, options = {} }, wwUtils) {
