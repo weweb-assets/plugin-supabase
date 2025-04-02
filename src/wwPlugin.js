@@ -441,8 +441,24 @@ export default {
                 });
 
                 if (!response.ok) {
+                    let errorData = {};
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        // If not JSON, try to get text
+                        try {
+                            errorData = { message: await response.text() };
+                        } catch (e2) {
+                            // If can't get text, use status text
+                            errorData = { message: response.statusText };
+                        }
+                    }
+
                     throw new Error(`Function returned an error with status code ${response.status}`, {
-                        cause: { status: response.status },
+                        cause: {
+                            status: response.status,
+                            data: errorData,
+                        },
                     });
                 }
 
