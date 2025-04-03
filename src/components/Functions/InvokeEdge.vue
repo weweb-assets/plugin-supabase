@@ -100,7 +100,7 @@
             <div class="body-sm ml-2">Stream response</div>
             <wwEditorQuestionMark
                 tooltip-position="top-left"
-                forced-content="The response will be streamed in real-time. You can use the stream variable to receive the data. This requires the server to support streaming responses."
+                forced-content="The response will be streamed in real-time. You can use the stream variable to receive the data. This requires the edge function to support streaming responses."
                 class="ml-auto"
             />
         </div>
