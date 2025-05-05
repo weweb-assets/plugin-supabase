@@ -99,6 +99,7 @@ export default {
         );
     },
     checkBackendUpdates() {
+        if (wwLib.$store.getters['manager/getIsBackup']) return;
         // check in settings and compare with current versions
         const hasEngineUpdates = this.settings.privateData.backendEngineVersion !== this.backendEngineVersion;
         const installedIntegrationsVersions = this.settings.privateData.backendIntegrations || {};
