@@ -146,6 +146,7 @@ export default {
                 settings.publicData.apiKey,
                 settings.privateData.apiKey
             );
+            this.checkBackendUpdates();
         } else {
             await this.load(settings.publicData.projectUrl, settings.publicData.apiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
