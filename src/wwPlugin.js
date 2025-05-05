@@ -39,6 +39,7 @@ export default {
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
+    backendEngineVersion: '1.0.0',
     integrations,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
@@ -96,6 +97,28 @@ export default {
             }/supabase/install`,
             { driver }
         );
+    },
+    checkBackendUpdates() {
+        // check in settings and compare with current versions
+        const hasEngineUpdates = this.settings.privateData.backendEngineVersion !== this.backendEngineVersion;
+        const installedIntegrationsVersions = this.settings.privateData.backendIntegrations || {};
+        const latestIntegrationsVersions = this.integrations.reduce((acc, integration) => {
+            acc[integration.id] = integration.version;
+            return acc;
+        }, {});
+
+        // check if any integration has an update
+        let hasIntegrationsUpdates = false;
+        for (const integrationKey in installedIntegrationsVersions) {
+            if (installedIntegrationsVersions[integrationKey] !== latestIntegrationsVersions[integrationKey]) {
+                hasIntegrationsUpdates = true;
+                break;
+            }
+        }
+        if (hasEngineUpdates || hasIntegrationsUpdates) {
+            // Request wwedge deploy
+            wwLib.$emit('wwTopBar:supabase:deploy');
+        }
     },
     async fetchProjectInfo(
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
@@ -220,6 +243,7 @@ export default {
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
+            this.checkBackendUpdates();
             await this.fetchDoc(projectUrl, apiKey);
             /* wwEditor:end */
         } catch (err) {
