@@ -103,7 +103,7 @@ export default {
         const hasEngineUpdates = this.settings.privateData.backendEngineVersion !== this.backendEngineVersion;
         const installedIntegrationsVersions = this.settings.privateData.backendIntegrations || {};
         const latestIntegrationsVersions = this.integrations.reduce((acc, integration) => {
-            acc[integration.id] = integration.version;
+            acc[integration.slug] = integration.version;
             return acc;
         }, {});
 
