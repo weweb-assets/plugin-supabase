@@ -39,7 +39,7 @@ export default {
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
-    backendEngineVersion: '0.2.47',
+    backendEngineVersion: '0.2.48',
     integrations,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
