@@ -1,7 +1,7 @@
 export default {
     "name": "PDFMonkey",
     "slug": "pdfmonkey",
-    "version": "1.0.0",
+    "version": "0.1.24",
     "shortDescription": "Access PDFMonkey API solutions",
     "description": "PDFMonkey integration for WeWeb that provides comprehensive access to the PDFMonkey platform including document generation, template management, and PDF engine configuration.",
     "secrets": [
