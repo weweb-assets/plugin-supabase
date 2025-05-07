@@ -98,8 +98,25 @@ export default {
             { driver }
         );
     },
+    async enableBackendWorkflows() {
+        if (this.settings.privateData.backendWorkflowsEnabled) return;
+        await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+            pluginId: wwLib.wwPlugins.supabase.id,
+            settings: {
+                id: wwLib.wwPlugins.supabase.settings.id,
+                designId: wwLib.wwPlugins.supabase.settings.designId,
+                publicData: wwLib.wwPlugins.supabase.settings.publicData,
+                privateData: {
+                    ...wwLib.wwPlugins.supabase.settings.privateData,
+                    backendWorkflowsEnabled: true,
+                },
+            },
+        });
+        this.checkBackendUpdates();
+    },
     checkBackendUpdates() {
         if (wwLib.$store.getters['manager/getIsBackup']) return;
+        if (!this.settings.privateData.backendWorkflowsEnabled) return;
         // check in settings and compare with current versions
         const hasEngineUpdates = this.settings.privateData.backendEngineVersion !== this.backendEngineVersion;
         const installedIntegrationsVersions = this.settings.privateData.backendIntegrations || {};
