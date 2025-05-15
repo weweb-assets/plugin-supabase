@@ -53,14 +53,13 @@ export default {
             wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
             window.localStorage.removeItem('supabase_oauth');
             await wwAxios.post(
-                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase/connect`,
                 { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
-            wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
+            wwLib.$emit('wwTopBar:plugins:setPluginId', wwLib.wwPlugins.supabase.id);
         }
         await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         /* wwEditor:end */
@@ -83,8 +82,7 @@ export default {
     },
     async syncSettings(settings) {
         await wwAxios.post(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
             }/supabase/sync`,
             { source: 'supabase', settings }
         );
@@ -92,8 +90,7 @@ export default {
     // driver: core, roles
     async install(driver = 'core') {
         await wwAxios.post(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
             }/supabase/install`,
             { driver }
         );
@@ -133,17 +130,15 @@ export default {
         try {
             return await wwAxios({
                 method,
-                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
-                }/supabase${path}`,
+                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase${path}`,
                 data,
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
-                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
                 return await this.requestAPI({ method, path, data }, false);
@@ -414,8 +409,8 @@ export default {
         const query = Array.isArray(queries)
             ? queries
             : queries && typeof queries === 'object'
-            ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
-            : [];
+                ? Object.keys(queries).map(k => ({ key: k, value: queries[k] }))
+                : [];
         const queryString = query.length
             ? query.reduce((result, item) => `${result}${item.key}=${item.value}&`, '?')
             : '';
@@ -482,14 +477,14 @@ export default {
             path,
             options.transform
                 ? {
-                      transform: {
-                          ...(options.transform.format ? { format: options.transform.format } : {}),
-                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
-                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
-                          ...(options.transform.width ? { width: options.transform.width } : {}),
-                          ...(options.transform.height ? { height: options.transform.height } : {}),
-                      },
-                  }
+                    transform: {
+                        ...(options.transform.format ? { format: options.transform.format } : {}),
+                        ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                        ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                        ...(options.transform.width ? { width: options.transform.width } : {}),
+                        ...(options.transform.height ? { height: options.transform.height } : {}),
+                    },
+                }
                 : {}
         );
         if (error) throw new Error(error.message, { cause: error });
@@ -541,12 +536,12 @@ export default {
                 download: options.download ? options.download.filename || true : false,
                 transform: options.transform
                     ? {
-                          ...(options.transform.format ? { format: options.transform.format } : {}),
-                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
-                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
-                          ...(options.transform.width ? { width: options.transform.width } : {}),
-                          ...(options.transform.height ? { height: options.transform.height } : {}),
-                      }
+                        ...(options.transform.format ? { format: options.transform.format } : {}),
+                        ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                        ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                        ...(options.transform.width ? { width: options.transform.width } : {}),
+                        ...(options.transform.height ? { height: options.transform.height } : {}),
+                    }
                     : null,
             });
         } else {
@@ -567,14 +562,14 @@ export default {
             download: options.download ? options.download.filename || true : false,
             ...(options.transform
                 ? {
-                      transform: {
-                          ...(options.transform.format ? { format: options.transform.format } : {}),
-                          ...(options.transform.quality ? { quality: options.transform.quality } : {}),
-                          ...(options.transform.resize ? { resize: options.transform.resize } : {}),
-                          ...(options.transform.width ? { width: options.transform.width } : {}),
-                          ...(options.transform.height ? { height: options.transform.height } : {}),
-                      },
-                  }
+                    transform: {
+                        ...(options.transform.format ? { format: options.transform.format } : {}),
+                        ...(options.transform.quality ? { quality: options.transform.quality } : {}),
+                        ...(options.transform.resize ? { resize: options.transform.resize } : {}),
+                        ...(options.transform.width ? { width: options.transform.width } : {}),
+                        ...(options.transform.height ? { height: options.transform.height } : {}),
+                    },
+                }
                 : {}),
         });
         if (error) throw new Error(error.message, { cause: error });
@@ -743,10 +738,10 @@ const applyModifiers = (query, { select, order, limit, range, single, maybeSingl
             select.mode === 'minimal'
                 ? ''
                 : select.mode === 'guided'
-                ? select?.fields.length
-                    ? select.fields.join(', ')
-                    : '*'
-                : select?.fieldsAdvanced
+                    ? select?.fields.length
+                        ? select.fields.join(', ')
+                        : '*'
+                    : select?.fieldsAdvanced
         );
     }
 
