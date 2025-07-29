@@ -124,6 +124,11 @@
 <script>
 import Expandable from '../Utils/Expandable.vue';
 
+const getElementName = uid => {
+    const { name } = wwLib.$store.getters['websiteData/getWwObjects'][uid] || { name: 'Element undefined' };
+    return name;
+};
+
 export default {
     components: { Expandable },
     props: {
@@ -174,11 +179,21 @@ export default {
         wwVariableOptions() {
             return this.wwVariables
                 .filter(variable => variable.type === 'array')
-                .map(variable => ({
-                    label: variable.name,
-                    value: variable.id,
-                    icon: variable.type,
-                }));
+                .map(variable => {
+                    let label = variable.name;
+                    const elementName =
+                        variable.componentType && variable.componentType === 'element'
+                            ? getElementName(variable.componentUid)
+                            : null;
+
+                    if (elementName) label = `${elementName} - ${variable.name}`;
+
+                    return {
+                        label,
+                        value: variable.id,
+                        icon: variable.type,
+                    };
+                });
         },
     },
     mounted() {
