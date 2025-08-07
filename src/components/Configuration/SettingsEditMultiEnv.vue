@@ -274,12 +274,18 @@ export default {
                 console.log('[SettingsEditMultiEnv] Global connection mode changed:', {
                     oldMode,
                     newMode,
-                    settings: this.settings
+                    settings: this.settings,
+                    willSync: newMode && (oldMode === undefined || newMode !== oldMode)
                 });
                 
-                // When global connection mode changes, update all environments to match
-                if (newMode && oldMode !== undefined && newMode !== oldMode) {
-                    this.syncConnectionModeToAllEnvironments(newMode);
+                // Sync connection mode to all environments when:
+                // 1. Initial load with a global mode set (oldMode undefined)
+                // 2. Mode changes from one value to another
+                if (newMode && (oldMode === undefined || newMode !== oldMode)) {
+                    // Use nextTick to ensure the component is fully mounted
+                    this.$nextTick(() => {
+                        this.syncConnectionModeToAllEnvironments(newMode);
+                    });
                 }
             },
             immediate: true
@@ -591,30 +597,46 @@ export default {
         syncConnectionModeToAllEnvironments(mode) {
             console.log('[syncConnectionModeToAllEnvironments] Syncing mode to all environments:', mode);
             
+            // Ensure environments structure exists
+            if (!this.settings.privateData?.environments) {
+                console.log('[syncConnectionModeToAllEnvironments] No environments found, skipping sync');
+                return;
+            }
+            
             const newSettings = {
                 ...this.settings,
+                publicData: {
+                    ...this.settings.publicData,
+                    environments: {
+                        ...this.settings.publicData?.environments
+                    }
+                },
                 privateData: {
                     ...this.settings.privateData,
-                    environments: {
-                        ...this.settings.privateData?.environments
-                    }
+                    environments: {}
                 }
             };
             
-            // Update connection mode for all configured environments
+            // Update connection mode for ALL environments (even if not yet configured)
             this.environments.forEach(env => {
-                if (newSettings.privateData.environments?.[env]) {
-                    newSettings.privateData.environments[env] = {
-                        ...newSettings.privateData.environments[env],
-                        connectionMode: mode
-                    };
-                    
-                    // Clear access tokens when switching to custom mode
-                    if (mode === 'custom') {
-                        newSettings.privateData.environments[env].accessToken = '';
-                        newSettings.privateData.environments[env].refreshToken = '';
-                    }
+                const existingEnvConfig = this.settings.privateData.environments?.[env] || {};
+                
+                newSettings.privateData.environments[env] = {
+                    ...existingEnvConfig,
+                    connectionMode: mode
+                };
+                
+                // Clear access tokens when switching to custom mode
+                if (mode === 'custom') {
+                    newSettings.privateData.environments[env].accessToken = '';
+                    newSettings.privateData.environments[env].refreshToken = '';
                 }
+                
+                console.log(`[syncConnectionModeToAllEnvironments] Updated ${env}:`, {
+                    oldMode: existingEnvConfig.connectionMode,
+                    newMode: mode,
+                    hasToken: !!existingEnvConfig.accessToken
+                });
             });
             
             // Also clear global tokens when switching to custom
