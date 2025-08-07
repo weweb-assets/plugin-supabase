@@ -1,23 +1,24 @@
 <template>
     <!-- Environment Tabs -->
-    <div class="environment-tabs mb-3">
+    <div class="environment-tabs-container">
         <wwEditorFormRow label="Environment Configuration" class="w-100">
-            <div class="flex gap-2">
-                <button
+            <div class="ww-tabs-header">
+                <div
                     v-for="env in environments"
                     :key="env"
                     :class="[
-                        'ww-editor-button -secondary -small',
-                        { '-primary': activeEnvironment === env }
+                        'ww-tab-item',
+                        { 'ww-tab-active': activeEnvironment === env }
                     ]"
                     @click="activeEnvironment = env"
-                    type="button"
                 >
-                    {{ capitalize(env) }}
-                    <span v-if="!isEnvironmentConfigured(env) && env !== 'production'" class="ml-1 text-xs opacity-60">
-                        (Optional)
+                    <span class="ww-tab-label">
+                        {{ capitalize(env) }}
                     </span>
-                </button>
+                    <span v-if="!isEnvironmentConfigured(env) && env !== 'production'" class="ww-tab-optional">
+                        Optional
+                    </span>
+                </div>
             </div>
         </wwEditorFormRow>
     </div>
@@ -380,7 +381,57 @@ export default {
 </script>
 
 <style scoped>
-.environment-tabs {
-    border-bottom: 1px solid var(--ww-color-border);
+.ww-tabs-header {
+    display: flex;
+    border-bottom: 2px solid var(--ww-color-border);
+    gap: 0;
+}
+
+.ww-tab-item {
+    position: relative;
+    padding: var(--ww-spacing-02) var(--ww-spacing-04);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--ww-color-content-secondary);
+    font-weight: var(--text-medium);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: var(--ww-spacing-01);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.ww-tab-item:hover {
+    color: var(--ww-color-content-primary);
+    background: var(--ww-color-bg-hover);
+}
+
+.ww-tab-item.ww-tab-active {
+    color: var(--ww-color-content-brand);
+    border-bottom-color: var(--ww-color-border-brand);
+    background: transparent;
+}
+
+.ww-tab-label {
+    font-size: var(--text-sm-font-size);
+}
+
+.ww-tab-optional {
+    font-size: var(--text-xs-font-size);
+    color: var(--ww-color-content-tertiary);
+    background: var(--ww-color-bg-tertiary);
+    padding: 2px 6px;
+    border-radius: var(--ww-border-radius-01);
+}
+
+.ww-tab-active .ww-tab-optional {
+    background: var(--ww-color-bg-brand-secondary);
+    color: var(--ww-color-content-brand);
+}
+
+.environment-tabs-container {
+    margin-bottom: var(--ww-spacing-05);
 }
 </style>
