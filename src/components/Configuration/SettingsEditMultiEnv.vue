@@ -24,17 +24,6 @@
 
     <!-- Environment Configuration -->
     <div v-for="env in environments" :key="`config-${env}`" v-show="activeEnvironment === env">
-        <!-- Key Type Indicator -->
-        <div v-if="getCurrentEnvConfig().apiKey" class="mb-2 p-2 rounded border">
-            <div class="flex items-center justify-between">
-                <span :class="getKeyTypeClass(getCurrentEnvConfig().apiKey)" class="text-xs px-2 py-1 rounded">
-                    {{ getKeyTypeLabel(getCurrentEnvConfig().apiKey) }}
-                </span>
-                <div v-if="isLegacyKey(getCurrentEnvConfig().apiKey)" class="text-warning text-sm">
-                    ⚠️ Legacy keys will be deprecated in late 2026
-                </div>
-            </div>
-        </div>
 
         <wwEditorFormRow class="w-100">
             <wwEditorInputRadio
@@ -88,7 +77,7 @@
                     label="Public API key"
                     :required="env === 'production'"
                     type="query"
-                    :placeholder="isLegacyKey(getCurrentEnvConfig().apiKey) ? 'ey********' : 'sb_publishable_********'"
+                    placeholder="Enter your public API key"
                     :model-value="getCurrentEnvConfig().apiKey"
                     @update:modelValue="(val) => changeApiKey(val, env)"
                 />
@@ -97,7 +86,7 @@
                     <div class="flex items-center">
                         <wwEditorInputText
                             type="password"
-                            :placeholder="isLegacyKey(getCurrentEnvPrivateConfig().apiKey) ? 'ey********' : 'sb_secret_********'"
+                            placeholder="Enter your service role key"
                             large
                             class="w-full"
                             :style="{ '-webkit-text-security': 'disc' }"
@@ -125,7 +114,6 @@
 </template>
 
 <script>
-import { detectKeyType, isLegacyKey, getKeyTypeLabel, getKeyTypeClass } from '../../helpers/keyDetection';
 import { isEnvironmentConfigured } from '../../helpers/environmentConfig';
 
 export default {
@@ -193,10 +181,6 @@ export default {
     },
     methods: {
         // Key detection helpers
-        detectKeyType,
-        isLegacyKey,
-        getKeyTypeLabel,
-        getKeyTypeClass,
         
         capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);

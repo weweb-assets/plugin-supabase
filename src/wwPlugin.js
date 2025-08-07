@@ -32,7 +32,6 @@ import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchEr
 
 import { generateFilter } from './helpers/filters';
 import { getEnvironmentConfig, getCurrentEnvironment } from './helpers/environmentConfig';
-import { detectKeyType, validateKeyUsage } from './helpers/keyDetection';
 
 export default {
     instance: null,
@@ -95,19 +94,6 @@ export default {
         }
         await this.fetchProjectInfo(envConfig.publicData.projectUrl, envConfig.privateData.accessToken);
         /* wwEditor:end */
-        
-        // Validate key usage
-        try {
-            validateKeyUsage(envConfig.publicData.apiKey, 'browser');
-            /* wwEditor:start */
-            validateKeyUsage(envConfig.privateData.apiKey, 'server');
-            /* wwEditor:end */
-        } catch (error) {
-            wwLib.wwLog.error('Invalid key usage:', error);
-            /* wwEditor:start */
-            wwLib.wwNotification.open({ text: error.message, color: 'red' });
-            /* wwEditor:end */
-        }
         
         await this.load(envConfig.publicData.customDomain || envConfig.publicData.projectUrl, envConfig.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
