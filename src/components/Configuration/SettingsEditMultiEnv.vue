@@ -39,9 +39,9 @@
             </button>
         </div>
 
-        <wwEditorFormRow class="w-100">
+        <!-- Only show select/create options in OAuth mode -->
+        <wwEditorFormRow class="w-100" v-if="isOAuthMode(env)">
             <wwEditorInputRadio
-                v-if="isConnected(env)"
                 v-model="selectModes[env]"
                 :disabled="isComingUp"
                 :choices="[
@@ -51,8 +51,18 @@
             />
         </wwEditorFormRow>
 
-        <template v-if="selectModes[env] === 'select' || !isConnected(env)">
-            <div class="flex items-center" v-if="isConnected(env)">
+        <!-- Custom mode message -->
+        <div v-if="!isOAuthMode(env)" class="mb-3 p-2 bg-secondary rounded">
+            <div class="body-sm content-secondary">
+                <wwEditorIcon name="info-circle" small class="mr-1" />
+                Manual configuration mode - Enter your Supabase project details below
+            </div>
+        </div>
+
+        <!-- Select/Custom mode configuration -->
+        <template v-if="selectModes[env] === 'select' || !isOAuthMode(env)">
+            <!-- OAuth mode: Show project selector -->
+            <div class="flex items-center" v-if="isOAuthMode(env)">
                 <wwEditorFormRow :required="env === 'production'" label="Project URL" class="w-100">
                     <wwEditorInput
                         type="select"
@@ -68,8 +78,9 @@
                 </button>
             </div>
             
+            <!-- OAuth mode: Toggle to show manual settings -->
             <button
-                v-if="isConnected(env)"
+                v-if="isOAuthMode(env)"
                 @click="showSettings[env] = !showSettings[env]"
                 class="ww-editor-button -secondary -small mb-2"
                 type="button"
@@ -77,7 +88,8 @@
                 {{ showSettings[env] ? 'Close' : 'Open' }} settings
             </button>
             
-            <template v-if="showSettings[env] || !isConnected(env)">
+            <!-- Show manual settings: Always visible in custom mode, toggleable in OAuth mode -->
+            <template v-if="showSettings[env] || !isOAuthMode(env)">
                 <wwEditorInputRow
                     label="Project URL"
                     type="query"
@@ -118,8 +130,8 @@
             </template>
         </template>
         
-        <!-- Create Project UI -->
-        <template v-else-if="selectModes[env] === 'create'">
+        <!-- Create Project UI (only in OAuth mode) -->
+        <template v-else-if="selectModes[env] === 'create' && isOAuthMode(env)">
             <div v-if="isComingUp" class="body-md flex items-center p-2">
                 <wwLoaderSmall loading class="mr-2" />
                 <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
@@ -313,6 +325,24 @@ export default {
             });
         },
         
+        isOAuthMode(env) {
+            // Check if we're in OAuth mode (not custom mode)
+            // First check environment-specific config
+            const envConfig = this.getCurrentEnvPrivateConfig(env);
+            if (envConfig?.connectionMode) {
+                return envConfig.connectionMode === 'oauth';
+            }
+            
+            // Fallback to global connection mode (for backward compatibility)
+            const globalMode = this.settings.privateData?.connectionMode;
+            if (globalMode) {
+                return globalMode === 'oauth';
+            }
+            
+            // Default to OAuth if connected with access token, custom otherwise
+            return this.isConnected(env);
+        },
+        
         getCurrentEnvConfig(env = this.activeEnvironment) {
             if (this.settings.publicData?.environments?.[env]) {
                 return this.settings.publicData.environments[env];
@@ -348,6 +378,7 @@ export default {
         
         migrateToMultiEnv() {
             // Migrate legacy config to multi-environment structure
+            const connectionMode = this.settings.privateData?.connectionMode || 'custom';
             const newSettings = {
                 ...this.settings,
                 publicData: {
@@ -364,7 +395,7 @@ export default {
                     ...this.settings.privateData,
                     environments: {
                         production: {
-                            connectionMode: this.settings.privateData?.connectionMode || 'custom',
+                            connectionMode: connectionMode,
                             accessToken: this.settings.privateData?.accessToken || '',
                             refreshToken: this.settings.privateData?.refreshToken || '',
                             apiKey: this.settings.privateData?.apiKey || '',
@@ -374,6 +405,8 @@ export default {
                     }
                 }
             };
+            // Keep global connection mode for ConnectionEdit component
+            newSettings.privateData.connectionMode = connectionMode;
             this.$emit('update:settings', newSettings);
         },
         
@@ -423,6 +456,12 @@ export default {
         },
         
         updateEnvironmentConfig(env, updates) {
+            // Get current connection mode (inherit from global if not set for environment)
+            const currentEnvPrivateConfig = this.getCurrentEnvPrivateConfig(env);
+            const connectionMode = currentEnvPrivateConfig?.connectionMode || 
+                                  this.settings.privateData?.connectionMode || 
+                                  'custom';
+            
             const newSettings = {
                 ...this.settings,
                 publicData: {
@@ -440,6 +479,7 @@ export default {
                     environments: {
                         ...this.settings.privateData?.environments,
                         [env]: {
+                            connectionMode, // Always preserve the connection mode
                             ...this.getCurrentEnvPrivateConfig(env),
                             ...(updates.privateData || {})
                         }
