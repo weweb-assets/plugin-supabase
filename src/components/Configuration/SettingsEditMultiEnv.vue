@@ -267,9 +267,14 @@ export default {
             this.migrateToMultiEnv();
         }
         
-        // Check if any environment is connected
+        // Check if any environment is connected and has a project URL
         const hasConnection = this.environments.some(env => this.isConnected(env));
-        if (hasConnection) {
+        const hasConfiguredProject = this.environments.some(env => {
+            const config = this.getCurrentEnvConfig(env);
+            return config?.projectUrl;
+        });
+        
+        if (hasConnection && hasConfiguredProject) {
             this.refreshProjects();
         } else {
             this.showSettings.production = true;
@@ -360,19 +365,30 @@ export default {
         },
         
         async changeProjectUrl(projectUrl, env) {
+            // Skip if no project URL is provided
+            if (!projectUrl) {
+                this.updateEnvironmentConfig(env, {
+                    publicData: { projectUrl: '', apiKey: '' },
+                    privateData: { apiKey: '', connectionString: '' }
+                });
+                return;
+            }
+            
             let apiKey = this.getCurrentEnvConfig(env).apiKey;
             let privateApiKey = this.getCurrentEnvPrivateConfig(env).apiKey;
             let connectionString = this.getCurrentEnvPrivateConfig(env).connectionString;
             
             if (this.isConnected(env)) {
-                const { apiKeys, pgbouncer } = await this.fetchProject(
+                const projectData = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 
-                // Get the JWT keys (anon and service_role)
-                apiKey = apiKeys.find(key => key.name === 'anon')?.api_key;
-                privateApiKey = apiKeys.find(key => key.name === 'service_role')?.api_key;
-                connectionString = pgbouncer.connection_string;
+                if (projectData) {
+                    // Get the JWT keys (anon and service_role)
+                    apiKey = projectData.apiKeys?.find(key => key.name === 'anon')?.api_key || apiKey;
+                    privateApiKey = projectData.apiKeys?.find(key => key.name === 'service_role')?.api_key || privateApiKey;
+                    connectionString = projectData.pgbouncer?.connection_string || connectionString;
+                }
             }
             
             this.updateEnvironmentConfig(env, {
@@ -436,29 +452,37 @@ export default {
         },
         
         async refreshProjects() {
+            // Use access token from any connected environment
+            const accessToken = this.environments
+                .map(env => this.getCurrentEnvPrivateConfig(env).accessToken)
+                .find(token => token);
+                
+            if (!accessToken) {
+                // No access token, skip refresh
+                return;
+            }
+            
             this.isLoading = true;
             try {
-                // Use access token from any connected environment
-                const accessToken = this.environments
-                    .map(env => this.getCurrentEnvPrivateConfig(env).accessToken)
-                    .find(token => token);
-                    
-                if (!accessToken) return;
-                    
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'POST',
                     path: '/projects/list',
                     data: { accessToken },
                 });
-                this.projects = data?.data;
+                this.projects = data?.data || [];
                 this.isLoading = false;
             } catch (error) {
                 this.isLoading = false;
-                throw error;
+                console.warn('Failed to refresh projects:', error);
+                // Don't throw, just log the error
             }
         },
         
         async fetchProject(projectId) {
+            if (!projectId) {
+                return null;
+            }
+            
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
@@ -469,7 +493,9 @@ export default {
                 return data?.data;
             } catch (error) {
                 this.isLoading = false;
-                throw error;
+                console.warn(`Failed to fetch project ${projectId}:`, error);
+                // Return null instead of throwing
+                return null;
             }
         },
         
@@ -534,23 +560,25 @@ export default {
                     if (this.projects.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
                         clearInterval(interval);
 
-                        const { apiKeys, pgbouncer } = await this.fetchProject(projectId);
-                        const apiKey = apiKeys.find(key => key.name === 'anon').api_key;
-                        const privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
-                        const connectionString = pgbouncer.connection_string;
-                        const databasePassword = newProject.dbPass;
-                        
-                        this.updateEnvironmentConfig(env, {
-                            publicData: { projectUrl, apiKey },
-                            privateData: {
-                                apiKey: privateApiKey,
-                                connectionString: connectionString,
-                                databasePassword,
-                            }
-                        });
-                        
-                        this.isComingUp = false;
-                        this.selectModes[env] = 'select';
+                        const projectData = await this.fetchProject(projectId);
+                        if (projectData) {
+                            const apiKey = projectData.apiKeys?.find(key => key.name === 'anon')?.api_key;
+                            const privateApiKey = projectData.apiKeys?.find(key => key.name === 'service_role')?.api_key;
+                            const connectionString = projectData.pgbouncer?.connection_string;
+                            const databasePassword = newProject.dbPass;
+                            
+                            this.updateEnvironmentConfig(env, {
+                                publicData: { projectUrl, apiKey },
+                                privateData: {
+                                    apiKey: privateApiKey,
+                                    connectionString: connectionString,
+                                    databasePassword,
+                                }
+                            });
+                            
+                            this.isComingUp = false;
+                            this.selectModes[env] = 'select';
+                        }
                     }
                 }, 5000);
             } catch (error) {
