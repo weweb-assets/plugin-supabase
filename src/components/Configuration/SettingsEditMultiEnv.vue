@@ -268,6 +268,16 @@ export default {
                 }
             },
             deep: true
+        },
+        'settings.privateData.connectionMode': {
+            handler(newMode, oldMode) {
+                console.log('[SettingsEditMultiEnv] Global connection mode changed:', {
+                    oldMode,
+                    newMode,
+                    settings: this.settings
+                });
+            },
+            immediate: true
         }
     },
     computed: {
@@ -319,28 +329,49 @@ export default {
         isConnected(env) {
             // OAuth connection is shared across all environments
             // Check if any environment has an access token
-            return this.environments.some(e => {
+            const hasToken = this.environments.some(e => {
                 const privateConfig = this.getCurrentEnvPrivateConfig(e);
                 return privateConfig?.accessToken;
             });
+            console.log(`[isConnected] Checking connection for ${env}: ${hasToken}`, {
+                envConfigs: this.environments.map(e => ({
+                    env: e,
+                    accessToken: this.getCurrentEnvPrivateConfig(e)?.accessToken
+                }))
+            });
+            return hasToken;
         },
         
         isOAuthMode(env) {
             // Check if we're in OAuth mode (not custom mode)
             // First check environment-specific config
             const envConfig = this.getCurrentEnvPrivateConfig(env);
+            console.log(`[isOAuthMode] Checking mode for ${env}:`, {
+                envConnectionMode: envConfig?.connectionMode,
+                globalConnectionMode: this.settings.privateData?.connectionMode,
+                hasAccessToken: this.isConnected(env),
+                envConfig,
+                globalPrivateData: this.settings.privateData
+            });
+            
             if (envConfig?.connectionMode) {
-                return envConfig.connectionMode === 'oauth';
+                const isOAuth = envConfig.connectionMode === 'oauth';
+                console.log(`[isOAuthMode] Using env-specific mode for ${env}: ${envConfig.connectionMode} -> OAuth: ${isOAuth}`);
+                return isOAuth;
             }
             
             // Fallback to global connection mode (for backward compatibility)
             const globalMode = this.settings.privateData?.connectionMode;
             if (globalMode) {
-                return globalMode === 'oauth';
+                const isOAuth = globalMode === 'oauth';
+                console.log(`[isOAuthMode] Using global mode for ${env}: ${globalMode} -> OAuth: ${isOAuth}`);
+                return isOAuth;
             }
             
             // Default to OAuth if connected with access token, custom otherwise
-            return this.isConnected(env);
+            const defaultOAuth = this.isConnected(env);
+            console.log(`[isOAuthMode] Using default for ${env}: hasToken: ${defaultOAuth} -> OAuth: ${defaultOAuth}`);
+            return defaultOAuth;
         },
         
         getCurrentEnvConfig(env = this.activeEnvironment) {
