@@ -192,8 +192,12 @@ export default {
         },
         
         isConnected(env) {
-            const privateConfig = this.getCurrentEnvPrivateConfig(env);
-            return privateConfig?.accessToken;
+            // OAuth connection is shared across all environments
+            // Check if any environment has an access token
+            return this.environments.some(e => {
+                const privateConfig = this.getCurrentEnvPrivateConfig(e);
+                return privateConfig?.accessToken;
+            });
         },
         
         getCurrentEnvConfig(env = this.activeEnvironment) {
@@ -270,12 +274,9 @@ export default {
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 
-                // Try to get new format keys first, fallback to legacy
-                const publishableKey = apiKeys.find(key => key.name === 'publishable')?.api_key;
-                const secretKey = apiKeys.find(key => key.name === 'secret')?.api_key;
-                
-                apiKey = publishableKey || apiKeys.find(key => key.name === 'anon')?.api_key;
-                privateApiKey = secretKey || apiKeys.find(key => key.name === 'service_role')?.api_key;
+                // Get the JWT keys (anon and service_role)
+                apiKey = apiKeys.find(key => key.name === 'anon')?.api_key;
+                privateApiKey = apiKeys.find(key => key.name === 'service_role')?.api_key;
                 connectionString = pgbouncer.connection_string;
             }
             
