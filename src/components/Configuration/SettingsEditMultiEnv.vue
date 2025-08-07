@@ -105,9 +105,70 @@
             </template>
         </template>
         
-        <!-- Create Project UI (same as before but per environment) -->
+        <!-- Create Project UI -->
         <template v-else-if="selectModes[env] === 'create'">
-            <!-- ... existing create project UI ... -->
+            <div v-if="isComingUp" class="body-md flex items-center p-2">
+                <wwLoaderSmall loading class="mr-2" />
+                <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
+            </div>
+            <template v-else>
+                <wwEditorInputRow 
+                    label="Project name" 
+                    type="query" 
+                    placeholder="My new project" 
+                    required
+                    v-model="newProjects[env].name" 
+                />
+                <wwEditorInputRow 
+                    label="Organization" 
+                    type="select" 
+                    placeholder="Select an organization" 
+                    required
+                    v-model="newProjects[env].organizationId"
+                    :options="organizations.map(org => ({ label: org.name, value: org.id }))" 
+                />
+                <wwEditorInputRow 
+                    label="Hosting region" 
+                    type="select" 
+                    placeholder="us-east-1" 
+                    required
+                    v-model="newProjects[env].region" 
+                    :options="[
+                        { label: 'us-east-1', value: 'us-east-1' },
+                        { label: 'us-west-1', value: 'us-west-1' },
+                        { label: 'eu-west-1', value: 'eu-west-1' },
+                        { label: 'eu-central-1', value: 'eu-central-1' },
+                        { label: 'ap-southeast-1', value: 'ap-southeast-1' },
+                        { label: 'ap-northeast-1', value: 'ap-northeast-1' },
+                    ]" 
+                />
+                <wwEditorFormRow label="Database password" required>
+                    <div class="flex items-center">
+                        <wwEditorInputText 
+                            :type="showDbPass ? 'text' : 'password'"
+                            placeholder="Enter your database password"
+                            :style="{ '-webkit-text-security': showDbPass ? 'none' : 'disc' }" 
+                            large
+                            v-model="newProjects[env].dbPass" 
+                            class="w-full" 
+                        />
+                        <button 
+                            type="button" 
+                            class="ww-editor-button -secondary -small -icon ml-2"
+                            @click="showDbPass = !showDbPass"
+                        >
+                            <wwEditorIcon :name="showDbPass ? '16/eye' : '16/eye-off'" medium />
+                        </button>
+                    </div>
+                </wwEditorFormRow>
+                <button 
+                    class="ww-editor-button -primary" 
+                    @click="createProject(env)" 
+                    type="button"
+                >
+                    Create project for {{ capitalize(env) }}
+                </button>
+            </template>
         </template>
     </div>
     
@@ -141,14 +202,48 @@ export default {
             isLoading: false,
             isComingUp: false,
             showDbPass: false,
-            newProject: {
-                name: '',
-                region: 'us-east-1',
-                organizationId: '',
-                dbPass: '',
-            },
             organizations: [],
+            newProjects: {
+                production: {
+                    name: '',
+                    region: 'us-east-1',
+                    organizationId: '',
+                    dbPass: '',
+                },
+                staging: {
+                    name: '',
+                    region: 'us-east-1',
+                    organizationId: '',
+                    dbPass: '',
+                },
+                editor: {
+                    name: '',
+                    region: 'us-east-1',
+                    organizationId: '',
+                    dbPass: '',
+                }
+            },
         };
+    },
+    watch: {
+        async selectModes: {
+            handler(newModes) {
+                // Check if any environment switched to 'create' mode
+                for (const env of this.environments) {
+                    if (newModes[env] === 'create' && this.organizations.length === 0) {
+                        this.fetchOrganizations();
+                        // Initialize new project data for this environment
+                        this.newProjects[env] = {
+                            name: `WeWeb - ${wwLib.$store.getters['websiteData/getDesignInfo'].name} (${this.capitalize(env)})`,
+                            region: 'us-east-1',
+                            organizationId: this.organizations[0]?.id || '',
+                            dbPass: wwLib.wwUtils.getUid(),
+                        };
+                    }
+                }
+            },
+            deep: true
+        }
     },
     computed: {
         projectRef() {
@@ -374,6 +469,93 @@ export default {
                 return data?.data;
             } catch (error) {
                 this.isLoading = false;
+                throw error;
+            }
+        },
+        
+        async fetchOrganizations() {
+            this.isLoading = true;
+            try {
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'GET',
+                    path: '/organizations',
+                });
+                this.organizations = data?.data || [];
+                // Update default org for all new projects
+                if (this.organizations.length > 0) {
+                    for (const env of this.environments) {
+                        if (!this.newProjects[env].organizationId) {
+                            this.newProjects[env].organizationId = this.organizations[0].id;
+                        }
+                    }
+                }
+                this.isLoading = false;
+                return this.organizations;
+            } catch (error) {
+                this.isLoading = false;
+                throw error;
+            }
+        },
+        
+        async createProject(env) {
+            this.isLoading = true;
+            try {
+                const newProject = this.newProjects[env];
+                
+                // Clear current config for this environment
+                this.updateEnvironmentConfig(env, {
+                    publicData: { projectUrl: '', apiKey: '' },
+                    privateData: {
+                        apiKey: '',
+                        connectionString: '',
+                        databasePassword: '',
+                    }
+                });
+                
+                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
+                    method: 'POST',
+                    path: '/projects',
+                    data: {
+                        name: newProject.name,
+                        organization_id: newProject.organizationId,
+                        region: newProject.region,
+                        db_pass: newProject.dbPass,
+                    },
+                });
+                
+                this.isLoading = false;
+                this.isComingUp = true;
+                const projectId = data?.data.id;
+                const projectUrl = `https://${data?.data.id}.supabase.co`;
+
+                // Poll for project to be ready
+                let interval = setInterval(async () => {
+                    await this.refreshProjects();
+                    if (this.projects.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
+                        clearInterval(interval);
+
+                        const { apiKeys, pgbouncer } = await this.fetchProject(projectId);
+                        const apiKey = apiKeys.find(key => key.name === 'anon').api_key;
+                        const privateApiKey = apiKeys.find(key => key.name === 'service_role').api_key;
+                        const connectionString = pgbouncer.connection_string;
+                        const databasePassword = newProject.dbPass;
+                        
+                        this.updateEnvironmentConfig(env, {
+                            publicData: { projectUrl, apiKey },
+                            privateData: {
+                                apiKey: privateApiKey,
+                                connectionString: connectionString,
+                                databasePassword,
+                            }
+                        });
+                        
+                        this.isComingUp = false;
+                        this.selectModes[env] = 'select';
+                    }
+                }, 5000);
+            } catch (error) {
+                this.isLoading = false;
+                this.isComingUp = false;
                 throw error;
             }
         },
