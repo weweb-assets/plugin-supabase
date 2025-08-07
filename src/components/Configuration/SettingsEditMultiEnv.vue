@@ -108,6 +108,14 @@
                         />
                         
                         <wwEditorInputRow
+                            label="Custom Domain (optional)"
+                            type="query"
+                            placeholder="https://your-custom-domain.com"
+                            :model-value="getCurrentEnvConfig(env).customDomain"
+                            @update:modelValue="(val) => changeCustomDomain(val, env)"
+                        />
+                        
+                        <wwEditorInputRow
                             label="Public API key"
                             :required="env === 'production'"
                             type="query"
@@ -222,6 +230,14 @@
                 :required="env === 'production'"
                 :model-value="getCurrentEnvConfig(env).projectUrl"
                 @update:modelValue="(val) => changeProjectUrl(val, env)"
+            />
+            
+            <wwEditorInputRow
+                label="Custom Domain (optional)"
+                type="query"
+                placeholder="https://your-custom-domain.com"
+                :model-value="getCurrentEnvConfig(env).customDomain"
+                @update:modelValue="(val) => changeCustomDomain(val, env)"
             />
             
             <wwEditorInputRow
@@ -545,6 +561,12 @@ export default {
         changeApiKey(apiKey, env) {
             this.updateEnvironmentConfig(env, {
                 publicData: { apiKey }
+            });
+        },
+        
+        changeCustomDomain(customDomain, env) {
+            this.updateEnvironmentConfig(env, {
+                publicData: { customDomain }
             });
         },
         
