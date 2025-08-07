@@ -226,12 +226,12 @@ export default {
         };
     },
     watch: {
-        async selectModes: {
-            handler(newModes) {
+        selectModes: {
+            async handler(newModes) {
                 // Check if any environment switched to 'create' mode
                 for (const env of this.environments) {
                     if (newModes[env] === 'create' && this.organizations.length === 0) {
-                        this.fetchOrganizations();
+                        await this.fetchOrganizations();
                         // Initialize new project data for this environment
                         this.newProjects[env] = {
                             name: `WeWeb - ${wwLib.$store.getters['websiteData/getDesignInfo'].name} (${this.capitalize(env)})`,
