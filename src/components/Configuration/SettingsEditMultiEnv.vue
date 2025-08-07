@@ -26,6 +26,19 @@
     <!-- Environment Configuration -->
     <div v-for="env in environments" :key="`config-${env}`" v-show="activeEnvironment === env">
 
+        <!-- Clear Environment Button for optional environments -->
+        <div v-if="env !== 'production' && isEnvironmentConfigured(env)" class="flex justify-end mb-2">
+            <button 
+                type="button" 
+                class="ww-editor-button -tertiary -small -alert"
+                @click="clearEnvironment(env)"
+                title="Clear this environment's configuration"
+            >
+                <wwEditorIcon name="trash" small />
+                <span class="ml-1">Clear configuration</span>
+            </button>
+        </div>
+
         <wwEditorFormRow class="w-100">
             <wwEditorInputRadio
                 v-if="isConnected(env)"
@@ -447,6 +460,54 @@ export default {
                     ...newSettings.privateData.environments.production
                 };
             }
+            
+            this.$emit('update:settings', newSettings);
+        },
+        
+        clearEnvironment(env) {
+            // Only allow clearing optional environments
+            if (env === 'production') {
+                return;
+            }
+            
+            // Confirm before clearing
+            if (!confirm(`Are you sure you want to clear the ${env} environment configuration? This will remove all settings for this environment.`)) {
+                return;
+            }
+            
+            // Clear the environment configuration
+            const newSettings = {
+                ...this.settings,
+                publicData: {
+                    ...this.settings.publicData,
+                    environments: {
+                        ...this.settings.publicData?.environments,
+                        [env]: {
+                            projectUrl: '',
+                            apiKey: '',
+                            customDomain: ''
+                        }
+                    }
+                },
+                privateData: {
+                    ...this.settings.privateData,
+                    environments: {
+                        ...this.settings.privateData?.environments,
+                        [env]: {
+                            connectionMode: 'custom',
+                            accessToken: '',
+                            refreshToken: '',
+                            apiKey: '',
+                            databasePassword: '',
+                            connectionString: ''
+                        }
+                    }
+                }
+            };
+            
+            // Reset the select mode and hide settings
+            this.selectModes[env] = 'select';
+            this.showSettings[env] = false;
             
             this.$emit('update:settings', newSettings);
         },
