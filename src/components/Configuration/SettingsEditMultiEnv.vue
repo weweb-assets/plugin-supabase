@@ -26,19 +26,6 @@
     <!-- Environment Configuration -->
     <div v-for="env in environments" :key="`config-${env}`" v-show="activeEnvironment === env">
 
-        <!-- Clear Environment Button for optional environments -->
-        <div v-if="env !== 'production' && isEnvironmentConfigured(env)" class="flex justify-end mb-2">
-            <button 
-                type="button" 
-                class="ww-editor-button -tertiary -small -alert"
-                @click="clearEnvironment(env)"
-                title="Clear this environment's configuration"
-            >
-                <wwEditorIcon name="trash" small />
-                <span class="ml-1">Clear configuration</span>
-            </button>
-        </div>
-
         <!-- Connection Mode Selector -->
         <wwEditorFormRow label="Connection Mode" class="w-100 mb-3">
             <wwEditorInputRadio
@@ -56,7 +43,7 @@
             <div v-if="!hasOAuthToken()" class="body-sm content-brand-secondary bg-brand-secondary border-brand-secondary p-2 mb-2 rounded-02">
                 <span>Connect to enable the Back-end panel and AI assistance.</span>
             </div>
-            <div class="flex items-center mb-3">
+            <div class="flex items-center justify-center mb-3">
                 <button class="ww-editor-button -secondary" @click="connect" type="button" :disabled="!!hasOAuthToken()">
                     <wwEditorIcon name="logos/supabase" class="ww-editor-button-icon -left" />
                     {{ hasOAuthToken() ? 'Account connected' : 'Connect Supabase' }}
@@ -266,6 +253,19 @@
                 </div>
             </wwEditorFormRow>
         </template>
+
+        <!-- Clear Environment Button at the bottom for optional environments -->
+        <div v-if="env !== 'production' && isEnvironmentConfigured(env)" class="flex justify-center mt-4 pt-4 border-t">
+            <button 
+                type="button" 
+                class="ww-editor-button -tertiary -alert"
+                @click="clearEnvironment(env)"
+                title="Clear this environment's configuration"
+            >
+                <wwEditorIcon name="trash" small />
+                <span class="ml-1">Clear {{ capitalize(env) }} configuration</span>
+            </button>
+        </div>
     </div>
     
     <wwLoader :loading="isLoading && !isComingUp" />
