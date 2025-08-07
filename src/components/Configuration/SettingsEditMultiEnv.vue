@@ -276,6 +276,11 @@ export default {
                     newMode,
                     settings: this.settings
                 });
+                
+                // When global connection mode changes, update all environments to match
+                if (newMode && oldMode !== undefined && newMode !== oldMode) {
+                    this.syncConnectionModeToAllEnvironments(newMode);
+                }
             },
             immediate: true
         }
@@ -579,6 +584,44 @@ export default {
             // Reset the select mode and hide settings
             this.selectModes[env] = 'select';
             this.showSettings[env] = false;
+            
+            this.$emit('update:settings', newSettings);
+        },
+        
+        syncConnectionModeToAllEnvironments(mode) {
+            console.log('[syncConnectionModeToAllEnvironments] Syncing mode to all environments:', mode);
+            
+            const newSettings = {
+                ...this.settings,
+                privateData: {
+                    ...this.settings.privateData,
+                    environments: {
+                        ...this.settings.privateData?.environments
+                    }
+                }
+            };
+            
+            // Update connection mode for all configured environments
+            this.environments.forEach(env => {
+                if (newSettings.privateData.environments?.[env]) {
+                    newSettings.privateData.environments[env] = {
+                        ...newSettings.privateData.environments[env],
+                        connectionMode: mode
+                    };
+                    
+                    // Clear access tokens when switching to custom mode
+                    if (mode === 'custom') {
+                        newSettings.privateData.environments[env].accessToken = '';
+                        newSettings.privateData.environments[env].refreshToken = '';
+                    }
+                }
+            });
+            
+            // Also clear global tokens when switching to custom
+            if (mode === 'custom') {
+                newSettings.privateData.accessToken = '';
+                newSettings.privateData.refreshToken = '';
+            }
             
             this.$emit('update:settings', newSettings);
         },
