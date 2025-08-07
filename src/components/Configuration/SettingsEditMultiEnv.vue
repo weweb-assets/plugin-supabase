@@ -108,14 +108,6 @@
                         />
                         
                         <wwEditorInputRow
-                            label="Custom Domain (optional)"
-                            type="query"
-                            placeholder="https://your-custom-domain.com"
-                            :model-value="getCurrentEnvConfig(env).customDomain"
-                            @update:modelValue="(val) => changeCustomDomain(val, env)"
-                        />
-                        
-                        <wwEditorInputRow
                             label="Public API key"
                             :required="env === 'production'"
                             type="query"
