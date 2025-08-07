@@ -385,6 +385,7 @@ export default {
     display: flex;
     border-bottom: 2px solid var(--ww-color-border);
     gap: 0;
+    width: 100%;
 }
 
 .ww-tab-item {
@@ -398,9 +399,12 @@ export default {
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: var(--ww-spacing-01);
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
+    flex: 1;
+    min-width: 0;
 }
 
 .ww-tab-item:hover {
