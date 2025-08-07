@@ -39,161 +39,232 @@
             </button>
         </div>
 
-        <!-- Only show select/create options in OAuth mode -->
-        <wwEditorFormRow class="w-100" v-if="isOAuthMode(env)">
+        <!-- Connection Mode Selector -->
+        <wwEditorFormRow label="Connection Mode" class="w-100 mb-3">
             <wwEditorInputRadio
-                v-model="selectModes[env]"
-                :disabled="isComingUp"
+                :model-value="getConnectionMode(env)"
                 :choices="[
-                    { label: 'Select a project', value: 'select' },
-                    { label: 'Create a project', value: 'create' },
+                    { label: 'Guided (recommended)', value: 'oauth', default: true },
+                    { label: 'Custom', value: 'custom' },
                 ]"
+                @update:modelValue="(mode) => changeConnectionMode(env, mode)"
             />
         </wwEditorFormRow>
 
-        <!-- Custom mode message -->
-        <div v-if="!isOAuthMode(env)" class="mb-3 p-2 bg-secondary rounded">
-            <div class="body-sm content-secondary">
-                <wwEditorIcon name="info-circle" small class="mr-1" />
-                Manual configuration mode - Enter your Supabase project details below
+        <!-- OAuth Connection -->
+        <template v-if="getConnectionMode(env) === 'oauth'">
+            <div v-if="!hasOAuthToken()" class="body-sm content-brand-secondary bg-brand-secondary border-brand-secondary p-2 mb-2 rounded-02">
+                <span>Connect to enable the Back-end panel and AI assistance.</span>
             </div>
-        </div>
+            <div class="flex items-center mb-3">
+                <button class="ww-editor-button -secondary" @click="connect" type="button" :disabled="!!hasOAuthToken()">
+                    <wwEditorIcon name="logos/supabase" class="ww-editor-button-icon -left" />
+                    {{ hasOAuthToken() ? 'Account connected' : 'Connect Supabase' }}
+                </button>
+                <button
+                    v-if="hasOAuthToken()"
+                    type="button"
+                    class="ww-editor-button -secondary -small -icon ml-2"
+                    @click="disconnect"
+                >
+                    <wwEditorIcon name="unbind" medium />
+                </button>
+            </div>
 
-        <!-- Select/Custom mode configuration -->
-        <template v-if="selectModes[env] === 'select' || !isOAuthMode(env)">
-            <!-- OAuth mode: Show project selector -->
-            <div class="flex items-center" v-if="isOAuthMode(env)">
-                <wwEditorFormRow :required="env === 'production'" label="Project URL" class="w-100">
-                    <wwEditorInput
-                        type="select"
-                        placeholder="https://your-project.supabase.co"
-                        :model-value="getCurrentEnvConfig().projectUrl"
-                        :options="projectsOptions"
-                        @update:modelValue="(val) => changeProjectUrl(val, env)"
-                        class="-full"
+            <!-- Project Selection/Creation for OAuth mode -->
+            <template v-if="hasOAuthToken()">
+                <wwEditorFormRow class="w-100">
+                    <wwEditorInputRadio
+                        v-model="selectModes[env]"
+                        :disabled="isComingUp"
+                        :choices="[
+                            { label: 'Select a project', value: 'select' },
+                            { label: 'Create a project', value: 'create' },
+                        ]"
                     />
                 </wwEditorFormRow>
-                <button type="button" class="ww-editor-button -primary -small -icon ml-2 mt-1" @click="refreshProjects">
-                    <wwEditorIcon name="refresh" medium />
-                </button>
-            </div>
-            
-            <!-- OAuth mode: Toggle to show manual settings -->
-            <button
-                v-if="isOAuthMode(env)"
-                @click="showSettings[env] = !showSettings[env]"
-                class="ww-editor-button -secondary -small mb-2"
-                type="button"
-            >
-                {{ showSettings[env] ? 'Close' : 'Open' }} settings
-            </button>
-            
-            <!-- Show manual settings: Always visible in custom mode, toggleable in OAuth mode -->
-            <template v-if="showSettings[env] || !isOAuthMode(env)">
-                <wwEditorInputRow
-                    label="Project URL"
-                    type="query"
-                    placeholder="https://your-project.supabase.co"
-                    :required="env === 'production'"
-                    :model-value="getCurrentEnvConfig().projectUrl"
-                    @update:modelValue="(val) => changeProjectUrl(val, env)"
-                />
-                
-                <wwEditorInputRow
-                    label="Public API key"
-                    :required="env === 'production'"
-                    type="query"
-                    placeholder="Enter your public API key"
-                    :model-value="getCurrentEnvConfig().apiKey"
-                    @update:modelValue="(val) => changeApiKey(val, env)"
-                />
-                
-                <wwEditorFormRow label="Service role key">
+
+                <!-- Select Project -->
+                <template v-if="selectModes[env] === 'select'">
                     <div class="flex items-center">
-                        <wwEditorInputText
-                            type="password"
-                            placeholder="Enter your service role key"
-                            large
-                            class="w-full"
-                            :style="{ '-webkit-text-security': 'disc' }"
-                            :model-value="getCurrentEnvPrivateConfig().apiKey"
-                            @update:modelValue="(val) => changePrivateApiKey(val, env)"
-                        />
-                        <wwEditorQuestionMark
-                            tooltip-position="top-left"
-                            forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
-                            class="ml-2"
-                            :class="{ 'text-yellow-500': !getCurrentEnvPrivateConfig().apiKey }"
-                        />
-                    </div>
-                </wwEditorFormRow>
-            </template>
-        </template>
-        
-        <!-- Create Project UI (only in OAuth mode) -->
-        <template v-else-if="selectModes[env] === 'create' && isOAuthMode(env)">
-            <div v-if="isComingUp" class="body-md flex items-center p-2">
-                <wwLoaderSmall loading class="mr-2" />
-                <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
-            </div>
-            <template v-else>
-                <wwEditorInputRow 
-                    label="Project name" 
-                    type="query" 
-                    placeholder="My new project" 
-                    required
-                    v-model="newProjects[env].name" 
-                />
-                <wwEditorInputRow 
-                    label="Organization" 
-                    type="select" 
-                    placeholder="Select an organization" 
-                    required
-                    v-model="newProjects[env].organizationId"
-                    :options="organizations.map(org => ({ label: org.name, value: org.id }))" 
-                />
-                <wwEditorInputRow 
-                    label="Hosting region" 
-                    type="select" 
-                    placeholder="us-east-1" 
-                    required
-                    v-model="newProjects[env].region" 
-                    :options="[
-                        { label: 'us-east-1', value: 'us-east-1' },
-                        { label: 'us-west-1', value: 'us-west-1' },
-                        { label: 'eu-west-1', value: 'eu-west-1' },
-                        { label: 'eu-central-1', value: 'eu-central-1' },
-                        { label: 'ap-southeast-1', value: 'ap-southeast-1' },
-                        { label: 'ap-northeast-1', value: 'ap-northeast-1' },
-                    ]" 
-                />
-                <wwEditorFormRow label="Database password" required>
-                    <div class="flex items-center">
-                        <wwEditorInputText 
-                            :type="showDbPass ? 'text' : 'password'"
-                            placeholder="Enter your database password"
-                            :style="{ '-webkit-text-security': showDbPass ? 'none' : 'disc' }" 
-                            large
-                            v-model="newProjects[env].dbPass" 
-                            class="w-full" 
-                        />
-                        <button 
-                            type="button" 
-                            class="ww-editor-button -secondary -small -icon ml-2"
-                            @click="showDbPass = !showDbPass"
-                        >
-                            <wwEditorIcon :name="showDbPass ? '16/eye' : '16/eye-off'" medium />
+                        <wwEditorFormRow :required="env === 'production'" label="Project URL" class="w-100">
+                            <wwEditorInput
+                                type="select"
+                                placeholder="https://your-project.supabase.co"
+                                :model-value="getCurrentEnvConfig(env).projectUrl"
+                                :options="projectsOptions"
+                                @update:modelValue="(val) => changeProjectUrl(val, env)"
+                                class="-full"
+                            />
+                        </wwEditorFormRow>
+                        <button type="button" class="ww-editor-button -primary -small -icon ml-2 mt-1" @click="refreshProjects">
+                            <wwEditorIcon name="refresh" medium />
                         </button>
                     </div>
-                </wwEditorFormRow>
-                <button 
-                    class="ww-editor-button -primary" 
-                    @click="createProject(env)" 
-                    type="button"
-                >
-                    Create project for {{ capitalize(env) }}
-                </button>
+                    
+                    <button
+                        @click="showSettings[env] = !showSettings[env]"
+                        class="ww-editor-button -secondary -small mb-2"
+                        type="button"
+                    >
+                        {{ showSettings[env] ? 'Close' : 'Open' }} settings
+                    </button>
+                    
+                    <template v-if="showSettings[env]">
+                        <wwEditorInputRow
+                            label="Project URL"
+                            type="query"
+                            placeholder="https://your-project.supabase.co"
+                            :required="env === 'production'"
+                            :model-value="getCurrentEnvConfig(env).projectUrl"
+                            @update:modelValue="(val) => changeProjectUrl(val, env)"
+                        />
+                        
+                        <wwEditorInputRow
+                            label="Public API key"
+                            :required="env === 'production'"
+                            type="query"
+                            placeholder="Enter your public API key"
+                            :model-value="getCurrentEnvConfig(env).apiKey"
+                            @update:modelValue="(val) => changeApiKey(val, env)"
+                        />
+                        
+                        <wwEditorFormRow label="Service role key">
+                            <div class="flex items-center">
+                                <wwEditorInputText
+                                    type="password"
+                                    placeholder="Enter your service role key"
+                                    large
+                                    class="w-full"
+                                    :style="{ '-webkit-text-security': 'disc' }"
+                                    :model-value="getCurrentEnvPrivateConfig(env).apiKey"
+                                    @update:modelValue="(val) => changePrivateApiKey(val, env)"
+                                />
+                                <wwEditorQuestionMark
+                                    tooltip-position="top-left"
+                                    forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
+                                    class="ml-2"
+                                    :class="{ 'text-yellow-500': !getCurrentEnvPrivateConfig(env).apiKey }"
+                                />
+                            </div>
+                        </wwEditorFormRow>
+                    </template>
+                </template>
+
+                <!-- Create Project -->
+                <template v-else-if="selectModes[env] === 'create'">
+                    <div v-if="isComingUp" class="body-md flex items-center p-2">
+                        <wwLoaderSmall loading class="mr-2" />
+                        <div>We're now preparing your database. Please wait a few moments, it may take up to 1 minute.</div>
+                    </div>
+                    <template v-else>
+                        <wwEditorInputRow 
+                            label="Project name" 
+                            type="query" 
+                            placeholder="My new project" 
+                            required
+                            v-model="newProjects[env].name" 
+                        />
+                        <wwEditorInputRow 
+                            label="Organization" 
+                            type="select" 
+                            placeholder="Select an organization" 
+                            required
+                            v-model="newProjects[env].organizationId"
+                            :options="organizations.map(org => ({ label: org.name, value: org.id }))" 
+                        />
+                        <wwEditorInputRow 
+                            label="Hosting region" 
+                            type="select" 
+                            placeholder="us-east-1" 
+                            required
+                            v-model="newProjects[env].region" 
+                            :options="[
+                                { label: 'us-east-1', value: 'us-east-1' },
+                                { label: 'us-west-1', value: 'us-west-1' },
+                                { label: 'eu-west-1', value: 'eu-west-1' },
+                                { label: 'eu-central-1', value: 'eu-central-1' },
+                                { label: 'ap-southeast-1', value: 'ap-southeast-1' },
+                                { label: 'ap-northeast-1', value: 'ap-northeast-1' },
+                            ]" 
+                        />
+                        <wwEditorFormRow label="Database password" required>
+                            <div class="flex items-center">
+                                <wwEditorInputText 
+                                    :type="showDbPass ? 'text' : 'password'"
+                                    placeholder="Enter your database password"
+                                    :style="{ '-webkit-text-security': showDbPass ? 'none' : 'disc' }" 
+                                    large
+                                    v-model="newProjects[env].dbPass" 
+                                    class="w-full" 
+                                />
+                                <button 
+                                    type="button" 
+                                    class="ww-editor-button -secondary -small -icon ml-2"
+                                    @click="showDbPass = !showDbPass"
+                                >
+                                    <wwEditorIcon :name="showDbPass ? '16/eye' : '16/eye-off'" medium />
+                                </button>
+                            </div>
+                        </wwEditorFormRow>
+                        <button 
+                            class="ww-editor-button -primary" 
+                            @click="createProject(env)" 
+                            type="button"
+                        >
+                            Create project for {{ capitalize(env) }}
+                        </button>
+                    </template>
+                </template>
             </template>
+        </template>
+
+        <!-- Custom Connection Mode -->
+        <template v-else>
+            <div class="body-sm content-secondary bg-secondary border-secondary p-2 rounded-02 mb-2">
+                <span>Use this mode for self-hosted projects, local development, or if you don't want to connect your account.</span>
+            </div>
+            <div class="body-sm content-warning-secondary bg-warning-secondary p-2 rounded-02 mb-3">
+                <span>Using this mode disables the Back-end panel and AI assistance.</span>
+            </div>
+
+            <wwEditorInputRow
+                label="Project URL"
+                type="query"
+                placeholder="https://your-project.supabase.co"
+                :required="env === 'production'"
+                :model-value="getCurrentEnvConfig(env).projectUrl"
+                @update:modelValue="(val) => changeProjectUrl(val, env)"
+            />
+            
+            <wwEditorInputRow
+                label="Public API key"
+                :required="env === 'production'"
+                type="query"
+                placeholder="Enter your public API key"
+                :model-value="getCurrentEnvConfig(env).apiKey"
+                @update:modelValue="(val) => changeApiKey(val, env)"
+            />
+            
+            <wwEditorFormRow label="Service role key">
+                <div class="flex items-center">
+                    <wwEditorInputText
+                        type="password"
+                        placeholder="Enter your service role key"
+                        large
+                        class="w-full"
+                        :style="{ '-webkit-text-security': 'disc' }"
+                        :model-value="getCurrentEnvPrivateConfig(env).apiKey"
+                        @update:modelValue="(val) => changePrivateApiKey(val, env)"
+                    />
+                    <wwEditorQuestionMark
+                        tooltip-position="top-left"
+                        forced-content="Required if you want to manage your users and roles from the Editor or restrict access to a page for a specific role."
+                        class="ml-2"
+                        :class="{ 'text-yellow-500': !getCurrentEnvPrivateConfig(env).apiKey }"
+                    />
+                </div>
+            </wwEditorFormRow>
         </template>
     </div>
     
@@ -268,27 +339,6 @@ export default {
                 }
             },
             deep: true
-        },
-        'settings.privateData.connectionMode': {
-            handler(newMode, oldMode) {
-                console.log('[SettingsEditMultiEnv] Global connection mode changed:', {
-                    oldMode,
-                    newMode,
-                    settings: this.settings,
-                    willSync: newMode && (oldMode === undefined || newMode !== oldMode)
-                });
-                
-                // Sync connection mode to all environments when:
-                // 1. Initial load with a global mode set (oldMode undefined)
-                // 2. Mode changes from one value to another
-                if (newMode && (oldMode === undefined || newMode !== oldMode)) {
-                    // Use nextTick to ensure the component is fully mounted
-                    this.$nextTick(() => {
-                        this.syncConnectionModeToAllEnvironments(newMode);
-                    });
-                }
-            },
-            immediate: true
         }
     },
     computed: {
@@ -313,22 +363,12 @@ export default {
             this.migrateToMultiEnv();
         }
         
-        // Check if any environment is connected and has a project URL
-        const hasConnection = this.environments.some(env => this.isConnected(env));
-        const hasConfiguredProject = this.environments.some(env => {
-            const config = this.getCurrentEnvConfig(env);
-            return config?.projectUrl;
-        });
-        
-        if (hasConnection && hasConfiguredProject) {
+        // Check if OAuth is connected and refresh projects
+        if (this.hasOAuthToken()) {
             this.refreshProjects();
-        } else {
-            this.showSettings.production = true;
         }
     },
     methods: {
-        // Key detection helpers
-        
         capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         },
@@ -337,52 +377,17 @@ export default {
             return isEnvironmentConfigured(this.settings, env);
         },
         
-        isConnected(env) {
-            // OAuth connection is shared across all environments
-            // Check if any environment has an access token
-            const hasToken = this.environments.some(e => {
-                const privateConfig = this.getCurrentEnvPrivateConfig(e);
-                return privateConfig?.accessToken;
-            });
-            console.log(`[isConnected] Checking connection for ${env}: ${hasToken}`, {
-                envConfigs: this.environments.map(e => ({
-                    env: e,
-                    accessToken: this.getCurrentEnvPrivateConfig(e)?.accessToken
-                }))
-            });
-            return hasToken;
+        getConnectionMode(env) {
+            const privateConfig = this.getCurrentEnvPrivateConfig(env);
+            return privateConfig?.connectionMode || 'custom';
         },
         
-        isOAuthMode(env) {
-            // Check if we're in OAuth mode (not custom mode)
-            // First check environment-specific config
-            const envConfig = this.getCurrentEnvPrivateConfig(env);
-            console.log(`[isOAuthMode] Checking mode for ${env}:`, {
-                envConnectionMode: envConfig?.connectionMode,
-                globalConnectionMode: this.settings.privateData?.connectionMode,
-                hasAccessToken: this.isConnected(env),
-                envConfig,
-                globalPrivateData: this.settings.privateData
-            });
-            
-            if (envConfig?.connectionMode) {
-                const isOAuth = envConfig.connectionMode === 'oauth';
-                console.log(`[isOAuthMode] Using env-specific mode for ${env}: ${envConfig.connectionMode} -> OAuth: ${isOAuth}`);
-                return isOAuth;
-            }
-            
-            // Fallback to global connection mode (for backward compatibility)
-            const globalMode = this.settings.privateData?.connectionMode;
-            if (globalMode) {
-                const isOAuth = globalMode === 'oauth';
-                console.log(`[isOAuthMode] Using global mode for ${env}: ${globalMode} -> OAuth: ${isOAuth}`);
-                return isOAuth;
-            }
-            
-            // Default to OAuth if connected with access token, custom otherwise
-            const defaultOAuth = this.isConnected(env);
-            console.log(`[isOAuthMode] Using default for ${env}: hasToken: ${defaultOAuth} -> OAuth: ${defaultOAuth}`);
-            return defaultOAuth;
+        hasOAuthToken() {
+            // Check if any environment has an OAuth access token
+            return this.environments.some(env => {
+                const privateConfig = this.getCurrentEnvPrivateConfig(env);
+                return privateConfig?.accessToken?.startsWith('sbp_oauth');
+            }) || this.settings.privateData?.accessToken?.startsWith('sbp_oauth');
         },
         
         getCurrentEnvConfig(env = this.activeEnvironment) {
@@ -407,7 +412,7 @@ export default {
             // Fallback to legacy format for production
             if (env === 'production' && this.settings.privateData) {
                 return {
-                    connectionMode: this.settings.privateData.connectionMode,
+                    connectionMode: this.settings.privateData.connectionMode || 'custom',
                     accessToken: this.settings.privateData.accessToken,
                     refreshToken: this.settings.privateData.refreshToken,
                     apiKey: this.settings.privateData.apiKey,
@@ -447,8 +452,61 @@ export default {
                     }
                 }
             };
-            // Keep global connection mode for ConnectionEdit component
-            newSettings.privateData.connectionMode = connectionMode;
+            this.$emit('update:settings', newSettings);
+        },
+        
+        changeConnectionMode(env, mode) {
+            const updates = {
+                privateData: {
+                    connectionMode: mode
+                }
+            };
+            
+            // Clear access tokens when switching to custom mode
+            if (mode === 'custom') {
+                updates.privateData.accessToken = '';
+                updates.privateData.refreshToken = '';
+            }
+            
+            this.updateEnvironmentConfig(env, updates);
+        },
+        
+        async connect() {
+            this.isLoading = true;
+            const redirectUri = window.location.origin + window.location.pathname;
+            window.localStorage.setItem('supabase_oauth', true);
+            const { data } = await wwAxios.post(
+                `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                }/supabase/authorize`,
+                { redirectUri, oauthRedirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
+            );
+            if (!data?.data) throw new Error('No authorization URL returned');
+            window.location.href = data?.data;
+        },
+        
+        disconnect() {
+            // Clear OAuth tokens from all environments
+            const newSettings = {
+                ...this.settings,
+                privateData: {
+                    ...this.settings.privateData,
+                    accessToken: '',
+                    refreshToken: '',
+                    environments: {
+                        ...this.settings.privateData?.environments
+                    }
+                }
+            };
+            
+            // Clear tokens from all environments
+            this.environments.forEach(env => {
+                if (newSettings.privateData.environments?.[env]) {
+                    newSettings.privateData.environments[env].accessToken = '';
+                    newSettings.privateData.environments[env].refreshToken = '';
+                }
+            });
+            
             this.$emit('update:settings', newSettings);
         },
         
@@ -466,13 +524,12 @@ export default {
             let privateApiKey = this.getCurrentEnvPrivateConfig(env).apiKey;
             let connectionString = this.getCurrentEnvPrivateConfig(env).connectionString;
             
-            if (this.isConnected(env)) {
+            if (this.hasOAuthToken() && this.getConnectionMode(env) === 'oauth') {
                 const projectData = await this.fetchProject(
                     projectUrl.replace('https://', '').replace('.supabase.co', '')
                 );
                 
                 if (projectData) {
-                    // Get the JWT keys (anon and service_role)
                     apiKey = projectData.apiKeys?.find(key => key.name === 'anon')?.api_key || apiKey;
                     privateApiKey = projectData.apiKeys?.find(key => key.name === 'service_role')?.api_key || privateApiKey;
                     connectionString = projectData.pgbouncer?.connection_string || connectionString;
@@ -498,11 +555,8 @@ export default {
         },
         
         updateEnvironmentConfig(env, updates) {
-            // Get current connection mode (inherit from global if not set for environment)
-            const currentEnvPrivateConfig = this.getCurrentEnvPrivateConfig(env);
-            const connectionMode = currentEnvPrivateConfig?.connectionMode || 
-                                  this.settings.privateData?.connectionMode || 
-                                  'custom';
+            const currentPrivateConfig = this.getCurrentEnvPrivateConfig(env);
+            const currentPublicConfig = this.getCurrentEnvConfig(env);
             
             const newSettings = {
                 ...this.settings,
@@ -511,7 +565,7 @@ export default {
                     environments: {
                         ...this.settings.publicData?.environments,
                         [env]: {
-                            ...this.getCurrentEnvConfig(env),
+                            ...currentPublicConfig,
                             ...(updates.publicData || {})
                         }
                     }
@@ -521,8 +575,7 @@ export default {
                     environments: {
                         ...this.settings.privateData?.environments,
                         [env]: {
-                            connectionMode, // Always preserve the connection mode
-                            ...this.getCurrentEnvPrivateConfig(env),
+                            ...currentPrivateConfig,
                             ...(updates.privateData || {})
                         }
                     }
@@ -543,21 +596,24 @@ export default {
                 };
             }
             
+            // Store OAuth tokens globally for sharing across environments
+            if (updates.privateData?.accessToken) {
+                newSettings.privateData.accessToken = updates.privateData.accessToken;
+                newSettings.privateData.refreshToken = updates.privateData.refreshToken;
+            }
+            
             this.$emit('update:settings', newSettings);
         },
         
         clearEnvironment(env) {
-            // Only allow clearing optional environments
             if (env === 'production') {
                 return;
             }
             
-            // Confirm before clearing
             if (!confirm(`Are you sure you want to clear the ${env} environment configuration? This will remove all settings for this environment.`)) {
                 return;
             }
             
-            // Clear the environment configuration
             const newSettings = {
                 ...this.settings,
                 publicData: {
@@ -587,75 +643,20 @@ export default {
                 }
             };
             
-            // Reset the select mode and hide settings
             this.selectModes[env] = 'select';
             this.showSettings[env] = false;
             
             this.$emit('update:settings', newSettings);
         },
         
-        syncConnectionModeToAllEnvironments(mode) {
-            console.log('[syncConnectionModeToAllEnvironments] Syncing mode to all environments:', mode);
-            
-            // Ensure environments structure exists
-            if (!this.settings.privateData?.environments) {
-                console.log('[syncConnectionModeToAllEnvironments] No environments found, skipping sync');
-                return;
-            }
-            
-            const newSettings = {
-                ...this.settings,
-                publicData: {
-                    ...this.settings.publicData,
-                    environments: {
-                        ...this.settings.publicData?.environments
-                    }
-                },
-                privateData: {
-                    ...this.settings.privateData,
-                    environments: {}
-                }
-            };
-            
-            // Update connection mode for ALL environments (even if not yet configured)
-            this.environments.forEach(env => {
-                const existingEnvConfig = this.settings.privateData.environments?.[env] || {};
-                
-                newSettings.privateData.environments[env] = {
-                    ...existingEnvConfig,
-                    connectionMode: mode
-                };
-                
-                // Clear access tokens when switching to custom mode
-                if (mode === 'custom') {
-                    newSettings.privateData.environments[env].accessToken = '';
-                    newSettings.privateData.environments[env].refreshToken = '';
-                }
-                
-                console.log(`[syncConnectionModeToAllEnvironments] Updated ${env}:`, {
-                    oldMode: existingEnvConfig.connectionMode,
-                    newMode: mode,
-                    hasToken: !!existingEnvConfig.accessToken
-                });
-            });
-            
-            // Also clear global tokens when switching to custom
-            if (mode === 'custom') {
-                newSettings.privateData.accessToken = '';
-                newSettings.privateData.refreshToken = '';
-            }
-            
-            this.$emit('update:settings', newSettings);
-        },
-        
         async refreshProjects() {
-            // Use access token from any connected environment
-            const accessToken = this.environments
-                .map(env => this.getCurrentEnvPrivateConfig(env).accessToken)
-                .find(token => token);
+            // Use OAuth token (shared across environments)
+            const accessToken = this.settings.privateData?.accessToken || 
+                               this.environments
+                                   .map(env => this.getCurrentEnvPrivateConfig(env).accessToken)
+                                   .find(token => token?.startsWith('sbp_oauth'));
                 
             if (!accessToken) {
-                // No access token, skip refresh
                 return;
             }
             
@@ -671,7 +672,6 @@ export default {
             } catch (error) {
                 this.isLoading = false;
                 console.warn('Failed to refresh projects:', error);
-                // Don't throw, just log the error
             }
         },
         
@@ -691,7 +691,6 @@ export default {
             } catch (error) {
                 this.isLoading = false;
                 console.warn(`Failed to fetch project ${projectId}:`, error);
-                // Return null instead of throwing
                 return null;
             }
         },
@@ -704,7 +703,6 @@ export default {
                     path: '/organizations',
                 });
                 this.organizations = data?.data || [];
-                // Update default org for all new projects
                 if (this.organizations.length > 0) {
                     for (const env of this.environments) {
                         if (!this.newProjects[env].organizationId) {
@@ -725,7 +723,6 @@ export default {
             try {
                 const newProject = this.newProjects[env];
                 
-                // Clear current config for this environment
                 this.updateEnvironmentConfig(env, {
                     publicData: { projectUrl: '', apiKey: '' },
                     privateData: {
@@ -751,7 +748,6 @@ export default {
                 const projectId = data?.data.id;
                 const projectUrl = `https://${data?.data.id}.supabase.co`;
 
-                // Poll for project to be ready
                 let interval = setInterval(async () => {
                     await this.refreshProjects();
                     if (this.projects.find(project => project.id === data?.data.id)?.status === 'ACTIVE_HEALTHY') {
