@@ -261,6 +261,12 @@ export default {
             if (data?.data) {
                 const keys = data.data;
                 console.log('[Supabase Migration] Found keys array:', keys);
+                console.log('[Supabase Migration] Keys structure:', keys.map(k => ({
+                    name: k.name,
+                    type: k.type,
+                    api_key_preview: k.api_key?.substring(0, 20) + '...',
+                    all_fields: Object.keys(k)
+                })));
                 
                 const publishableKey = keys.find(k => k.name === 'publishable' || k.type === 'publishable')?.api_key;
                 const secretKey = keys.find(k => k.name === 'secret' || k.type === 'secret')?.api_key;
@@ -285,6 +291,11 @@ export default {
                     });
                     
                     console.log('[Supabase Migration] Migration response:', newKeys);
+                    console.log('[Supabase Migration] Migration data structure:', {
+                        hasData: !!newKeys?.data,
+                        dataKeys: newKeys?.data ? Object.keys(newKeys.data) : [],
+                        dataContent: newKeys?.data
+                    });
                     
                     if (newKeys?.data) {
                         return {
