@@ -31,10 +31,13 @@ import './components/Functions/InvokeEdge.vue';
 import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+import { getEnvironmentConfig, getCurrentEnvironment } from './helpers/environmentConfig';
+import { detectKeyType, validateKeyUsage } from './helpers/keyDetection';
 
 export default {
     instance: null,
     channels: {},
+    currentEnvironment: 'production',
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
@@ -44,26 +47,69 @@ export default {
     \================================================================================================*/
     async _onLoad(settings) {
         /* wwEditor:start */
+        // Migrate legacy configuration to multi-environment format if needed
+        if (!settings.publicData?.environments) {
+            const migrated = await this.migrateToMultiEnvironment(settings);
+            if (migrated) {
+                settings = migrated;
+                // Save migrated settings back
+                await wwLib.$store.dispatch('websiteData/setPluginSettings', {
+                    pluginId: this.id,
+                    settings: migrated
+                });
+            }
+        }
+        /* wwEditor:end */
+        
+        // Detect current environment
+        this.currentEnvironment = getCurrentEnvironment();
+        
+        // Get configuration for current environment
+        const envConfig = getEnvironmentConfig(settings, this.currentEnvironment);
+        if (!envConfig) {
+            /* wwEditor:start */
+            wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
+            /* wwEditor:end */
+            return;
+        }
+        
+        /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
+        const environment = window.localStorage.getItem('supabase_oauth_env') || 'production';
         // get code params from url
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (isConnecting && code) {
             wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
             window.localStorage.removeItem('supabase_oauth');
+            window.localStorage.removeItem('supabase_oauth_env');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase/connect`,
-                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
+                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect', environment }
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
             wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
         }
-        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+        await this.fetchProjectInfo(envConfig.publicData.projectUrl, envConfig.privateData.accessToken);
         /* wwEditor:end */
-        await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
+        
+        // Validate key usage
+        try {
+            validateKeyUsage(envConfig.publicData.apiKey, 'browser');
+            /* wwEditor:start */
+            validateKeyUsage(envConfig.privateData.apiKey, 'server');
+            /* wwEditor:end */
+        } catch (error) {
+            wwLib.wwLog.error('Invalid key usage:', error);
+            /* wwEditor:start */
+            wwLib.wwNotification.open({ text: error.message, color: 'red' });
+            /* wwEditor:end */
+        }
+        
+        await this.load(envConfig.publicData.customDomain || envConfig.publicData.projectUrl, envConfig.publicData.apiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
@@ -95,6 +141,118 @@ export default {
             { driver }
         );
     },
+    /* wwEditor:start */
+    async migrateToMultiEnvironment(settings) {
+        // Skip if no legacy config to migrate
+        if (!settings.publicData?.projectUrl) {
+            return null;
+        }
+        
+        let publicApiKey = settings.publicData.apiKey;
+        let privateApiKey = settings.privateData?.apiKey;
+        
+        // If OAuth connected and using legacy JWT keys, try to get new keys
+        if (settings.privateData?.accessToken && 
+            (detectKeyType(publicApiKey) === 'jwt' || detectKeyType(privateApiKey) === 'jwt')) {
+            try {
+                const newKeys = await this.fetchNewApiKeys(
+                    settings.publicData.projectUrl,
+                    settings.privateData.accessToken
+                );
+                
+                if (newKeys) {
+                    publicApiKey = newKeys.publishableKey;
+                    privateApiKey = newKeys.secretKey;
+                    wwLib.wwNotification.open({ 
+                        text: 'Supabase API keys have been automatically updated to the new format', 
+                        color: 'blue' 
+                    });
+                }
+            } catch (error) {
+                console.warn('Could not fetch new API keys, using existing keys:', error);
+            }
+        }
+        
+        // Migrate to multi-environment format
+        return {
+            ...settings,
+            publicData: {
+                ...settings.publicData,
+                environments: {
+                    production: {
+                        projectUrl: settings.publicData.projectUrl,
+                        apiKey: publicApiKey,
+                        customDomain: settings.publicData.customDomain
+                    }
+                }
+            },
+            privateData: {
+                ...settings.privateData,
+                environments: {
+                    production: {
+                        connectionMode: settings.privateData?.connectionMode || 'custom',
+                        accessToken: settings.privateData?.accessToken,
+                        refreshToken: settings.privateData?.refreshToken,
+                        apiKey: privateApiKey,
+                        databasePassword: settings.privateData?.databasePassword,
+                        connectionString: settings.privateData?.connectionString
+                    }
+                }
+            }
+        };
+    },
+    
+    async fetchNewApiKeys(projectUrl, accessToken) {
+        const projectId = projectUrl?.replace('https://', '').replace('.supabase.co', '');
+        if (!projectId || !accessToken) return null;
+        
+        try {
+            // Try to fetch API keys from Supabase
+            const { data } = await this.requestAPI({
+                method: 'GET',
+                path: `/projects/${projectId}/api-keys`
+            });
+            
+            // Look for new format keys in the response
+            if (data?.data) {
+                const keys = data.data;
+                const publishableKey = keys.find(k => k.name === 'publishable' || k.type === 'publishable')?.api_key;
+                const secretKey = keys.find(k => k.name === 'secret' || k.type === 'secret')?.api_key;
+                
+                if (publishableKey && secretKey) {
+                    return { publishableKey, secretKey };
+                }
+                
+                // If new keys don't exist yet, try to create them
+                try {
+                    const { data: newKeys } = await this.requestAPI({
+                        method: 'POST',
+                        path: `/projects/${projectId}/api-keys/migrate`
+                    });
+                    
+                    if (newKeys?.data) {
+                        return {
+                            publishableKey: newKeys.data.publishableKey || newKeys.data.publishable_key,
+                            secretKey: newKeys.data.secretKey || newKeys.data.secret_key
+                        };
+                    }
+                } catch (createError) {
+                    console.warn('Could not create new API keys:', createError);
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            // If API doesn't support new keys yet, return null
+            if (error.response?.status === 404) {
+                return null;
+            }
+            console.warn('Error fetching API keys:', error);
+            return null;
+        }
+    },
+    /* wwEditor:end */
+    
     async fetchProjectInfo(
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
         accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
@@ -109,20 +267,25 @@ export default {
     },
     async onSave(settings) {
         await this.syncSettings(settings);
-        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
+        
+        // Get config for editor environment (what we're saving in)
+        const envConfig = getEnvironmentConfig(settings, 'editor');
+        if (!envConfig) return;
+        
+        if (envConfig.privateData.accessToken && envConfig.publicData.projectUrl) {
             await this.install();
-            await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+            await this.fetchProjectInfo(envConfig.publicData.projectUrl, envConfig.privateData.accessToken);
         }
 
         if (wwLib.wwPlugins.supabaseAuth) {
             // supabaseAuth will call syncInstance
             await wwLib.wwPlugins.supabaseAuth.load(
-                settings.publicData.customDomain || settings.publicData.projectUrl,
-                settings.publicData.apiKey,
-                settings.privateData.apiKey
+                envConfig.publicData.customDomain || envConfig.publicData.projectUrl,
+                envConfig.publicData.apiKey,
+                envConfig.privateData.apiKey
             );
         } else {
-            await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
+            await this.load(envConfig.publicData.customDomain || envConfig.publicData.projectUrl, envConfig.publicData.apiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
@@ -163,6 +326,14 @@ export default {
     async _fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
+                // Ensure we have an instance for the current environment
+                if (!this.instance) {
+                    const envConfig = getEnvironmentConfig(this.settings, this.currentEnvironment);
+                    if (envConfig) {
+                        await this.load(envConfig.publicData.projectUrl, envConfig.publicData.apiKey);
+                    }
+                }
+                
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
