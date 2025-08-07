@@ -47,31 +47,17 @@ export default {
     \================================================================================================*/
     async _onLoad(settings) {
         /* wwEditor:start */
-        console.log('[Supabase] _onLoad called with settings:', {
-            hasEnvironments: !!settings.publicData?.environments,
-            hasLegacyConfig: !!settings.publicData?.projectUrl,
-            publicKeyType: detectKeyType(settings.publicData?.apiKey),
-            privateKeyType: detectKeyType(settings.privateData?.apiKey)
-        });
-        
         // Migrate legacy configuration to multi-environment format if needed
         if (!settings.publicData?.environments) {
-            console.log('[Supabase] No environments config found, attempting migration...');
             const migrated = await this.migrateToMultiEnvironment(settings);
             if (migrated) {
-                console.log('[Supabase] Migration successful, saving settings...');
                 settings = migrated;
                 // Save migrated settings back
                 await wwLib.$store.dispatch('websiteData/setPluginSettings', {
                     pluginId: this.id,
                     settings: migrated
                 });
-                console.log('[Supabase] Migrated settings saved');
-            } else {
-                console.log('[Supabase] No migration performed');
             }
-        } else {
-            console.log('[Supabase] Already using multi-environment config');
         }
         /* wwEditor:end */
         
@@ -157,59 +143,12 @@ export default {
     },
     /* wwEditor:start */
     async migrateToMultiEnvironment(settings) {
-        console.log('[Supabase Migration] Starting migration check...');
-        
         // Skip if no legacy config to migrate
         if (!settings.publicData?.projectUrl) {
-            console.log('[Supabase Migration] No legacy config found, skipping migration');
             return null;
         }
         
-        console.log('[Supabase Migration] Legacy config detected:', {
-            projectUrl: settings.publicData.projectUrl,
-            hasAccessToken: !!settings.privateData?.accessToken,
-            publicKeyType: detectKeyType(settings.publicData.apiKey),
-            privateKeyType: detectKeyType(settings.privateData?.apiKey)
-        });
-        
-        let publicApiKey = settings.publicData.apiKey;
-        let privateApiKey = settings.privateData?.apiKey;
-        
-        // If OAuth connected and using legacy JWT keys, try to get new keys
-        if (settings.privateData?.accessToken && 
-            (detectKeyType(publicApiKey) === 'jwt' || detectKeyType(privateApiKey) === 'jwt')) {
-            console.log('[Supabase Migration] OAuth connected with JWT keys, attempting to fetch new keys...');
-            try {
-                const newKeys = await this.fetchNewApiKeys(
-                    settings.publicData.projectUrl,
-                    settings.privateData.accessToken
-                );
-                
-                console.log('[Supabase Migration] Fetch new keys result:', newKeys);
-                
-                if (newKeys) {
-                    publicApiKey = newKeys.publishableKey;
-                    privateApiKey = newKeys.secretKey;
-                    console.log('[Supabase Migration] Successfully obtained new keys');
-                    wwLib.wwNotification.open({ 
-                        text: 'Supabase API keys have been automatically updated to the new format', 
-                        color: 'blue' 
-                    });
-                } else {
-                    console.log('[Supabase Migration] No new keys returned from API');
-                }
-            } catch (error) {
-                console.warn('[Supabase Migration] Could not fetch new API keys:', error);
-            }
-        } else {
-            console.log('[Supabase Migration] Skipping new key fetch:', {
-                hasAccessToken: !!settings.privateData?.accessToken,
-                publicKeyIsJWT: detectKeyType(publicApiKey) === 'jwt',
-                privateKeyIsJWT: detectKeyType(privateApiKey) === 'jwt'
-            });
-        }
-        
-        // Migrate to multi-environment format
+        // Simple migration to multi-environment format
         return {
             ...settings,
             publicData: {
@@ -217,7 +156,7 @@ export default {
                 environments: {
                     production: {
                         projectUrl: settings.publicData.projectUrl,
-                        apiKey: publicApiKey,
+                        apiKey: settings.publicData.apiKey,
                         customDomain: settings.publicData.customDomain
                     }
                 }
@@ -229,103 +168,13 @@ export default {
                         connectionMode: settings.privateData?.connectionMode || 'custom',
                         accessToken: settings.privateData?.accessToken,
                         refreshToken: settings.privateData?.refreshToken,
-                        apiKey: privateApiKey,
+                        apiKey: settings.privateData?.apiKey,
                         databasePassword: settings.privateData?.databasePassword,
                         connectionString: settings.privateData?.connectionString
                     }
                 }
             }
         };
-    },
-    
-    async fetchNewApiKeys(projectUrl, accessToken) {
-        const projectId = projectUrl?.replace('https://', '').replace('.supabase.co', '');
-        console.log('[Supabase Migration] fetchNewApiKeys called with:', { projectId, hasToken: !!accessToken });
-        
-        if (!projectId || !accessToken) {
-            console.log('[Supabase Migration] Missing projectId or accessToken');
-            return null;
-        }
-        
-        try {
-            console.log('[Supabase Migration] Fetching API keys from Supabase API...');
-            // Try to fetch API keys from Supabase
-            const { data } = await this.requestAPI({
-                method: 'GET',
-                path: `/projects/${projectId}/api-keys`
-            });
-            
-            console.log('[Supabase Migration] API keys response:', data);
-            
-            // Look for new format keys in the response
-            if (data?.data) {
-                const keys = data.data;
-                console.log('[Supabase Migration] Found keys array:', keys);
-                console.log('[Supabase Migration] Keys structure:', keys.map(k => ({
-                    name: k.name,
-                    type: k.type,
-                    api_key_preview: k.api_key?.substring(0, 20) + '...',
-                    all_fields: Object.keys(k)
-                })));
-                
-                const publishableKey = keys.find(k => k.name === 'publishable' || k.type === 'publishable')?.api_key;
-                const secretKey = keys.find(k => k.name === 'secret' || k.type === 'secret')?.api_key;
-                
-                console.log('[Supabase Migration] Extracted keys:', { 
-                    hasPublishable: !!publishableKey, 
-                    hasSecret: !!secretKey,
-                    publishableType: detectKeyType(publishableKey),
-                    secretType: detectKeyType(secretKey)
-                });
-                
-                if (publishableKey && secretKey) {
-                    return { publishableKey, secretKey };
-                }
-                
-                // If new keys don't exist yet, try to create them
-                console.log('[Supabase Migration] New keys not found, attempting to migrate...');
-                try {
-                    const { data: newKeys } = await this.requestAPI({
-                        method: 'POST',
-                        path: `/projects/${projectId}/api-keys/migrate`
-                    });
-                    
-                    console.log('[Supabase Migration] Migration response:', newKeys);
-                    console.log('[Supabase Migration] Migration data structure:', {
-                        hasData: !!newKeys?.data,
-                        dataKeys: newKeys?.data ? Object.keys(newKeys.data) : [],
-                        dataContent: newKeys?.data
-                    });
-                    
-                    if (newKeys?.data) {
-                        return {
-                            publishableKey: newKeys.data.publishableKey || newKeys.data.publishable_key,
-                            secretKey: newKeys.data.secretKey || newKeys.data.secret_key
-                        };
-                    }
-                } catch (createError) {
-                    console.warn('[Supabase Migration] Could not create new API keys:', createError);
-                }
-            }
-            
-            console.log('[Supabase Migration] No new keys available');
-            return null;
-        } catch (error) {
-            console.error('[Supabase Migration] Error fetching API keys:', {
-                status: error.response?.status,
-                statusText: error.response?.statusText,
-                data: error.response?.data,
-                message: error.message
-            });
-            
-            // If API doesn't support new keys yet, return null
-            if (error.response?.status === 404) {
-                console.log('[Supabase Migration] API endpoint not found (404), new keys not supported yet');
-                return null;
-            }
-            console.warn('Error fetching API keys:', error);
-            return null;
-        }
     },
     /* wwEditor:end */
     
