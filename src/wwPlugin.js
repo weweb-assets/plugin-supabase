@@ -31,6 +31,7 @@ import './components/Functions/InvokeEdge.vue';
 import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+import integrations from './integrations/index';
 
 export default {
     instance: null,
@@ -38,6 +39,8 @@ export default {
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
+    backendEngineVersion: '0.2.48',
+    integrations,
     /* wwEditor:end */
     /*=============================================m_ÔÔ_m=============================================\
         Plugin API
@@ -59,7 +62,7 @@ export default {
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
-            wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
+            wwLib.$emit('wwTopBar:plugins:setPluginId', wwLib.wwPlugins.supabase.id);
         }
         await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
         /* wwEditor:end */
@@ -95,6 +98,46 @@ export default {
             { driver }
         );
     },
+    async enableBackendWorkflows() {
+        if (this.settings.privateData.backendWorkflowsEnabled) return;
+        await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+            pluginId: wwLib.wwPlugins.supabase.id,
+            settings: {
+                id: wwLib.wwPlugins.supabase.settings.id,
+                designId: wwLib.wwPlugins.supabase.settings.designId,
+                publicData: wwLib.wwPlugins.supabase.settings.publicData,
+                privateData: {
+                    ...wwLib.wwPlugins.supabase.settings.privateData,
+                    backendWorkflowsEnabled: true,
+                },
+            },
+        });
+        this.checkBackendUpdates();
+    },
+    checkBackendUpdates() {
+        if (wwLib.$store.getters['manager/getIsBackup']) return;
+        if (!this.settings.privateData.backendWorkflowsEnabled) return;
+        // check in settings and compare with current versions
+        const hasEngineUpdates = this.settings.privateData.backendEngineVersion !== this.backendEngineVersion;
+        const installedIntegrationsVersions = this.settings.privateData.backendIntegrations || {};
+        const latestIntegrationsVersions = this.integrations.reduce((acc, integration) => {
+            acc[integration.slug] = integration.version;
+            return acc;
+        }, {});
+
+        // check if any integration has an update
+        let hasIntegrationsUpdates = false;
+        for (const integrationKey in installedIntegrationsVersions) {
+            if (installedIntegrationsVersions[integrationKey] !== latestIntegrationsVersions[integrationKey]) {
+                hasIntegrationsUpdates = true;
+                break;
+            }
+        }
+        if (hasEngineUpdates || hasIntegrationsUpdates) {
+            // Request wwedge deploy
+            wwLib.$emit('wwTopBar:supabase:deploy');
+        }
+    },
     async fetchProjectInfo(
         projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
         accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
@@ -121,6 +164,7 @@ export default {
                 settings.publicData.apiKey,
                 settings.privateData.apiKey
             );
+            this.checkBackendUpdates();
         } else {
             await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
@@ -218,6 +262,7 @@ export default {
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
+            this.checkBackendUpdates();
             await this.fetchDoc(projectUrl, apiKey);
             /* wwEditor:end */
         } catch (err) {
