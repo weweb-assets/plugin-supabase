@@ -62,21 +62,15 @@ export default {
         
         // Get configuration for current environment
         const config = getCurrentSupabaseSettings('supabase');
-        console.log('[Supabase] init - config from getCurrentSupabaseSettings:', config);
         
         if (!config.projectUrl || !config.publicApiKey) {
             /* wwEditor:start */
             wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
             /* wwEditor:end */
-            console.warn('[Supabase] init - Missing projectUrl or publicApiKey, returning early');
             return;
         }
         
         /* wwEditor:start */
-        console.log('[Supabase] init - About to call fetchProjectInfo with:', {
-            projectUrl: config.projectUrl,
-            hasAccessToken: !!config.accessToken
-        });
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
         const environment = window.localStorage.getItem('supabase_oauth_env') || 'production';
@@ -104,10 +98,6 @@ export default {
     },
     /* wwEditor:start */
     _getCopilotContext() {
-        console.log('[Supabase] _getCopilotContext - projectInfo:', this.projectInfo);
-        console.log('[Supabase] _getCopilotContext - edge data:', this.projectInfo?.edge);
-        console.log('[Supabase] _getCopilotContext - edgeFunctions settings:', this.settings?.privateData?.edgeFunctions);
-        
         return {
             tables: this.projectInfo?.schema?.tables?.map(table => ({
                 name: table.name,
@@ -181,38 +171,13 @@ export default {
             projectUrl = projectUrl || config.projectUrl;
             accessToken = accessToken || config.accessToken;
         }
-        console.log('[Supabase] fetchProjectInfo - projectUrl:', projectUrl, 'accessToken:', accessToken ? 'present' : 'missing');
-        
-        if (!accessToken || !projectUrl) {
-            console.warn('[Supabase] fetchProjectInfo - Missing accessToken or projectUrl');
-            return;
-        }
-        
-        try {
-            console.log('[Supabase] Fetching schema...');
-            const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
-            console.log('[Supabase] Schema data:', schemaData);
-            
-            console.log('[Supabase] Fetching edge functions...');
-            const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
-            console.log('[Supabase] Edge data:', edgeData);
-            
-            // Initialize projectInfo with schema data or empty object
-            this.projectInfo = schemaData?.data || {};
-            
-            // Add edge data if projectInfo was successfully set
-            if (this.projectInfo) {
-                this.projectInfo.edge = edgeData?.data;
-            }
-            
-            console.log('[Supabase] Final projectInfo:', this.projectInfo);
-            
-            wwLib.$emit('wwTopBar:supabase:refresh');
-            return this.projectInfo;
-        } catch (error) {
-            console.error('[Supabase] Error fetching project info:', error);
-            throw error;
-        }
+        if (!accessToken || !projectUrl) return;
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
+        this.projectInfo = schemaData?.data;
+        this.projectInfo.edge = edgeData?.data;
+        wwLib.$emit('wwTopBar:supabase:refresh');
+        return this.projectInfo;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
@@ -240,23 +205,16 @@ export default {
         }
     },
     async requestAPI({ method, path, data }, retry = true) {
-        const url = `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
-            }/supabase${path}`;
-        console.log(`[Supabase] requestAPI - ${method} ${url}`, data);
-        
         try {
-            const response = await wwAxios({
+            return await wwAxios({
                 method,
-                url,
+                url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    }/supabase${path}`,
                 data,
             });
-            console.log(`[Supabase] requestAPI response for ${path}:`, response);
-            return response;
         } catch (error) {
-            console.error(`[Supabase] requestAPI error for ${path}:`, error);
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
-                console.log('[Supabase] Refreshing OAuth token...');
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
