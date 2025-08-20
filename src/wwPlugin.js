@@ -66,7 +66,7 @@ export default {
                 settings = migrated;
                 // Save migrated settings back
                 console.log('[MIGRATION] Saving migrated settings to store...');
-                await wwLib.$store.dispatch('websiteData/setPluginSettings', {
+                await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
                     pluginId: this.id,
                     settings: migrated
                 });
