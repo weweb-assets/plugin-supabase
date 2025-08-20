@@ -36,7 +36,6 @@ import { getCurrentSupabaseSettings } from './helpers/environmentConfig';
 export default {
     instance: null,
     channels: {},
-    currentEnvironment: 'production',
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
@@ -81,7 +80,6 @@ export default {
         
         // Get configuration for current environment
         const config = getCurrentSupabaseSettings('supabase');
-        this.currentEnvironment = config.environment;
         
         if (!config.projectUrl || !config.publicApiKey) {
             /* wwEditor:start */
