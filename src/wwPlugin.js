@@ -274,9 +274,9 @@ export default {
             try {
                 // Ensure we have an instance for the current environment
                 if (!this.instance) {
-                    const envConfig = getEnvironmentConfig(this.settings, this.currentEnvironment);
-                    if (envConfig) {
-                        await this.load(envConfig.publicData.projectUrl, envConfig.publicData.apiKey);
+                    const config = getCurrentSupabaseSettings('supabase');
+                    if (config.projectUrl && config.publicApiKey) {
+                        await this.load(config.projectUrl, config.publicApiKey);
                     }
                 }
                 
