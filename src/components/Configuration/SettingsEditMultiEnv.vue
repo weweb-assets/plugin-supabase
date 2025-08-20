@@ -366,23 +366,13 @@ export default {
         },
     },
     mounted() {
-        console.log('[UI MIGRATION] Component mounted, checking settings:', {
-            hasEnvironments: !!this.settings.publicData?.environments,
-            publicData: this.settings.publicData,
-            privateData: this.settings.privateData
-        });
-        
         // Initialize multi-environment structure if needed
         if (!this.settings.publicData?.environments) {
-            console.log('[UI MIGRATION] No environments found, triggering UI migration...');
             this.migrateToMultiEnv();
-        } else {
-            console.log('[UI MIGRATION] Environments already present, no UI migration needed');
         }
         
         // Check if OAuth is connected and refresh projects
         if (this.hasOAuthToken()) {
-            console.log('[UI MIGRATION] OAuth token found, refreshing projects...');
             this.refreshProjects();
         }
     },
@@ -442,14 +432,8 @@ export default {
         },
         
         migrateToMultiEnv() {
-            console.log('[UI MIGRATION - migrateToMultiEnv] Starting UI migration from:', {
-                publicData: this.settings.publicData,
-                privateData: this.settings.privateData
-            });
-            
             // Migrate legacy config to multi-environment structure
             const connectionMode = this.settings.privateData?.connectionMode || 'custom';
-            console.log('[UI MIGRATION - migrateToMultiEnv] Detected connection mode:', connectionMode);
             
             const newSettings = {
                 ...this.settings,
@@ -478,9 +462,7 @@ export default {
                 }
             };
             
-            console.log('[UI MIGRATION - migrateToMultiEnv] Emitting new settings:', newSettings);
             this.$emit('update:settings', newSettings);
-            console.log('[UI MIGRATION - migrateToMultiEnv] Migration complete, settings emitted');
         },
         
         changeConnectionMode(env, mode) {

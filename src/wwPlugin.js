@@ -46,35 +46,17 @@ export default {
     async _onLoad(settings) {
         /* wwEditor:start */
         // Migrate legacy configuration to multi-environment format if needed
-        console.log('[MIGRATION] Checking if migration needed:', {
-            hasEnvironments: !!settings.publicData?.environments,
-            currentPublicData: settings.publicData,
-            currentPrivateData: settings.privateData
-        });
-        
         if (!settings.publicData?.environments) {
-            console.log('[MIGRATION] Starting migration from legacy format...');
             const migrated = await this.migrateToMultiEnvironment(settings);
             
             if (migrated) {
-                console.log('[MIGRATION] Migration successful, new settings:', {
-                    publicEnvironments: migrated.publicData?.environments,
-                    privateEnvironments: migrated.privateData?.environments
-                });
-                
                 settings = migrated;
                 // Save migrated settings back
-                console.log('[MIGRATION] Saving migrated settings to store...');
                 await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
                     pluginId: this.id,
                     settings: migrated
                 });
-                console.log('[MIGRATION] Settings saved to store');
-            } else {
-                console.log('[MIGRATION] No migration performed (no legacy data to migrate)');
             }
-        } else {
-            console.log('[MIGRATION] Already has environments, no migration needed');
         }
         /* wwEditor:end */
         
@@ -145,20 +127,10 @@ export default {
     },
     /* wwEditor:start */
     async migrateToMultiEnvironment(settings) {
-        console.log('[MIGRATION - migrateToMultiEnvironment] Input settings:', settings);
-        
         // Skip if no legacy config to migrate
         if (!settings.publicData?.projectUrl) {
-            console.log('[MIGRATION - migrateToMultiEnvironment] No projectUrl found, skipping migration');
             return null;
         }
-        
-        console.log('[MIGRATION - migrateToMultiEnvironment] Creating multi-env structure from:', {
-            projectUrl: settings.publicData.projectUrl,
-            apiKey: settings.publicData.apiKey,
-            customDomain: settings.publicData.customDomain,
-            connectionMode: settings.privateData?.connectionMode
-        });
         
         // Simple migration to multi-environment format
         const migrated = {
@@ -188,7 +160,6 @@ export default {
             }
         };
         
-        console.log('[MIGRATION - migrateToMultiEnvironment] Migration complete, output:', migrated);
         return migrated;
     },
     /* wwEditor:end */
