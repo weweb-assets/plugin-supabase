@@ -62,15 +62,21 @@ export default {
         
         // Get configuration for current environment
         const config = getCurrentSupabaseSettings('supabase');
+        console.log('[Supabase] init - config from getCurrentSupabaseSettings:', config);
         
         if (!config.projectUrl || !config.publicApiKey) {
             /* wwEditor:start */
             wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
             /* wwEditor:end */
+            console.warn('[Supabase] init - Missing projectUrl or publicApiKey, returning early');
             return;
         }
         
         /* wwEditor:start */
+        console.log('[Supabase] init - About to call fetchProjectInfo with:', {
+            projectUrl: config.projectUrl,
+            hasAccessToken: !!config.accessToken
+        });
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
         const environment = window.localStorage.getItem('supabase_oauth_env') || 'production';
