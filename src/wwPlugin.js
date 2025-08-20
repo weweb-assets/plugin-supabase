@@ -31,6 +31,7 @@ import './components/Functions/InvokeEdge.vue';
 import { createClient, FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+import { getCurrentSupabaseSettings } from './helpers/environmentConfig';
 
 export default {
     instance: null,
@@ -44,26 +45,55 @@ export default {
     \================================================================================================*/
     async _onLoad(settings) {
         /* wwEditor:start */
+        // Migrate legacy configuration to multi-environment format if needed
+        if (!settings.publicData?.environments) {
+            const migrated = await this.migrateToMultiEnvironment(settings);
+            
+            if (migrated) {
+                settings = migrated;
+                // Save migrated settings back
+                await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+                    pluginId: this.id,
+                    settings: migrated
+                });
+            }
+        }
+        /* wwEditor:end */
+        
+        // Get configuration for current environment
+        const config = getCurrentSupabaseSettings('supabase');
+        
+        if (!config.projectUrl || !config.publicApiKey) {
+            /* wwEditor:start */
+            wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
+            /* wwEditor:end */
+            return;
+        }
+        
+        /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
+        const environment = window.localStorage.getItem('supabase_oauth_env') || 'production';
         // get code params from url
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (isConnecting && code) {
             wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
             window.localStorage.removeItem('supabase_oauth');
+            window.localStorage.removeItem('supabase_oauth_env');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase/connect`,
-                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
+                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect', environment }
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
             wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
         }
-        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+        await this.fetchProjectInfo(config.projectUrl, config.accessToken);
         /* wwEditor:end */
-        await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
+        
+        await this.load(config.projectUrl, config.publicApiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
@@ -95,10 +125,52 @@ export default {
             { driver }
         );
     },
-    async fetchProjectInfo(
-        projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
-        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
-    ) {
+    /* wwEditor:start */
+    async migrateToMultiEnvironment(settings) {
+        // Skip if no legacy config to migrate
+        if (!settings.publicData?.projectUrl) {
+            return null;
+        }
+        
+        // Simple migration to multi-environment format
+        const migrated = {
+            ...settings,
+            publicData: {
+                ...settings.publicData,
+                environments: {
+                    production: {
+                        projectUrl: settings.publicData.projectUrl,
+                        apiKey: settings.publicData.apiKey,
+                        customDomain: settings.publicData.customDomain
+                    }
+                }
+            },
+            privateData: {
+                ...settings.privateData,
+                environments: {
+                    production: {
+                        connectionMode: settings.privateData?.connectionMode || 'custom',
+                        accessToken: settings.privateData?.accessToken,
+                        refreshToken: settings.privateData?.refreshToken,
+                        apiKey: settings.privateData?.apiKey,
+                        databasePassword: settings.privateData?.databasePassword,
+                        connectionString: settings.privateData?.connectionString
+                    }
+                }
+            }
+        };
+        
+        return migrated;
+    },
+    /* wwEditor:end */
+    
+    async fetchProjectInfo(projectUrl, accessToken) {
+        // If not provided, get from current environment config
+        if (!projectUrl || !accessToken) {
+            const config = getCurrentSupabaseSettings('supabase');
+            projectUrl = projectUrl || config.projectUrl;
+            accessToken = accessToken || config.accessToken;
+        }
         if (!accessToken || !projectUrl) return;
         const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
         const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
@@ -109,20 +181,26 @@ export default {
     },
     async onSave(settings) {
         await this.syncSettings(settings);
-        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
+        
+        // Get config for current environment
+        const config = getCurrentSupabaseSettings('supabase');
+        if (!config.projectUrl) return;
+        
+        if (config.accessToken && config.projectUrl) {
             await this.install();
-            await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+            await this.fetchProjectInfo(config.projectUrl, config.accessToken);
         }
 
         if (wwLib.wwPlugins.supabaseAuth) {
             // supabaseAuth will call syncInstance
+            const authConfig = getCurrentSupabaseSettings('supabaseAuth');
             await wwLib.wwPlugins.supabaseAuth.load(
-                settings.publicData.customDomain || settings.publicData.projectUrl,
-                settings.publicData.apiKey,
-                settings.privateData.apiKey
+                authConfig.projectUrl,
+                authConfig.publicApiKey,
+                authConfig.privateApiKey
             );
         } else {
-            await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
+            await this.load(config.projectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
@@ -163,6 +241,14 @@ export default {
     async _fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
+                // Ensure we have an instance for the current environment
+                if (!this.instance) {
+                    const config = getCurrentSupabaseSettings('supabase');
+                    if (config.projectUrl && config.publicApiKey) {
+                        await this.load(config.projectUrl, config.publicApiKey);
+                    }
+                }
+                
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
@@ -230,8 +316,11 @@ export default {
         }
     },
     /* wwEditor:start */
-    async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
-        this.doc = await getDoc(projectUrl, apiKey);
+    async fetchDoc() {
+        const config = getCurrentSupabaseSettings('supabase');
+        if (config.projectUrl && config.publicApiKey) {
+            this.doc = await getDoc(config.projectUrl, config.publicApiKey);
+        }
     },
     /* wwEditor:end */
     async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers }, wwUtils) {
