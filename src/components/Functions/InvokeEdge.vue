@@ -94,6 +94,30 @@
         :model-value="body"
         @update:modelValue="setArgs({ body: $event })"
     />
+    <wwEditorFormRow>
+        <div class="flex items-center">
+            <wwEditorInputSwitch :model-value="useStreaming" @update:modelValue="setUseStreaming" />
+            <div class="body-sm ml-2">Stream response</div>
+            <wwEditorQuestionMark
+                tooltip-position="top-left"
+                forced-content="The response will be streamed in real-time. You can use the stream variable to receive the data. This requires the edge function to support streaming responses."
+                class="ml-auto"
+            />
+        </div>
+    </wwEditorFormRow>
+    <wwEditorInputRow
+        v-if="useStreaming"
+        label="Stream variable"
+        placeholder="Select an array variable"
+        type="select"
+        :actions="[{ icon: 'plus', label: 'Create variable', onAction: createWwVariable }]"
+        :options="wwVariableOptions"
+        :model-value="streamVariableId"
+        @update:modelValue="setArgs({ streamVariableId: $event })"
+        @action="action => action?.onAction()"
+        required
+        tooltip="The array variable that will receive the stream data"
+    />
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -104,9 +128,14 @@ export default {
     components: { Expandable },
     props: {
         plugin: { type: Object, required: true },
-        args: { type: Object, default: () => ({ fieldsMode: 'guided' }) },
+        args: { type: Object, default: () => ({ fieldsMode: 'guided', useStreaming: false }) },
     },
     emits: ['update:args'],
+    setup() {
+        const { website: websiteVariables, components: componentVariables } = wwLib.wwVariable.useEditorVariables();
+
+        return { websiteVariables, componentVariables };
+    },
     data() {
         return {
             isAdvancedOpen: false,
@@ -130,6 +159,35 @@ export default {
         body() {
             return this.args.body;
         },
+        useStreaming() {
+            return this.args.useStreaming || false;
+        },
+        streamVariableId() {
+            return this.args.streamVariableId;
+        },
+        wwVariables() {
+            return [
+                ...(this.websiteVariables ? Object.values(this.websiteVariables) : []),
+                ...(this.componentVariables ? Object.values(this.componentVariables) : []),
+            ];
+        },
+        wwVariableOptions() {
+            return this.wwVariables
+                .filter(variable => variable.type === 'array')
+                .map(variable => {
+                    const labelPrefix = variable.componentType
+                        ? wwLib.wwElement.getComponentLabel(variable.componentType, variable.componentUid)
+                        : null;
+
+                    const label = labelPrefix ? `${labelPrefix} - ${variable.name}` : variable.name;
+
+                    return {
+                        label,
+                        value: variable.id,
+                        icon: variable.type,
+                    };
+                });
+        },
     },
     mounted() {
         this.fetchFunctions();
@@ -147,6 +205,14 @@ export default {
             } catch (error) {
                 this.isLoading = false;
             }
+        },
+        setUseStreaming(useStreaming) {
+            this.setArgs({ useStreaming });
+        },
+        createWwVariable() {
+            wwLib.wwPopupSidebars.open({ name: 'NAVIGATOR' });
+            wwLib.$emit('wwTopBar:navigator:tab', 'data');
+            wwLib.$emit('wwTopBar:navigator:data:variables:set', null);
         },
     },
 };

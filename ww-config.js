@@ -935,6 +935,16 @@ export default {
                         description: 'Request body',
                         bindable: true,
                     },
+                    useStreaming: {
+                        type: 'boolean',
+                        description: 'Whether to use streaming',
+                        bindable: true,
+                    },
+                    streamVariableId: {
+                        type: 'string',
+                        description: 'The variable ID of the array variable that will receive the stream data',
+                        bindable: true,
+                    },
                 },
             },
             /* wwEditor:end */
