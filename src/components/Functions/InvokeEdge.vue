@@ -169,7 +169,10 @@ export default {
             return [
                 ...(this.websiteVariables ? Object.values(this.websiteVariables) : []),
                 ...(this.componentVariables ? Object.values(this.componentVariables) : []),
-            ];
+            ].filter(variable => {
+                if (variable.componentType === 'libraryComponent') return false;
+                return true;
+            });
         },
         wwVariableOptions() {
             return this.wwVariables
