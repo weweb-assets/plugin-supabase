@@ -80,19 +80,17 @@ export default {
         /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
-        const environment = window.localStorage.getItem('supabase_oauth_env') || 'production';
         // get code params from url
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         if (isConnecting && code) {
             wwLib.wwNotification.open({ text: 'Connecting supabase account...', color: 'blue' });
             window.localStorage.removeItem('supabase_oauth');
-            window.localStorage.removeItem('supabase_oauth_env');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase/connect`,
-                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect', environment }
+                { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');

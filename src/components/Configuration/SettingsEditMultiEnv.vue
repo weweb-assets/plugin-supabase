@@ -391,11 +391,8 @@ export default {
         },
         
         hasOAuthToken() {
-            // Check if any environment has an OAuth access token
-            return this.environments.some(env => {
-                const privateConfig = this.getCurrentEnvPrivateConfig(env);
-                return privateConfig?.accessToken?.startsWith('sbp_oauth');
-            }) || this.settings.privateData?.accessToken?.startsWith('sbp_oauth');
+            // Single OAuth across environments: rely on global token only
+            return this.settings.privateData?.accessToken?.startsWith('sbp_oauth');
         },
         
         getCurrentEnvConfig(env = this.activeEnvironment) {
@@ -485,12 +482,6 @@ export default {
             this.isLoading = true;
             const redirectUri = window.location.origin + window.location.pathname;
             window.localStorage.setItem('supabase_oauth', true);
-            try {
-                const env = this.activeEnvironment || (wwLib.getEnvironment ? wwLib.getEnvironment() : 'production') || 'production';
-                window.localStorage.setItem('supabase_oauth_env', env);
-            } catch (e) {
-                // Best-effort; server will still infer env from Referer if missing
-            }
             const { data } = await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
@@ -673,10 +664,7 @@ export default {
         
         async refreshProjects() {
             // Use OAuth token (shared across environments)
-            const accessToken = this.settings.privateData?.accessToken || 
-                               this.environments
-                                   .map(env => this.getCurrentEnvPrivateConfig(env).accessToken)
-                                   .find(token => token?.startsWith('sbp_oauth'));
+            const accessToken = this.settings.privateData?.accessToken;
                 
             if (!accessToken) {
                 return;
