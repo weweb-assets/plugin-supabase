@@ -402,6 +402,17 @@ export default {
         if (this.hasOAuthToken()) {
             this.refreshProjects();
         }
+
+        // Proactively check branching availability for existing project URLs
+        // so the Branch selector can appear without manual project toggle
+        this.$nextTick(async () => {
+            try {
+                for (const env of this.environments) {
+                    const url = this.getCurrentEnvConfig(env)?.projectUrl;
+                    if (url) await this.checkBranching(env);
+                }
+            } catch (_) {}
+        });
     },
     methods: {
         capitalize(str) {
