@@ -31,7 +31,7 @@ import './components/Functions/InvokeEdge.vue';
 import { createClient } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
-import { getCurrentSupabaseSettings } from './helpers/environmentConfig';
+import { getCurrentSupabaseSettings, resolveRuntimeProjectUrl } from './helpers/environmentConfig';
 
 import {
     buildQueryString,
@@ -76,6 +76,7 @@ export default {
         
         // Get configuration for current environment
         let config = getCurrentSupabaseSettings('supabase');
+        let runtimeProjectUrl = resolveRuntimeProjectUrl(config);
 
         /* wwEditor:start */
         // check oauth in local storage
@@ -96,15 +97,16 @@ export default {
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
             wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
             config = getCurrentSupabaseSettings('supabase');
+            runtimeProjectUrl = resolveRuntimeProjectUrl(config);
         }
-        if (!config.projectUrl || !config.publicApiKey) {
+        if (!runtimeProjectUrl || !config.publicApiKey) {
             return;
         } else {
-            await this.fetchProjectInfo(config.projectUrl, config.accessToken);
+            await this.fetchProjectInfo(config);
         }
         /* wwEditor:end */
 
-        await this.load(config.projectUrl, config.publicApiKey);
+        await this.load(runtimeProjectUrl, config.publicApiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
@@ -177,20 +179,26 @@ export default {
     },
     /* wwEditor:end */
     
-    async fetchProjectInfo(projectUrl, accessToken) {
-        // If not provided, get from current environment config
-        if (!projectUrl || !accessToken) {
-            const config = getCurrentSupabaseSettings('supabase');
-            projectUrl = projectUrl || config.projectUrl;
-            accessToken = accessToken || config.accessToken;
-        }
+    async fetchProjectInfo(configOverride = null) {
+        const config = configOverride || getCurrentSupabaseSettings('supabase');
+        const projectUrl = config?.projectUrl;
+        const accessToken = config?.accessToken;
         if (!accessToken || !projectUrl) return;
-        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
-        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
+
+        const params = this.getBranchQueryParams(config);
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema', params });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge', params });
         this.projectInfo = schemaData?.data;
         this.projectInfo.edge = edgeData?.data;
         wwLib.$emit('wwTopBar:supabase:refresh');
         return this.projectInfo;
+    },
+    getBranchQueryParams(config = getCurrentSupabaseSettings('supabase')) {
+        if (!config) return undefined;
+        const params = {};
+        if (config.branchSlug) params.branch = config.branchSlug;
+        if (config.baseProjectRef) params.baseProjectRef = config.baseProjectRef;
+        return Object.keys(params).length ? params : undefined;
     },
     async onSave(settings) {
         await this.syncSettings(settings);
@@ -199,21 +207,24 @@ export default {
         const config = getCurrentSupabaseSettings('supabase');
         if (!config.projectUrl) return;
         
+        const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+
         if (config.accessToken && config.projectUrl) {
             await this.install();
-            await this.fetchProjectInfo(config.projectUrl, config.accessToken);
+            await this.fetchProjectInfo(config);
         }
 
         if (wwLib.wwPlugins.supabaseAuth) {
             // supabaseAuth will call syncInstance
             const authConfig = getCurrentSupabaseSettings('supabaseAuth');
+            const authRuntimeUrl = resolveRuntimeProjectUrl(authConfig);
             await wwLib.wwPlugins.supabaseAuth.load(
-                authConfig.projectUrl,
+                authRuntimeUrl,
                 authConfig.publicApiKey,
                 authConfig.privateApiKey
             );
         } else {
-            await this.load(config.projectUrl, config.publicApiKey);
+            await this.load(runtimeProjectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
@@ -260,8 +271,9 @@ export default {
                 // Ensure we have an instance for the current environment
                 if (!this.instance) {
                     const config = getCurrentSupabaseSettings('supabase');
-                    if (config.projectUrl && config.publicApiKey) {
-                        await this.load(config.projectUrl, config.publicApiKey);
+                    const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+                    if (runtimeProjectUrl && config.publicApiKey) {
+                        await this.load(runtimeProjectUrl, config.publicApiKey);
                     }
                 }
                 
@@ -320,7 +332,7 @@ export default {
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
-            await this.fetchDoc(projectUrl, apiKey);
+            await this.fetchDoc();
             /* wwEditor:end */
         } catch (err) {
             this.instance = null;
@@ -334,10 +346,12 @@ export default {
     /* wwEditor:start */
     async fetchDoc() {
         const config = getCurrentSupabaseSettings('supabase');
+        const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
         const logContext = {
             env: config.environment,
             resolvedEnv: config.resolvedEnvironment,
             projectUrl: config.projectUrl,
+            runtimeProjectUrl,
             projectRef: config.projectRef,
             baseProjectRef: config.baseProjectRef,
             branch: config.branch,
@@ -347,7 +361,7 @@ export default {
         };
         console.info('[Supabase plugin] fetchDoc config', logContext);
 
-        if (!config.projectUrl || !config.publicApiKey) {
+        if (!runtimeProjectUrl || !config.publicApiKey) {
             console.warn('[Supabase plugin] fetchDoc skipped', {
                 reason: 'Missing projectUrl or publicApiKey',
                 ...logContext,
@@ -356,16 +370,18 @@ export default {
         }
 
         try {
-            const doc = await getDoc(config.projectUrl, config.publicApiKey);
+            const doc = await getDoc(runtimeProjectUrl, config.publicApiKey, {
+                branchSlug: config.branchSlug,
+            });
             this.doc = doc;
             const rowCount = Array.isArray(doc) ? doc.length : undefined;
             console.info('[Supabase plugin] fetchDoc success', {
-                projectUrl: config.projectUrl,
+                projectUrl: runtimeProjectUrl,
                 rowCount,
             });
         } catch (error) {
             console.warn('[Supabase plugin] fetchDoc failed', {
-                projectUrl: config.projectUrl,
+                projectUrl: runtimeProjectUrl,
                 status: error?.response?.status,
                 message: error?.message,
                 responseError: error?.response?.data?.message,
@@ -914,13 +930,19 @@ const findIndexFromPrimaryData = (data, obj, primaryData) => {
 };
 
 /* wwEditor:start */
-const getDoc = async (url, apiKey) => {
+const getDoc = async (url, apiKey, { branchSlug } = {}) => {
     console.info('[Supabase plugin] fetchDoc request', {
         url,
         headerPreview: maskForLog(apiKey),
+        branchSlug,
     });
     try {
-        const { data } = await axios.get(`${url}/rest/v1/`, { headers: { apiKey } });
+        const headers = {
+            apikey: apiKey,
+            Authorization: `Bearer ${apiKey}`,
+        };
+        const params = branchSlug ? { branch: branchSlug } : undefined;
+        const { data } = await axios.get(`${url}/rest/v1/`, { headers, params });
         return data;
     } catch (error) {
         console.warn('[Supabase plugin] fetchDoc request error', {
