@@ -40,6 +40,13 @@ import {
     executeStreamingInvocation,
 } from './helpers/edgeFunction.js';
 
+const maskForLog = value => {
+    if (!value) return null;
+    const str = String(value);
+    if (str.length <= 8) return str;
+    return `${str.slice(0, 4)}...${str.slice(-4)}`;
+};
+
 export default {
     instance: null,
     channels: {},
@@ -327,8 +334,43 @@ export default {
     /* wwEditor:start */
     async fetchDoc() {
         const config = getCurrentSupabaseSettings('supabase');
-        if (config.projectUrl && config.publicApiKey) {
-            this.doc = await getDoc(config.projectUrl, config.publicApiKey);
+        const logContext = {
+            env: config.environment,
+            resolvedEnv: config.resolvedEnvironment,
+            projectUrl: config.projectUrl,
+            projectRef: config.projectRef,
+            baseProjectRef: config.baseProjectRef,
+            branch: config.branch,
+            branchSlug: config.branchSlug,
+            hasApiKey: !!config.publicApiKey,
+            apiKeyPreview: maskForLog(config.publicApiKey),
+        };
+        console.info('[Supabase plugin] fetchDoc config', logContext);
+
+        if (!config.projectUrl || !config.publicApiKey) {
+            console.warn('[Supabase plugin] fetchDoc skipped', {
+                reason: 'Missing projectUrl or publicApiKey',
+                ...logContext,
+            });
+            return;
+        }
+
+        try {
+            const doc = await getDoc(config.projectUrl, config.publicApiKey);
+            this.doc = doc;
+            const rowCount = Array.isArray(doc) ? doc.length : undefined;
+            console.info('[Supabase plugin] fetchDoc success', {
+                projectUrl: config.projectUrl,
+                rowCount,
+            });
+        } catch (error) {
+            console.warn('[Supabase plugin] fetchDoc failed', {
+                projectUrl: config.projectUrl,
+                status: error?.response?.status,
+                message: error?.message,
+                responseError: error?.response?.data?.message,
+            });
+            throw error;
         }
     },
     /* wwEditor:end */
@@ -873,7 +915,21 @@ const findIndexFromPrimaryData = (data, obj, primaryData) => {
 
 /* wwEditor:start */
 const getDoc = async (url, apiKey) => {
-    const { data } = await axios.get(`${url}/rest/v1/`, { headers: { apiKey } });
-    return data;
+    console.info('[Supabase plugin] fetchDoc request', {
+        url,
+        headerPreview: maskForLog(apiKey),
+    });
+    try {
+        const { data } = await axios.get(`${url}/rest/v1/`, { headers: { apiKey } });
+        return data;
+    } catch (error) {
+        console.warn('[Supabase plugin] fetchDoc request error', {
+            url,
+            status: error?.response?.status,
+            message: error?.message,
+            responseError: error?.response?.data?.message,
+        });
+        throw error;
+    }
 };
 /* wwEditor:end */
