@@ -623,7 +623,9 @@ export default {
                         baseProjectRef;
                 }
             }
-            
+
+            console.info('[Supabase plugin] changeProjectUrl', { env, projectUrl, baseProjectRef });
+
             this.updateEnvironmentConfig(env, {
                 publicData: { projectUrl, apiKey, baseProjectRef },
                 privateData: { apiKey: privateApiKey, connectionString }
@@ -635,10 +637,10 @@ export default {
 
         async loadBranches(env, overrideRef = '') {
             try {
-                const cfg = this.getCurrentEnvConfig(env);
-                const baseRef = overrideRef || cfg.baseProjectRef || cfg.projectUrl?.replace('https://', '').replace('.supabase.co', '');
-                const ref = baseRef;
-                console.info('[Supabase plugin] loadBranches', { env, baseProjectRef: cfg.baseProjectRef, overrideRef, projectUrl: cfg.projectUrl, ref, hasOAuth: this.hasOAuthToken() });
+            const cfg = this.getCurrentEnvConfig(env);
+            const baseRef = overrideRef || cfg.baseProjectRef || cfg.projectUrl?.replace('https://', '').replace('.supabase.co', '');
+            const ref = baseRef;
+            console.info('[Supabase plugin] loadBranches', { env, baseProjectRef: cfg.baseProjectRef, overrideRef, projectUrl: cfg.projectUrl, ref, hasOAuth: this.hasOAuthToken() });
                 if (!ref || !this.hasOAuthToken()) return;
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'GET',
