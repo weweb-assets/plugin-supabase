@@ -91,16 +91,14 @@ export default {
             config = getCurrentSupabaseSettings('supabase');
         }
         if (!config.projectUrl || !config.publicApiKey) {
-            wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
+            return;
         } else {
             await this.fetchProjectInfo(config.projectUrl, config.accessToken);
         }
         /* wwEditor:end */
 
-        if (config.projectUrl && config.publicApiKey) {
-            await this.load(config.projectUrl, config.publicApiKey);
-            this.subscribeTables(settings.publicData.realtimeTables || {});
-        }
+        await this.load(config.projectUrl, config.publicApiKey);
+        this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
     _getCopilotContext() {
