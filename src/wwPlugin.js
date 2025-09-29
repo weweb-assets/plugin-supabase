@@ -68,15 +68,8 @@ export default {
         /* wwEditor:end */
         
         // Get configuration for current environment
-        const config = getCurrentSupabaseSettings('supabase');
-        
-        if (!config.projectUrl || !config.publicApiKey) {
-            /* wwEditor:start */
-            wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
-            /* wwEditor:end */
-            return;
-        }
-        
+        let config = getCurrentSupabaseSettings('supabase');
+
         /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
@@ -95,12 +88,19 @@ export default {
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
             wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
+            config = getCurrentSupabaseSettings('supabase');
         }
-        await this.fetchProjectInfo(config.projectUrl, config.accessToken);
+        if (!config.projectUrl || !config.publicApiKey) {
+            wwLib.wwNotification.open({ text: 'No Supabase configuration found for current environment', color: 'yellow' });
+        } else {
+            await this.fetchProjectInfo(config.projectUrl, config.accessToken);
+        }
         /* wwEditor:end */
-        
-        await this.load(config.projectUrl, config.publicApiKey);
-        this.subscribeTables(settings.publicData.realtimeTables || {});
+
+        if (config.projectUrl && config.publicApiKey) {
+            await this.load(config.projectUrl, config.publicApiKey);
+            this.subscribeTables(settings.publicData.realtimeTables || {});
+        }
     },
     /* wwEditor:start */
     _getCopilotContext() {
