@@ -636,7 +636,7 @@ export default {
             console.info('[Supabase plugin] changeProjectUrl', { env, projectUrl, baseProjectRef });
 
             this.updateEnvironmentConfig(env, {
-                publicData: { projectUrl, apiKey, baseProjectRef },
+                publicData: { projectUrl, apiKey, baseProjectRef, branch: null, branchSlug: null },
                 privateData: { apiKey: privateApiKey, connectionString }
             });
 
@@ -671,10 +671,20 @@ export default {
                 const defaultBranch = branches.find(b => b.is_default);
                 const defaultValue = defaultBranch?.project_ref || defaultBranch?.ref || defaultBranch?.id || '';
                 const currentSelection = this.selectedBranches?.[env];
-                const selectionExistsInList = branches.some(b => (b.project_ref || b.ref || b.id || b.name) === currentSelection);
-                if (defaultValue && (!currentSelection || !selectionExistsInList)) {
-                    if (this.$set) this.$set(this.selectedBranches, env, defaultValue);
-                    else this.selectedBranches = { ...(this.selectedBranches || {}), [env]: defaultValue };
+                const savedSelection = this.getCurrentEnvConfig(env)?.branch || '';
+                const targetSelection = currentSelection || savedSelection || '';
+                const selectionExistsInList = targetSelection && branches.some(b => (b.project_ref || b.ref || b.id || b.name) === targetSelection);
+
+                let nextSelection = '';
+                if (selectionExistsInList) {
+                    nextSelection = targetSelection;
+                } else if (defaultValue) {
+                    nextSelection = defaultValue;
+                }
+
+                if (nextSelection || currentSelection || savedSelection) {
+                    if (this.$set) this.$set(this.selectedBranches, env, nextSelection);
+                    else this.selectedBranches = { ...(this.selectedBranches || {}), [env]: nextSelection };
                 }
 
                 console.info('[Supabase plugin] loadBranches success', { env, count: branches.length, defaultValue });
@@ -696,37 +706,41 @@ export default {
         async changeBranch(branchValue, env) {
             if (this.$set) this.$set(this.selectedBranches, env, branchValue || '');
             else this.selectedBranches = { ...(this.selectedBranches || {}), [env]: branchValue || '' };
+
             const baseRef = this.getCurrentEnvConfig(env).baseProjectRef || this.getCurrentEnvConfig(env).projectUrl?.replace('https://', '').replace('.supabase.co', '');
             if (!baseRef) return;
+
             let targetRef = baseRef;
             let branchSlug = '';
             if (branchValue) {
                 const list = this.branches?.[env] || [];
-                const b = list.find(it => (it.project_ref || it.ref || it.id || it.name) === branchValue);
-                targetRef = b?.project_ref || b?.ref || branchValue;
-                branchSlug = b?.name || '';
+                const branch = list.find(it => (it.project_ref || it.ref || it.id || it.name) === branchValue);
+                targetRef = branch?.project_ref || branch?.ref || branchValue;
+                branchSlug = branch?.name || '';
             }
 
-            const projectUrl = `https://${targetRef}.supabase.co`;
-            // Update env config with branch project URL and refresh keys/conn string from that ref
-            let projectData;
-            if (branchValue) {
-                projectData = await this.fetchProjectBranch(baseRef, branchSlug || branchValue);
-            } else {
-                projectData = await this.fetchProject(targetRef);
-            }
+            const effectiveBranchSlug = branchValue ? (branchSlug || this.getCurrentEnvConfig(env)?.branchSlug || '') : '';
+            const projectData = await this.fetchProject(branchValue ? baseRef : targetRef, effectiveBranchSlug);
             const apiKey = projectData?.apiKeys?.find(key => key.name === 'anon')?.api_key;
             const privateApiKey = projectData?.apiKeys?.find(key => key.name === 'service_role')?.api_key;
             const connectionString = projectData?.pgbouncer?.connection_string;
+            const resolvedRef = branchValue
+                ? (projectData?.project?.project_ref || projectData?.project?.ref || projectData?.project?.id || targetRef)
+                : targetRef;
+            const projectUrl = `https://${resolvedRef}.supabase.co`;
 
             this.updateEnvironmentConfig(env, {
                 publicData: {
                     projectUrl,
                     apiKey: apiKey || this.getCurrentEnvConfig(env).apiKey,
                     branch: branchValue || null,
+                    branchSlug: effectiveBranchSlug || null,
                     baseProjectRef: baseRef,
                 },
-                privateData: { apiKey: privateApiKey || this.getCurrentEnvPrivateConfig(env).apiKey, connectionString: connectionString || this.getCurrentEnvPrivateConfig(env).connectionString }
+                privateData: {
+                    apiKey: privateApiKey || this.getCurrentEnvPrivateConfig(env).apiKey,
+                    connectionString: connectionString || this.getCurrentEnvPrivateConfig(env).connectionString,
+                }
             });
 
             await this.loadBranches(env, baseRef);
@@ -868,43 +882,23 @@ export default {
             }
         },
         
-        async fetchProject(projectId) {
+        async fetchProject(projectId, branchSlug = '') {
             if (!projectId) {
                 return null;
             }
-            
+
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'GET',
                     path: '/projects/' + projectId,
+                    params: branchSlug ? { branch: branchSlug } : undefined,
                 });
                 this.isLoading = false;
                 return data?.data;
             } catch (error) {
                 this.isLoading = false;
                 console.warn(`Failed to fetch project ${projectId}:`, error);
-                return null;
-            }
-        },
-
-        async fetchProjectBranch(baseProjectId, branchSlug) {
-            if (!baseProjectId || !branchSlug) {
-                return null;
-            }
-
-            this.isLoading = true;
-            try {
-                console.info('[Supabase plugin] fetchProjectBranch', { baseProjectId, branch: branchSlug });
-                const { data } = await wwLib.wwPlugins.supabase.requestAPI({
-                    method: 'GET',
-                    path: `/projects/${baseProjectId}/branches/${branchSlug}`,
-                });
-                this.isLoading = false;
-                return data?.data;
-            } catch (error) {
-                this.isLoading = false;
-                console.warn(`Failed to fetch branch ${branchId} of ${baseProjectId}:`, error);
                 return null;
             }
         },
