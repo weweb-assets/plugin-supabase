@@ -231,20 +231,6 @@ export default {
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
-                const accessToken = data?.data?.access_token;
-                const refreshToken = data?.data?.refresh_token;
-                if (accessToken) {
-                    const privateData = {
-                        ...(wwLib.wwPlugins.supabase.settings.privateData || {}),
-                        accessToken,
-                        refreshToken: refreshToken || wwLib.wwPlugins.supabase.settings.privateData?.refreshToken,
-                    };
-                    wwLib.wwPlugins.supabase.settings = {
-                        ...wwLib.wwPlugins.supabase.settings,
-                        privateData,
-                    };
-                    console.info('[Supabase plugin] requestAPI updated local tokens after refresh');
-                }
                 console.info('[Supabase plugin] requestAPI retry after refresh', { method, path });
                 return await this.requestAPI({ method, path, data }, false);
             }
