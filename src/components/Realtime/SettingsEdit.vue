@@ -24,6 +24,8 @@
 </template>
 
 <script>
+import { getCurrentSupabaseSettings } from '../../helpers/environmentConfig';
+
 export default {
     props: {
         plugin: { type: Object, required: true },
@@ -58,13 +60,20 @@ export default {
         panelOpen(value) {
             if (value) {
                 console.info('[Supabase plugin] realtime panel opened, refreshing schema');
-                this.queueDocRefresh(100);
+                this.queueDocRefresh(200);
             }
+        },
+        settings: {
+            handler() {
+                this.scheduleConfigWatch();
+            },
+            deep: true,
         },
     },
     mounted() {
         if (!this.settings.publicData?.realtimeTables) this.changeRealtimeTables({});
         this.applyDefinitions(this.plugin?.doc?.definitions || {});
+        this.scheduleConfigWatch();
         this.queueDocRefresh();
     },
     beforeUnmount() {
@@ -74,6 +83,23 @@ export default {
         }
     },
     methods: {
+        scheduleConfigWatch() {
+            const cfg = getCurrentSupabaseSettings('supabase');
+            const snapshot = {
+                projectUrl: cfg?.projectUrl || null,
+                baseProjectRef: cfg?.baseProjectRef || null,
+                branch: cfg?.branch || null,
+                branchSlug: cfg?.branchSlug || null,
+            };
+            const serialized = JSON.stringify(snapshot);
+            if (this._lastConfigSnapshot === serialized) return;
+            const previous = this._lastConfigSnapshot ? JSON.parse(this._lastConfigSnapshot) : null;
+            this._lastConfigSnapshot = serialized;
+            if (previous) {
+                console.info('[Supabase plugin] realtime config change detected', { previous, snapshot });
+                this.queueDocRefresh(200);
+            }
+        },
         handleTogglePanel(isOpen) {
             this.panelOpen = isOpen;
         },
