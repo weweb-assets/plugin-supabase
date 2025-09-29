@@ -238,18 +238,6 @@ export default {
                     privateData.accessToken = accessToken;
                     if (refreshToken) privateData.refreshToken = refreshToken;
                     wwLib.wwPlugins.supabase.settings.privateData = privateData;
-                    try {
-                        await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
-                            pluginId: wwLib.wwPlugins.supabase.id,
-                            settings: {
-                                ...wwLib.wwPlugins.supabase.settings,
-                                privateData,
-                            },
-                        });
-                        console.info('[Supabase plugin] requestAPI persisted refreshed tokens');
-                    } catch (persistError) {
-                        console.warn('[Supabase plugin] requestAPI persist failed', persistError);
-                    }
                     console.info('[Supabase plugin] requestAPI updated local tokens after refresh');
                 }
                 console.info('[Supabase plugin] requestAPI retry after refresh', { method, path });
