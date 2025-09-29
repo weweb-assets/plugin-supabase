@@ -752,7 +752,9 @@ export default {
                 effectiveBranchSlug,
                 resolvedRef,
                 projectHasAnonKey: !!apiKey,
+                anonKeyPreview: this.maskValue(apiKey),
                 projectHasServiceRole: !!privateApiKey,
+                serviceRolePreview: this.maskValue(privateApiKey),
                 connectionHasPlaceholder: connectionString?.includes('[YOUR-PASSWORD]') || false,
                 connectionPreview: this.maskConnectionString(connectionString),
             });
@@ -936,7 +938,9 @@ export default {
                     branchSlug,
                     projectRef: project?.ref || project?.id,
                     hasAnonKey: apiKeys.some(key => key.name === 'anon'),
+                    anonKeyPreview: this.maskValue(apiKeys.find(key => key.name === 'anon')?.api_key),
                     hasServiceKey: apiKeys.some(key => key.name === 'service_role'),
+                    serviceKeyPreview: this.maskValue(apiKeys.find(key => key.name === 'service_role')?.api_key),
                     connectionHasPlaceholder: pgbouncer?.connection_string?.includes('[YOUR-PASSWORD]') || false,
                     connectionPreview: this.maskConnectionString(pgbouncer?.connection_string),
                 });
