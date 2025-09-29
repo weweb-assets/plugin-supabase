@@ -424,6 +424,16 @@ export default {
         });
     },
     methods: {
+        maskValue(value) {
+            if (!value) return null;
+            const str = String(value);
+            if (str.length <= 8) return str;
+            return `${str.slice(0, 4)}...${str.slice(-4)}`;
+        },
+        maskConnectionString(connectionString = '') {
+            if (!connectionString) return null;
+            return connectionString.replace(/:(.*?)@/, ':****@');
+        },
         capitalize(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         },
@@ -720,6 +730,14 @@ export default {
             }
 
             const effectiveBranchSlug = branchValue ? (branchSlug || this.getCurrentEnvConfig(env)?.branchSlug || '') : '';
+            console.info('[Supabase plugin] changeBranch request', {
+                env,
+                baseRef,
+                targetRef,
+                branchValue,
+                effectiveBranchSlug,
+            });
+
             const projectData = await this.fetchProject(branchValue ? baseRef : targetRef, effectiveBranchSlug);
             const apiKey = projectData?.apiKeys?.find(key => key.name === 'anon')?.api_key;
             const privateApiKey = projectData?.apiKeys?.find(key => key.name === 'service_role')?.api_key;
@@ -728,6 +746,16 @@ export default {
                 ? (projectData?.project?.project_ref || projectData?.project?.ref || projectData?.project?.id || targetRef)
                 : targetRef;
             const projectUrl = `https://${resolvedRef}.supabase.co`;
+
+            console.info('[Supabase plugin] changeBranch projectData', {
+                env,
+                effectiveBranchSlug,
+                resolvedRef,
+                projectHasAnonKey: !!apiKey,
+                projectHasServiceRole: !!privateApiKey,
+                connectionHasPlaceholder: connectionString?.includes('[YOUR-PASSWORD]') || false,
+                connectionPreview: this.maskConnectionString(connectionString),
+            });
 
             this.updateEnvironmentConfig(env, {
                 publicData: {
@@ -887,6 +915,11 @@ export default {
                 return null;
             }
 
+            console.info('[Supabase plugin] fetchProject request', {
+                projectId,
+                branchSlug,
+            });
+
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
@@ -895,6 +928,18 @@ export default {
                     params: branchSlug ? { branch: branchSlug } : undefined,
                 });
                 this.isLoading = false;
+                const project = data?.data?.project || {};
+                const apiKeys = data?.data?.apiKeys || [];
+                const pgbouncer = data?.data?.pgbouncer;
+                console.info('[Supabase plugin] fetchProject response', {
+                    projectId,
+                    branchSlug,
+                    projectRef: project?.ref || project?.id,
+                    hasAnonKey: apiKeys.some(key => key.name === 'anon'),
+                    hasServiceKey: apiKeys.some(key => key.name === 'service_role'),
+                    connectionHasPlaceholder: pgbouncer?.connection_string?.includes('[YOUR-PASSWORD]') || false,
+                    connectionPreview: this.maskConnectionString(pgbouncer?.connection_string),
+                });
                 return data?.data;
             } catch (error) {
                 this.isLoading = false;
