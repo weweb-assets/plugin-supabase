@@ -591,21 +591,17 @@ export default {
             let baseProjectRef = projectUrl.replace('https://', '').replace('.supabase.co', '');
 
             // Reset branch state while loading new project data (prevents showing stale options)
-            if (this.$set) {
-                this.$set(this.branches, env, []);
-                this.$set(this.branchErrors, env, '');
-                this.$set(this.selectedBranches, env, '');
-            } else {
-                const branchCopy = { ...(this.branches || {}) };
-                branchCopy[env] = [];
-                this.branches = branchCopy;
-                const errorCopy = { ...(this.branchErrors || {}) };
-                delete errorCopy[env];
-                this.branchErrors = errorCopy;
-                const selectedCopy = { ...(this.selectedBranches || {}) };
-                selectedCopy[env] = '';
-                this.selectedBranches = selectedCopy;
-            }
+            const copyBranches = { ...(this.branches || {}) };
+            copyBranches[env] = [];
+            this.branches = copyBranches;
+
+            const copyErrors = { ...(this.branchErrors || {}) };
+            delete copyErrors[env];
+            this.branchErrors = copyErrors;
+
+            const copySelected = { ...(this.selectedBranches || {}) };
+            copySelected[env] = '';
+            this.selectedBranches = copySelected;
 
             if (this.hasOAuthToken() && this.getConnectionMode(env) === 'oauth') {
                 const projectData = await this.fetchProject(
@@ -632,6 +628,7 @@ export default {
             });
 
             // Load branches (do not gate UI on success)
+            await this.$nextTick();
             await this.loadBranches(env, baseProjectRef);
         },
 
