@@ -59,7 +59,6 @@ export default {
         },
         panelOpen(value) {
             if (value) {
-                console.info('[Supabase plugin] realtime panel opened, refreshing schema');
                 this.queueDocRefresh(200);
             }
         },
@@ -96,7 +95,6 @@ export default {
             const previous = this._lastConfigSnapshot ? JSON.parse(this._lastConfigSnapshot) : null;
             this._lastConfigSnapshot = serialized;
             if (previous) {
-                console.info('[Supabase plugin] realtime config change detected', { previous, snapshot });
                 this.queueDocRefresh(200);
             }
         },
@@ -110,10 +108,6 @@ export default {
                     this.isLoading = true;
                     await this.plugin.fetchDoc();
                     this.applyDefinitions(this.plugin?.doc?.definitions || {});
-                    console.info('[Supabase plugin] realtime queued refresh', {
-                        tables: Object.keys(this.definitions),
-                        hasDoc: !!this.plugin?.doc,
-                    });
                 } catch (err) {
                     wwLib.wwLog.error(err);
                 } finally {
@@ -143,10 +137,6 @@ export default {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin?.doc?.definitions || {};
-                console.info('[Supabase plugin] realtime fetchTables', {
-                    tables: Object.keys(this.definitions),
-                    hasDoc: !!this.plugin?.doc,
-                });
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
@@ -169,10 +159,6 @@ export default {
                 publicData: { ...this.settings.publicData, realtimeTables },
             });
             this.subscribeTables(realtimeTables);
-            console.info('[Supabase plugin] realtime changeRealtimeTables', {
-                realtimeTables,
-                availableTables: Object.keys(this.definitions),
-            });
         },
         subscribeTables(realtimeTables) {
             if (!this.settings.publicData.realtimeTables) return;

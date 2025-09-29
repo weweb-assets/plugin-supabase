@@ -643,8 +643,6 @@ export default {
                 }
             }
 
-            console.info('[Supabase plugin] changeProjectUrl', { env, projectUrl, baseProjectRef });
-
             this.updateEnvironmentConfig(env, {
                 publicData: { projectUrl, apiKey, baseProjectRef, branch: null, branchSlug: null },
                 privateData: { apiKey: privateApiKey, connectionString }
@@ -660,7 +658,6 @@ export default {
             const cfg = this.getCurrentEnvConfig(env);
             const baseRef = overrideRef || cfg.baseProjectRef || cfg.projectUrl?.replace('https://', '').replace('.supabase.co', '');
             const ref = baseRef;
-            console.info('[Supabase plugin] loadBranches', { env, baseProjectRef: cfg.baseProjectRef, overrideRef, projectUrl: cfg.projectUrl, ref, hasOAuth: this.hasOAuthToken() });
                 if (!ref || !this.hasOAuthToken()) return;
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'GET',
@@ -697,7 +694,6 @@ export default {
                     else this.selectedBranches = { ...(this.selectedBranches || {}), [env]: nextSelection };
                 }
 
-                console.info('[Supabase plugin] loadBranches success', { env, count: branches.length, defaultValue });
             } catch (e) {
                 const msg = e?.response?.data?.error || e?.message || 'Unable to load branches';
                 if (this.$set) {
@@ -730,14 +726,6 @@ export default {
             }
 
             const effectiveBranchSlug = branchValue ? (branchSlug || this.getCurrentEnvConfig(env)?.branchSlug || '') : '';
-            console.info('[Supabase plugin] changeBranch request', {
-                env,
-                baseRef,
-                targetRef,
-                branchValue,
-                effectiveBranchSlug,
-            });
-
             const projectData = await this.fetchProject(baseRef, {
                 branchSlug: effectiveBranchSlug,
                 branchRef: branchValue ? targetRef : '',
@@ -752,18 +740,6 @@ export default {
             const projectUrl = `https://${runtimeRef}.supabase.co`;
             const displayAnonKey = apiKey || this.getCurrentEnvConfig(env).apiKey;
             const displayServiceKey = privateApiKey || this.getCurrentEnvPrivateConfig(env).apiKey;
-
-            console.info('[Supabase plugin] changeBranch projectData', {
-                env,
-                effectiveBranchSlug,
-                runtimeRef,
-                projectHasAnonKey: !!apiKey,
-                anonKeyPreview: this.maskValue(displayAnonKey),
-                projectHasServiceRole: !!privateApiKey,
-                serviceRolePreview: this.maskValue(displayServiceKey),
-                connectionHasPlaceholder: connectionString?.includes('[YOUR-PASSWORD]') || false,
-                connectionPreview: this.maskConnectionString(connectionString),
-            });
 
             this.updateEnvironmentConfig(env, {
                 publicData: {
@@ -923,12 +899,6 @@ export default {
                 return null;
             }
 
-            console.info('[Supabase plugin] fetchProject request', {
-                projectId,
-                branchSlug,
-                branchRef,
-            });
-
             this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
@@ -946,18 +916,6 @@ export default {
                 const project = data?.data?.project || {};
                 const apiKeys = data?.data?.apiKeys || [];
                 const pgbouncer = data?.data?.pgbouncer;
-                console.info('[Supabase plugin] fetchProject response', {
-                    projectId,
-                    branchSlug,
-                    branchRef,
-                    projectRef: project?.ref || project?.id,
-                    hasAnonKey: apiKeys.some(key => key.name === 'anon'),
-                    anonKeyPreview: this.maskValue(apiKeys.find(key => key.name === 'anon')?.api_key),
-                    hasServiceKey: apiKeys.some(key => key.name === 'service_role'),
-                    serviceKeyPreview: this.maskValue(apiKeys.find(key => key.name === 'service_role')?.api_key),
-                    connectionHasPlaceholder: pgbouncer?.connection_string?.includes('[YOUR-PASSWORD]') || false,
-                    connectionPreview: this.maskConnectionString(pgbouncer?.connection_string),
-                });
                 return data?.data;
             } catch (error) {
                 this.isLoading = false;
