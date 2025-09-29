@@ -47,16 +47,45 @@ export default {
             return this.settings.publicData?.realtimeTables || {};
         },
     },
+    watch: {
+        'plugin.doc.definitions': {
+            handler(definitions) {
+                this.applyDefinitions(definitions);
+            },
+            immediate: true,
+        },
+    },
     mounted() {
-        this.definitions = this.plugin?.doc?.definitions || {};
         if (!this.settings.publicData?.realtimeTables) this.changeRealtimeTables({});
+        this.applyDefinitions(this.plugin?.doc?.definitions || {});
     },
     methods: {
+        applyDefinitions(definitions = {}) {
+            const normalized = definitions || {};
+            this.definitions = normalized;
+
+            const available = new Set(Object.keys(normalized));
+            const realtimeTables = { ...this.realtimeTables };
+            let mutated = false;
+            for (const key of Object.keys(realtimeTables)) {
+                if (!available.has(key)) {
+                    delete realtimeTables[key];
+                    mutated = true;
+                }
+            }
+            if (mutated) {
+                this.changeRealtimeTables(realtimeTables);
+            }
+        },
         async fetchTables() {
             try {
                 this.isLoading = true;
                 await this.plugin.fetchDoc();
                 this.definitions = this.plugin?.doc?.definitions || {};
+                console.info('[Supabase plugin] realtime fetchTables', {
+                    tables: Object.keys(this.definitions),
+                    hasDoc: !!this.plugin?.doc,
+                });
             } catch (err) {
                 wwLib.wwLog.error(err);
             } finally {
@@ -79,6 +108,10 @@ export default {
                 publicData: { ...this.settings.publicData, realtimeTables },
             });
             this.subscribeTables(realtimeTables);
+            console.info('[Supabase plugin] realtime changeRealtimeTables', {
+                realtimeTables,
+                availableTables: Object.keys(this.definitions),
+            });
         },
         subscribeTables(realtimeTables) {
             if (!this.settings.publicData.realtimeTables) return;
