@@ -738,7 +738,10 @@ export default {
                 effectiveBranchSlug,
             });
 
-            const projectData = await this.fetchProject(branchValue ? baseRef : targetRef, effectiveBranchSlug);
+            const projectData = await this.fetchProject(baseRef, {
+                branchSlug: effectiveBranchSlug,
+                branchRef: branchValue ? targetRef : '',
+            });
             const apiKey = projectData?.apiKeys?.find(key => key.name === 'anon')?.api_key;
             const privateApiKey = projectData?.apiKeys?.find(key => key.name === 'service_role')?.api_key;
             const connectionString = projectData?.pgbouncer?.connection_string;
@@ -912,7 +915,7 @@ export default {
             }
         },
         
-        async fetchProject(projectId, branchSlug = '') {
+        async fetchProject(projectId, { branchSlug = '', branchRef = '' } = {}) {
             if (!projectId) {
                 return null;
             }
@@ -920,6 +923,7 @@ export default {
             console.info('[Supabase plugin] fetchProject request', {
                 projectId,
                 branchSlug,
+                branchRef,
             });
 
             this.isLoading = true;
@@ -927,7 +931,13 @@ export default {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'GET',
                     path: '/projects/' + projectId,
-                    params: branchSlug ? { branch: branchSlug } : undefined,
+                    params:
+                        branchSlug || branchRef
+                            ? {
+                                  ...(branchSlug ? { branch: branchSlug } : {}),
+                                  ...(branchRef ? { branchRef } : {}),
+                              }
+                            : undefined,
                 });
                 this.isLoading = false;
                 const project = data?.data?.project || {};
@@ -936,6 +946,7 @@ export default {
                 console.info('[Supabase plugin] fetchProject response', {
                     projectId,
                     branchSlug,
+                    branchRef,
                     projectRef: project?.ref || project?.id,
                     hasAnonKey: apiKeys.some(key => key.name === 'anon'),
                     anonKeyPreview: this.maskValue(apiKeys.find(key => key.name === 'anon')?.api_key),
