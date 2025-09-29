@@ -4,7 +4,7 @@
         This feature allow your collections to be updated in realtime automcatically. You must enable realtime on your
         tables both in WeWeb and in Supabase in order to use this feature.
     </div>
-    <wwEditorFormRow label="Enable realtime table">
+    <wwEditorFormRow label="Enable realtime table" @togglePanel="handleTogglePanel">
         <template #append-label>
             <a class="ww-editor-link ml-2" href="https://supabase.com/docs/guides/api#realtime-api-1" target="_blank">
                 Find it here
@@ -34,6 +34,7 @@ export default {
         return {
             isLoading: false,
             definitions: {},
+            panelOpen: false,
         };
     },
     computed: {
@@ -54,6 +55,12 @@ export default {
             },
             immediate: true,
         },
+        panelOpen(value) {
+            if (value) {
+                console.info('[Supabase plugin] realtime panel opened, refreshing schema');
+                this.queueDocRefresh(100);
+            }
+        },
     },
     mounted() {
         if (!this.settings.publicData?.realtimeTables) this.changeRealtimeTables({});
@@ -67,7 +74,10 @@ export default {
         }
     },
     methods: {
-        queueDocRefresh() {
+        handleTogglePanel(isOpen) {
+            this.panelOpen = isOpen;
+        },
+        queueDocRefresh(delay = 1000) {
             if (this._refreshTimeout) clearTimeout(this._refreshTimeout);
             this._refreshTimeout = setTimeout(async () => {
                 try {
