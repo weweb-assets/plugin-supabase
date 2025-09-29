@@ -210,7 +210,7 @@ export default {
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
-    async requestAPI({ method, path, data }, retry = true) {
+    async requestAPI({ method, path, data, params }, retry = true) {
         try {
             return await wwAxios({
                 method,
@@ -218,6 +218,7 @@ export default {
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase${path}`,
                 data,
+                params,
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
@@ -227,7 +228,7 @@ export default {
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
-                return await this.requestAPI({ method, path, data }, false);
+                return await this.requestAPI({ method, path, data, params }, false);
             }
             wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
             throw error;
