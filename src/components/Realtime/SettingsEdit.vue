@@ -58,8 +58,33 @@ export default {
     mounted() {
         if (!this.settings.publicData?.realtimeTables) this.changeRealtimeTables({});
         this.applyDefinitions(this.plugin?.doc?.definitions || {});
+        this.queueDocRefresh();
+    },
+    beforeUnmount() {
+        if (this._refreshTimeout) {
+            clearTimeout(this._refreshTimeout);
+            this._refreshTimeout = null;
+        }
     },
     methods: {
+        queueDocRefresh() {
+            if (this._refreshTimeout) clearTimeout(this._refreshTimeout);
+            this._refreshTimeout = setTimeout(async () => {
+                try {
+                    this.isLoading = true;
+                    await this.plugin.fetchDoc();
+                    this.applyDefinitions(this.plugin?.doc?.definitions || {});
+                    console.info('[Supabase plugin] realtime queued refresh', {
+                        tables: Object.keys(this.definitions),
+                        hasDoc: !!this.plugin?.doc,
+                    });
+                } catch (err) {
+                    wwLib.wwLog.error(err);
+                } finally {
+                    this.isLoading = false;
+                }
+            }, 1000);
+        },
         applyDefinitions(definitions = {}) {
             const normalized = definitions || {};
             this.definitions = normalized;
