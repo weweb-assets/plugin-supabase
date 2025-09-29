@@ -214,7 +214,6 @@ export default {
     },
     async requestAPI({ method, path, data }, retry = true) {
         try {
-            console.debug('[Supabase plugin] requestAPI', { method, path });
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
@@ -223,7 +222,6 @@ export default {
                 data,
             });
         } catch (error) {
-            console.warn('[Supabase plugin] requestAPI error', { method, path, status: error?.response?.status, reason: error?.response?.data?.error || error?.message });
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
@@ -231,7 +229,6 @@ export default {
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
-                console.info('[Supabase plugin] requestAPI retry after refresh', { method, path });
                 return await this.requestAPI({ method, path, data }, false);
             }
             wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
