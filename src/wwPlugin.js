@@ -165,8 +165,6 @@ export default {
                 environments: {
                     production: {
                         connectionMode: settings.privateData?.connectionMode || 'custom',
-                        accessToken: settings.privateData?.accessToken,
-                        refreshToken: settings.privateData?.refreshToken,
                         apiKey: settings.privateData?.apiKey,
                         databasePassword: settings.privateData?.databasePassword,
                         connectionString: settings.privateData?.connectionString
