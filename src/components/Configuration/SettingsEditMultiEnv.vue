@@ -402,11 +402,6 @@ export default {
         },
     },
     mounted() {
-        console.log('[Supabase] Settings mounted', {
-            settings: this.settings,
-            hasEnvironments: !!this.settings.publicData?.environments
-        });
-
         // Initialize multi-environment structure if needed
         if (!this.settings.publicData?.environments) {
             this.migrateToMultiEnv();
@@ -486,9 +481,7 @@ export default {
         
         getConnectionMode(env) {
             const privateConfig = this.getCurrentEnvPrivateConfig(env);
-            const mode = privateConfig?.connectionMode || 'oauth';
-            console.log('[Supabase] getConnectionMode', { env, privateConfig, mode });
-            return mode;
+            return privateConfig?.connectionMode || 'oauth';
         },
         
         hasOAuthToken() {
