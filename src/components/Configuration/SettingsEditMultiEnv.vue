@@ -402,13 +402,18 @@ export default {
         },
     },
     mounted() {
+        console.log('[Supabase] Settings mounted', {
+            settings: this.settings,
+            hasEnvironments: !!this.settings.publicData?.environments
+        });
+
         // Initialize multi-environment structure if needed
         if (!this.settings.publicData?.environments) {
             this.migrateToMultiEnv();
         }
 
         this.sanitizeEnvironmentTokens();
-        
+
         // Check if OAuth is connected and refresh projects
         if (this.hasOAuthToken()) {
             this.refreshProjects();
@@ -481,7 +486,9 @@ export default {
         
         getConnectionMode(env) {
             const privateConfig = this.getCurrentEnvPrivateConfig(env);
-            return privateConfig?.connectionMode || 'oauth';
+            const mode = privateConfig?.connectionMode || 'oauth';
+            console.log('[Supabase] getConnectionMode', { env, privateConfig, mode });
+            return mode;
         },
         
         hasOAuthToken() {
