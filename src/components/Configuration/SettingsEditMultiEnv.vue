@@ -635,49 +635,54 @@ export default {
                 return;
             }
 
-            let apiKey = this.getCurrentEnvConfig(env).apiKey;
-            let privateApiKey = this.getCurrentEnvPrivateConfig(env).apiKey;
-            let connectionString = this.getCurrentEnvPrivateConfig(env).connectionString;
-            let baseProjectRef = projectUrl.replace('https://', '').replace('.supabase.co', '');
+            this.isLoading = true;
+            try {
+                let apiKey = this.getCurrentEnvConfig(env).apiKey;
+                let privateApiKey = this.getCurrentEnvPrivateConfig(env).apiKey;
+                let connectionString = this.getCurrentEnvPrivateConfig(env).connectionString;
+                let baseProjectRef = projectUrl.replace('https://', '').replace('.supabase.co', '');
 
-            // Reset branch state while loading new project data (prevents showing stale options)
-            const copyBranches = { ...(this.branches || {}) };
-            copyBranches[env] = [];
-            this.branches = copyBranches;
+                // Reset branch state while loading new project data (prevents showing stale options)
+                const copyBranches = { ...(this.branches || {}) };
+                copyBranches[env] = [];
+                this.branches = copyBranches;
 
-            const copyErrors = { ...(this.branchErrors || {}) };
-            delete copyErrors[env];
-            this.branchErrors = copyErrors;
+                const copyErrors = { ...(this.branchErrors || {}) };
+                delete copyErrors[env];
+                this.branchErrors = copyErrors;
 
-            const copySelected = { ...(this.selectedBranches || {}) };
-            copySelected[env] = '';
-            this.selectedBranches = copySelected;
+                const copySelected = { ...(this.selectedBranches || {}) };
+                copySelected[env] = '';
+                this.selectedBranches = copySelected;
 
-            if (this.hasOAuthToken() && this.getConnectionMode(env) === 'oauth') {
-                const projectData = await this.fetchProject(
-                    projectUrl.replace('https://', '').replace('.supabase.co', '')
-                );
-                
-                if (projectData) {
-                    apiKey = projectData.apiKeys?.find(key => key.name === 'anon')?.api_key || apiKey;
-                    privateApiKey = projectData.apiKeys?.find(key => key.name === 'service_role')?.api_key || privateApiKey;
-                    connectionString = projectData.pgbouncer?.connection_string || connectionString;
-                    baseProjectRef =
-                        projectData.project?.parent_project_ref ||
-                        projectData.project?.ref ||
-                        projectData.project?.id ||
-                        baseProjectRef;
+                if (this.hasOAuthToken() && this.getConnectionMode(env) === 'oauth') {
+                    const projectData = await this.fetchProject(
+                        projectUrl.replace('https://', '').replace('.supabase.co', '')
+                    );
+
+                    if (projectData) {
+                        apiKey = projectData.apiKeys?.find(key => key.name === 'anon')?.api_key || apiKey;
+                        privateApiKey = projectData.apiKeys?.find(key => key.name === 'service_role')?.api_key || privateApiKey;
+                        connectionString = projectData.pgbouncer?.connection_string || connectionString;
+                        baseProjectRef =
+                            projectData.project?.parent_project_ref ||
+                            projectData.project?.ref ||
+                            projectData.project?.id ||
+                            baseProjectRef;
+                    }
                 }
+
+                this.updateEnvironmentConfig(env, {
+                    publicData: { projectUrl, apiKey, baseProjectRef, branch: null, branchSlug: null },
+                    privateData: { apiKey: privateApiKey, connectionString }
+                });
+
+                // Load branches
+                await this.$nextTick();
+                await this.loadBranches(env, baseProjectRef);
+            } finally {
+                this.isLoading = false;
             }
-
-            this.updateEnvironmentConfig(env, {
-                publicData: { projectUrl, apiKey, baseProjectRef, branch: null, branchSlug: null },
-                privateData: { apiKey: privateApiKey, connectionString }
-            });
-
-            // Load branches (do not gate UI on success)
-            await this.$nextTick();
-            await this.loadBranches(env, baseProjectRef);
         },
 
         async loadBranches(env, overrideRef = '') {
@@ -950,7 +955,6 @@ export default {
                 return null;
             }
 
-            this.isLoading = true;
             try {
                 const { data } = await wwLib.wwPlugins.supabase.requestAPI({
                     method: 'GET',
@@ -963,13 +967,11 @@ export default {
                               }
                             : undefined,
                 });
-                this.isLoading = false;
                 const project = data?.data?.project || {};
                 const apiKeys = data?.data?.apiKeys || [];
                 const pgbouncer = data?.data?.pgbouncer;
                 return data?.data;
             } catch (error) {
-                this.isLoading = false;
                 console.warn(`Failed to fetch project ${projectId}:`, error);
                 return null;
             }
