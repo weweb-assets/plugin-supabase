@@ -31,6 +31,7 @@ import './components/Functions/InvokeEdge.vue';
 import { createClient } from '@supabase/supabase-js';
 
 import { generateFilter } from './helpers/filters';
+import { getCurrentSupabaseSettings, resolveRuntimeProjectUrl } from './helpers/environmentConfig';
 
 import {
     buildQueryString,
@@ -38,6 +39,13 @@ import {
     executeRegularInvocation,
     executeStreamingInvocation,
 } from './helpers/edgeFunction.js';
+
+const maskForLog = value => {
+    if (!value) return null;
+    const str = String(value);
+    if (str.length <= 8) return str;
+    return `${str.slice(0, 4)}...${str.slice(-4)}`;
+};
 
 export default {
     instance: null,
@@ -50,6 +58,26 @@ export default {
         Plugin API
     \================================================================================================*/
     async _onLoad(settings) {
+        /* wwEditor:start */
+        // Migrate legacy configuration to multi-environment format if needed
+        if (!settings.publicData?.environments) {
+            const migrated = await this.migrateToMultiEnvironment(settings);
+            
+            if (migrated) {
+                settings = migrated;
+                // Save migrated settings back
+                await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+                    pluginId: this.id,
+                    settings: migrated
+                });
+            }
+        }
+        /* wwEditor:end */
+        
+        // Get configuration for current environment
+        let config = getCurrentSupabaseSettings('supabase');
+        let runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+
         /* wwEditor:start */
         // check oauth in local storage
         const isConnecting = window.localStorage.getItem('supabase_oauth');
@@ -68,10 +96,17 @@ export default {
             wwLib.wwNotification.open({ text: 'Your supabase account has been linked.', color: 'green' });
             wwLib.$emit('wwTopBar:open', 'WEBSITE_PLUGINS');
             wwLib.$emit('wwTopBar:plugins:setPlugin', wwLib.wwPlugins.supabase.id);
+            config = getCurrentSupabaseSettings('supabase');
+            runtimeProjectUrl = resolveRuntimeProjectUrl(config);
         }
-        await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+        if (!runtimeProjectUrl || !config.publicApiKey) {
+            return;
+        } else {
+            await this.fetchProjectInfo(config);
+        }
         /* wwEditor:end */
-        await this.load(settings.publicData.customDomain || settings.publicData.projectUrl, settings.publicData.apiKey);
+
+        await this.load(runtimeProjectUrl, config.publicApiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
@@ -105,41 +140,93 @@ export default {
             { driver }
         );
     },
-    async fetchProjectInfo(
-        projectUrl = wwLib.wwPlugins.supabase.settings.publicData?.projectUrl,
-        accessToken = wwLib.wwPlugins.supabase.settings.privateData?.accessToken
-    ) {
+    /* wwEditor:start */
+    async migrateToMultiEnvironment(settings) {
+        // Skip if no legacy config to migrate
+        if (!settings.publicData?.projectUrl) {
+            return null;
+        }
+        
+        // Simple migration to multi-environment format
+        const migrated = {
+            ...settings,
+            publicData: {
+                ...settings.publicData,
+                environments: {
+                    production: {
+                        projectUrl: settings.publicData.projectUrl,
+                        apiKey: settings.publicData.apiKey,
+                        customDomain: settings.publicData.customDomain
+                    }
+                }
+            },
+            privateData: {
+                ...settings.privateData,
+                environments: {
+                    production: {
+                        connectionMode: settings.privateData?.connectionMode || 'custom',
+                        apiKey: settings.privateData?.apiKey,
+                        databasePassword: settings.privateData?.databasePassword,
+                        connectionString: settings.privateData?.connectionString
+                    }
+                }
+            }
+        };
+        
+        return migrated;
+    },
+    /* wwEditor:end */
+    
+    async fetchProjectInfo(configOverride = null) {
+        const config = configOverride || getCurrentSupabaseSettings('supabase');
+        const projectUrl = config?.projectUrl;
+        const accessToken = config?.accessToken;
         if (!accessToken || !projectUrl) return;
-        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
-        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
+
+        const params = this.getBranchQueryParams(config);
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema', params });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge', params });
         this.projectInfo = schemaData?.data;
         this.projectInfo.edge = edgeData?.data;
         wwLib.$emit('wwTopBar:supabase:refresh');
         return this.projectInfo;
     },
+    getBranchQueryParams(config = getCurrentSupabaseSettings('supabase')) {
+        if (!config) return undefined;
+        const params = {};
+        if (config.branchSlug) params.branch = config.branchSlug;
+        if (config.baseProjectRef) params.baseProjectRef = config.baseProjectRef;
+        return Object.keys(params).length ? params : undefined;
+    },
     async onSave(settings) {
         await this.syncSettings(settings);
-        if (settings.privateData.accessToken && settings.publicData.projectUrl) {
+        
+        // Get config for current environment
+        const config = getCurrentSupabaseSettings('supabase');
+        if (!config.projectUrl) return;
+        
+        const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+
+        if (config.accessToken && config.projectUrl) {
             await this.install();
-            await this.fetchProjectInfo(settings.publicData.projectUrl, settings.privateData.accessToken);
+            await this.fetchProjectInfo(config);
         }
 
         if (wwLib.wwPlugins.supabaseAuth) {
             // supabaseAuth will call syncInstance
+            const authConfig = getCurrentSupabaseSettings('supabaseAuth');
+            const authRuntimeUrl = resolveRuntimeProjectUrl(authConfig);
             await wwLib.wwPlugins.supabaseAuth.load(
-                settings.publicData.customDomain || settings.publicData.projectUrl,
-                settings.publicData.apiKey,
-                settings.privateData.apiKey
+                authRuntimeUrl,
+                authConfig.publicApiKey,
+                authConfig.privateApiKey
             );
         } else {
-            await this.load(
-                settings.publicData.customDomain || settings.publicData.projectUrl,
-                settings.publicData.apiKey
-            );
+            await this.load(runtimeProjectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
-    async requestAPI({ method, path, data }, retry = true) {
+    async requestAPI({ method, path, data, params }, retry = true) {
         try {
             return await wwAxios({
                 method,
@@ -147,6 +234,7 @@ export default {
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase${path}`,
                 data,
+                params,
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
@@ -156,7 +244,7 @@ export default {
                         wwLib.$store.getters['websiteData/getDesignInfo'].id
                     }/supabase/refresh`
                 );
-                return await this.requestAPI({ method, path, data }, false);
+                return await this.requestAPI({ method, path, data, params }, false);
             }
             wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
             throw error;
@@ -178,6 +266,15 @@ export default {
     async _fetchCollection(collection) {
         if (collection.mode === 'dynamic') {
             try {
+                // Ensure we have an instance for the current environment
+                if (!this.instance) {
+                    const config = getCurrentSupabaseSettings('supabase');
+                    const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+                    if (runtimeProjectUrl && config.publicApiKey) {
+                        await this.load(runtimeProjectUrl, config.publicApiKey);
+                    }
+                }
+                
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
@@ -233,7 +330,7 @@ export default {
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
-            await this.fetchDoc(projectUrl, apiKey);
+            await this.fetchDoc();
             /* wwEditor:end */
         } catch (err) {
             this.instance = null;
@@ -245,8 +342,44 @@ export default {
         }
     },
     /* wwEditor:start */
-    async fetchDoc(projectUrl = this.settings.publicData.projectUrl, apiKey = this.settings.publicData.apiKey) {
-        this.doc = await getDoc(projectUrl, apiKey);
+    async fetchDoc() {
+        const config = getCurrentSupabaseSettings('supabase');
+        const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
+        const logContext = {
+            env: config.environment,
+            resolvedEnv: config.resolvedEnvironment,
+            projectUrl: config.projectUrl,
+            runtimeProjectUrl,
+            projectRef: config.projectRef,
+            baseProjectRef: config.baseProjectRef,
+            branch: config.branch,
+            branchSlug: config.branchSlug,
+            hasApiKey: !!config.publicApiKey,
+            apiKeyPreview: maskForLog(config.publicApiKey),
+        };
+        if (!runtimeProjectUrl || !config.publicApiKey) {
+            console.warn('[Supabase plugin] fetchDoc skipped', {
+                reason: 'Missing projectUrl or publicApiKey',
+                ...logContext,
+            });
+            return;
+        }
+
+        try {
+            const doc = await getDoc(runtimeProjectUrl, config.publicApiKey, {
+                branchSlug: config.branchSlug,
+            });
+            this.doc = doc;
+            const rowCount = Array.isArray(doc) ? doc.length : undefined;
+        } catch (error) {
+            console.warn('[Supabase plugin] fetchDoc failed', {
+                projectUrl: runtimeProjectUrl,
+                status: error?.response?.status,
+                message: error?.message,
+                responseError: error?.response?.data?.message,
+            });
+            throw error;
+        }
     },
     /* wwEditor:end */
     async select({ table, fieldsMode, dataFields, dataFieldsAdvanced, filters, modifiers }, wwUtils) {
@@ -789,8 +922,22 @@ const findIndexFromPrimaryData = (data, obj, primaryData) => {
 };
 
 /* wwEditor:start */
-const getDoc = async (url, apiKey) => {
-    const { data } = await axios.get(`${url}/rest/v1/`, { headers: { apiKey } });
-    return data;
+const getDoc = async (url, apiKey, { branchSlug } = {}) => {
+    try {
+        const headers = {
+            apikey: apiKey,
+            Authorization: `Bearer ${apiKey}`,
+        };
+        const { data } = await axios.get(`${url}/rest/v1/`, { headers });
+        return data;
+    } catch (error) {
+        console.warn('[Supabase plugin] fetchDoc request error', {
+            url,
+            status: error?.response?.status,
+            message: error?.message,
+            responseError: error?.response?.data?.message,
+        });
+        throw error;
+    }
 };
 /* wwEditor:end */
