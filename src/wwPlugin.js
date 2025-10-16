@@ -123,6 +123,9 @@ export default {
             dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
         };
     },
+    getCurrentSupabaseSettings(pluginName = 'supabase') {
+        return getCurrentSupabaseSettings(pluginName);
+    },
     async syncSettings(settings) {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
@@ -228,13 +231,20 @@ export default {
     },
     async requestAPI({ method, path, data, params }, retry = true) {
         try {
+            // Get current environment and send it explicitly
+            const config = getCurrentSupabaseSettings('supabase');
+            const currentEnv = config.environment; // 'editor', 'staging', or 'production'
+
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase${path}`,
                 data,
-                params,
+                params: {
+                    ...params,
+                    wwEnv: currentEnv, // Send environment explicitly
+                },
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
