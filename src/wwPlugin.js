@@ -183,9 +183,9 @@ export default {
         const accessToken = config?.accessToken;
         if (!accessToken || !projectUrl) return;
 
-        const params = this.getBranchQueryParams(config);
-        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema', params });
-        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge', params });
+        // No need to send branch/baseProjectRef - backend resolves from environment
+        const { data: schemaData } = await this.requestAPI({ method: 'GET', path: '/schema' });
+        const { data: edgeData } = await this.requestAPI({ method: 'GET', path: '/edge' });
         this.projectInfo = schemaData?.data;
         this.projectInfo.edge = edgeData?.data;
         wwLib.$emit('wwTopBar:supabase:refresh');
@@ -228,13 +228,20 @@ export default {
     },
     async requestAPI({ method, path, data, params }, retry = true) {
         try {
+            // Get current environment and send it explicitly
+            const config = getCurrentSupabaseSettings('supabase');
+            const currentEnv = config.environment; // 'editor', 'staging', or 'production'
+
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
                     wwLib.$store.getters['websiteData/getDesignInfo'].id
                 }/supabase${path}`,
                 data,
-                params,
+                params: {
+                    ...params,
+                    wwEnv: currentEnv, // Send environment explicitly
+                },
             });
         } catch (error) {
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
