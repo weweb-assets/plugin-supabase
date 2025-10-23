@@ -730,15 +730,24 @@ export default {
                 const selectionExistsInList = targetSelection && branches.some(b => (b.project_ref || b.ref || b.id || b.name) === targetSelection);
 
                 let nextSelection = '';
+                let shouldFetchBranchData = false;
+
                 if (selectionExistsInList) {
                     nextSelection = targetSelection;
                 } else if (defaultValue) {
                     nextSelection = defaultValue;
+                    // Auto-selected default branch needs data fetched
+                    shouldFetchBranchData = !savedSelection;
                 }
 
                 if (nextSelection || currentSelection || savedSelection) {
                     if (this.$set) this.$set(this.selectedBranches, env, nextSelection);
                     else this.selectedBranches = { ...(this.selectedBranches || {}), [env]: nextSelection };
+
+                    // If we auto-selected a default branch, fetch its data
+                    if (shouldFetchBranchData && nextSelection) {
+                        await this.changeBranch(nextSelection, env);
+                    }
                 }
 
             } catch (e) {
@@ -768,6 +777,7 @@ export default {
 
             // Set flag to prevent saving while branch change is in progress
             this.setLoadingFlag(true);
+            this.isLoading = true;
 
             try {
                 if (this.$set) this.$set(this.selectedBranches, env, branchValue || '');
@@ -827,6 +837,7 @@ export default {
             } finally {
                 // Clear loading flag when complete (success or abort)
                 this.setLoadingFlag(false);
+                this.isLoading = false;
 
                 // Clear abort controller if this request completed
                 if (this.branchChangeAbortController?.signal === signal) {
