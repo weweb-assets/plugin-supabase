@@ -60,6 +60,7 @@
             <wwEditorFormRow label="Service role key" required>
                 <div class="flex items-center">
                     <wwEditorInputText
+                        required
                         type="password"
                         placeholder="ey********"
                         large
