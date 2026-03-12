@@ -154,7 +154,7 @@
                             @update:modelValue="val => changeApiKey(val, env)"
                         />
 
-                        <wwEditorFormRow label="Service role key" required>
+                        <wwEditorFormRow label="Service role key">
                             <div class="flex items-center">
                                 <wwEditorInputText
                                     type="password"
@@ -280,7 +280,7 @@
                 @update:modelValue="val => changeApiKey(val, env)"
             />
 
-            <wwEditorFormRow label="Service role key" required>
+            <wwEditorFormRow label="Service role key">
                 <div class="flex items-center">
                     <wwEditorInputText
                         type="password"
