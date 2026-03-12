@@ -50,6 +50,9 @@ const maskForLog = value => {
 export default {
     instance: null,
     channels: {},
+    _realtimeTables: {},
+    _reconnectTimer: null,
+    _visibilityHandler: null,
     /* wwEditor:start */
     doc: null,
     projectInfo: null,
@@ -108,6 +111,7 @@ export default {
 
         await this.load(runtimeProjectUrl, config.publicApiKey);
         this.subscribeTables(settings.publicData.realtimeTables || {});
+        this._setupAutoReconnect();
     },
     /* wwEditor:start */
     _getCopilotContext() {
@@ -227,6 +231,7 @@ export default {
         } else {
             await this.load(runtimeProjectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
+            this._setupAutoReconnect();
         }
     },
     async requestAPI({ method, path, data, params, signal }, retry = true) {
@@ -274,6 +279,7 @@ export default {
         if (wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance) {
             this.instance = wwLib.wwPlugins.supabaseAuth.publicInstance;
             this.subscribeTables(wwLib.wwPlugins.supabase.settings.publicData.realtimeTables || {});
+            this._setupAutoReconnect();
         }
     },
     /*=============================================m_ÔÔ_m=============================================\
@@ -327,6 +333,7 @@ export default {
     \================================================================================================*/
     subscribeTables(realtimeTables) {
         if (!this.instance) return;
+        this._realtimeTables = realtimeTables;
         // this.instance.removeAllChannels();
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
@@ -828,6 +835,9 @@ export default {
         self = false,
         presence = false,
     }) {
+        // Track subscription config for auto-reconnect
+        this.channels[channel] = { channel, type, event, schema, table, filter, self, presence };
+
         const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
         _channel.on(
             type,
@@ -864,6 +874,7 @@ export default {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
         this.instance.removeChannel(_channel);
+        delete this.channels[channel];
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
         debugger;
@@ -875,6 +886,93 @@ export default {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before updating the state.');
         _channel.track(state);
+    },
+    /*=============================================m_ÔÔ_m=============================================\
+        Realtime Auto-Reconnect
+    \================================================================================================*/
+    _setupAutoReconnect() {
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+        }
+
+        this._visibilityHandler = () => {
+            if (document.visibilityState !== 'visible') return;
+            console.log('[Supabase RT] Tab visible — checking channels in 1s');
+            clearTimeout(this._reconnectTimer);
+            this._reconnectTimer = setTimeout(() => this._reconnectChannels(), 1000);
+        };
+
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+        const tracked = Object.keys(this.channels).length;
+        const tables = Object.keys(this._realtimeTables).filter(t => this._realtimeTables[t]).length;
+        console.log(`[Supabase RT] Auto-reconnect ready — tracking ${tracked} channel(s), ${tables} table(s)`);
+    },
+    _reconnectChannels() {
+        if (!this.instance) return;
+
+        const activeChannels = this.instance.getChannels();
+        const states = activeChannels.map(c => `${c.subTopic}:${c.state}`);
+        console.log('[Supabase RT] Channel states:', states);
+
+        let reconnected = 0;
+
+        // Reconnect user workflow channels
+        for (const [name, config] of Object.entries(this.channels)) {
+            const existing = activeChannels.find(c => c.subTopic === name);
+            if (existing && existing.state === 'joined') continue;
+
+            console.log(`[Supabase RT] Reconnecting channel "${name}" (was: ${existing?.state || 'gone'})`);
+            if (existing) this.instance.removeChannel(existing);
+
+            const _channel = this.instance.channel(name, { config: { broadcast: { self: config.self } } });
+            _channel.on(
+                config.type,
+                {
+                    event: config.event || '*',
+                    ...(config.type === 'postgres_changes' ? { schema: config.schema || '*' } : {}),
+                    ...(config.type === 'postgres_changes' && config.table ? { table: config.table } : {}),
+                    ...(config.type === 'postgres_changes' && config.filter ? { filter: config.filter } : {}),
+                },
+                e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:' + config.type, {
+                        event: { channel: name, data: e },
+                        conditions: { channel: name, event: e.event || e.eventType },
+                    });
+                }
+            );
+            if (config.presence) {
+                _channel.on('presence', { event: '*' }, e => {
+                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                        event: { channel: name, data: e },
+                        conditions: { channel: name, event: e.event },
+                    });
+                });
+            }
+            _channel.subscribe();
+            reconnected++;
+        }
+
+        // Reconnect table auto-subscriptions
+        for (const tableName of Object.keys(this._realtimeTables)) {
+            if (!this._realtimeTables[tableName]) continue;
+            const channelName = 'ww:public:' + tableName;
+            const existing = activeChannels.find(c => c.subTopic === channelName);
+            if (existing && existing.state === 'joined') continue;
+
+            console.log(`[Supabase RT] Reconnecting table "${tableName}" (was: ${existing?.state || 'gone'})`);
+            if (existing) this.instance.removeChannel(existing);
+            this.instance
+                .channel(channelName)
+                .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
+                .subscribe();
+            reconnected++;
+        }
+
+        if (reconnected > 0) {
+            console.log(`[Supabase RT] Reconnected ${reconnected} channel(s)`);
+        } else {
+            console.log('[Supabase RT] All channels OK');
+        }
     },
     performAutoSync(table, type, data) {
         if (!data || this.settings.publicData.realtimeTables[table]) return;
