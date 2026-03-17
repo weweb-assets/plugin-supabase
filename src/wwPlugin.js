@@ -369,9 +369,10 @@ export default {
             hasPrivateApiKey: !!config.privateApiKey,
             apiKeyPreview: maskForLog(config.privateApiKey),
         };
+        if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
         if (!runtimeProjectUrl || !config.privateApiKey) {
             if (config.publicApiKey && !config.privateApiKey) {
-                console.log('[Supabase] Breaking change detected: the Service Role Key is now required.');
+                if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
             }
             console.warn('[Supabase plugin] fetchDoc skipped', {
                 reason: 'Missing projectUrl or privateApiKey',
