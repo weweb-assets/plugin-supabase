@@ -62,18 +62,18 @@ export default {
         // Migrate legacy configuration to multi-environment format if needed
         if (!settings.publicData?.environments) {
             const migrated = await this.migrateToMultiEnvironment(settings);
-            
+
             if (migrated) {
                 settings = migrated;
                 // Save migrated settings back
                 await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
                     pluginId: this.id,
-                    settings: migrated
+                    settings: migrated,
                 });
             }
         }
         /* wwEditor:end */
-        
+
         // Get configuration for current environment
         let config = getCurrentSupabaseSettings('supabase');
         let runtimeProjectUrl = resolveRuntimeProjectUrl(config);
@@ -149,7 +149,7 @@ export default {
         if (!settings.publicData?.projectUrl) {
             return null;
         }
-        
+
         // Simple migration to multi-environment format
         const migrated = {
             ...settings,
@@ -159,9 +159,9 @@ export default {
                     production: {
                         projectUrl: settings.publicData.projectUrl,
                         apiKey: settings.publicData.apiKey,
-                        customDomain: settings.publicData.customDomain
-                    }
-                }
+                        customDomain: settings.publicData.customDomain,
+                    },
+                },
             },
             privateData: {
                 ...settings.privateData,
@@ -170,16 +170,16 @@ export default {
                         connectionMode: settings.privateData?.connectionMode || 'custom',
                         apiKey: settings.privateData?.apiKey,
                         databasePassword: settings.privateData?.databasePassword,
-                        connectionString: settings.privateData?.connectionString
-                    }
-                }
-            }
+                        connectionString: settings.privateData?.connectionString,
+                    },
+                },
+            },
         };
-        
+
         return migrated;
     },
     /* wwEditor:end */
-    
+
     async fetchProjectInfo(configOverride = null) {
         const config = configOverride || getCurrentSupabaseSettings('supabase');
         const projectUrl = config?.projectUrl;
@@ -203,11 +203,11 @@ export default {
     },
     async onSave(settings) {
         await this.syncSettings(settings);
-        
+
         // Get config for current environment
         const config = getCurrentSupabaseSettings('supabase');
         if (!config.projectUrl) return;
-        
+
         const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
 
         if (config.accessToken && config.projectUrl) {
@@ -219,11 +219,7 @@ export default {
             // supabaseAuth will call syncInstance
             const authConfig = getCurrentSupabaseSettings('supabaseAuth');
             const authRuntimeUrl = resolveRuntimeProjectUrl(authConfig);
-            await wwLib.wwPlugins.supabaseAuth.load(
-                authRuntimeUrl,
-                authConfig.publicApiKey,
-                authConfig.privateApiKey
-            );
+            await wwLib.wwPlugins.supabaseAuth.load(authRuntimeUrl, authConfig.publicApiKey, authConfig.privateApiKey);
         } else {
             await this.load(runtimeProjectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
@@ -290,7 +286,7 @@ export default {
                         await this.load(runtimeProjectUrl, config.publicApiKey);
                     }
                 }
-                
+
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
@@ -370,19 +366,22 @@ export default {
             baseProjectRef: config.baseProjectRef,
             branch: config.branch,
             branchSlug: config.branchSlug,
-            hasApiKey: !!config.publicApiKey,
-            apiKeyPreview: maskForLog(config.publicApiKey),
+            hasPrivateApiKey: !!config.privateApiKey,
+            apiKeyPreview: maskForLog(config.privateApiKey),
         };
-        if (!runtimeProjectUrl || !config.publicApiKey) {
+        if (!runtimeProjectUrl || !config.privateApiKey) {
+            if (config.publicApiKey && !config.privateApiKey) {
+                if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
+            }
             console.warn('[Supabase plugin] fetchDoc skipped', {
-                reason: 'Missing projectUrl or publicApiKey',
+                reason: 'Missing projectUrl or privateApiKey',
                 ...logContext,
             });
             return;
         }
 
         try {
-            const doc = await getDoc(runtimeProjectUrl, config.publicApiKey, {
+            const doc = await getDoc(runtimeProjectUrl, config.privateApiKey, {
                 branchSlug: config.branchSlug,
             });
             this.doc = doc;
@@ -911,10 +910,10 @@ const applyModifiers = (query, { select, order, limit, range, single, maybeSingl
             select.mode === 'minimal'
                 ? ''
                 : select.mode === 'guided'
-                ? select?.fields.length
-                    ? select.fields.join(', ')
-                    : '*'
-                : select?.fieldsAdvanced
+                  ? select?.fields.length
+                      ? select.fields.join(', ')
+                      : '*'
+                  : select?.fieldsAdvanced
         );
     }
 
