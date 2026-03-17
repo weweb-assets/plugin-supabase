@@ -369,7 +369,6 @@ export default {
             hasPrivateApiKey: !!config.privateApiKey,
             apiKeyPreview: maskForLog(config.privateApiKey),
         };
-        if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
         if (!runtimeProjectUrl || !config.privateApiKey) {
             if (config.publicApiKey && !config.privateApiKey) {
                 if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
