@@ -303,7 +303,9 @@ export default {
                 }
 
                 for (const sort of collection.sort) {
-                    query.order(sort.key, { ascending: sort.direction === 'ASC' });
+                    const sortColumn = Array.isArray(sort.field) ? sort.field[0] : sort.field || sort.key;
+                    if (!sortColumn) continue;
+                    query.order(sortColumn, { ascending: sort.direction === 'ASC' });
                 }
 
                 const { data, error, count } = await query;
