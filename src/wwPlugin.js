@@ -829,16 +829,7 @@ export default {
                 return;
         }
     },
-    subscribeToChannel({
-        channel,
-        type = 'postgres_changes',
-        event = '*',
-        schema = '*',
-        table,
-        filter,
-        self = false,
-        presence = false,
-    }) {
+    subscribeToChannel({ channel, type = 'postgres_changes', event = '*', schema = '*', table, filter, self = false }) {
         const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
         _channel.on(
             type,
@@ -855,20 +846,18 @@ export default {
                 });
             }
         );
-        if (presence) {
-            _channel.on(
-                'presence',
-                {
-                    event: '*',
-                },
-                e => {
-                    wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
-                        event: { channel, data: e },
-                        conditions: { channel, event: e.event },
-                    });
-                }
-            );
-        }
+        _channel.on(
+            'presence',
+            {
+                event: '*',
+            },
+            e => {
+                wwLib.wwWorkflow.executeTrigger(this.id + '-realtime:presence', {
+                    event: { channel, data: e },
+                    conditions: { channel, event: e.event },
+                });
+            }
+        );
         _channel.subscribe();
     },
     unsubscribeFromChannel({ channel }) {
@@ -877,7 +866,6 @@ export default {
         this.instance.removeChannel(_channel);
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
-        debugger;
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
