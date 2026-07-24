@@ -172,7 +172,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (!primaryData[field.name]) delete primaryData[field.name];
+                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
