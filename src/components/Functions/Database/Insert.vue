@@ -237,7 +237,7 @@ export default {
                     }
                 }
                 for (const field of this.tablePropertiesFiltered) {
-                    if (!data[field.name]) delete data[field.name];
+                    if (!data[field.name] && data[field.name] !== false) delete data[field.name];
                 }
             }
             this.$emit('update:args', { ...this.args, data });

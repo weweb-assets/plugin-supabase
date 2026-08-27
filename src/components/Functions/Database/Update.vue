@@ -213,7 +213,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (!primaryData[field.name]) delete primaryData[field.name];
+                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
@@ -228,7 +228,8 @@ export default {
                 }
             }
             for (const field of this.tablePropertiesFiltered) {
-                if (!data[field.name] && data[field.name] !== null) delete data[field.name]; // TODO LOGIC ISSUE HERE
+                if (!data[field.name] && data[field.name] !== null && data[field.name] !== false)
+                    delete data[field.name]; // TODO LOGIC ISSUE HERE
             }
             this.$emit('update:args', { ...this.args, data });
         },

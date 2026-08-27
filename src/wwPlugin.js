@@ -902,6 +902,7 @@ export default {
     types: {
         integer: 'number',
         string: 'query',
+        boolean: 'onoff',
     },
 };
 
