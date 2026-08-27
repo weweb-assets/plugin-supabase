@@ -94,6 +94,15 @@
         :model-value="self"
         @update:modelValue="setSelf"
     />
+    <wwEditorInputRow
+        type="onoff"
+        label="Listen presence"
+        tooltip="Define if you want to receive presence events"
+        bindable
+        small
+        :model-value="presence"
+        @update:modelValue="setPresence"
+    />
     <wwLoader :loading="isLoading" />
 </template>
 
@@ -132,6 +141,9 @@ export default {
         self() {
             return this.args.self ?? false;
         },
+        presence() {
+            return this.args.presence ?? false;
+        },
         tablesOptions() {
             return [
                 { label: 'All tables', value: null },
@@ -161,6 +173,7 @@ export default {
                 table: null,
                 filter: null,
                 self: false,
+                presence: false,
             });
         },
         setEvent(event) {
@@ -177,6 +190,9 @@ export default {
         },
         setSelf(self) {
             this.$emit('update:args', { ...this.args, self });
+        },
+        setPresence(presence) {
+            this.$emit('update:args', { ...this.args, presence });
         },
         async fetchTables() {
             try {
