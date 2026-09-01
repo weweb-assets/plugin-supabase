@@ -1,5 +1,5 @@
 export function convertCondition({ field, operator, value, isEmptyIgnored }) {
-    if (isEmptyIgnored && !value) return [];
+    if (isEmptyIgnored && !isValuelessOperator(operator) && isEmptyValue(value)) return [];
     switch (operator) {
         case '$eq':
             return [field, 'eq', typeof value === 'string' ? `"${escape(value)}"` : value];
@@ -25,6 +25,10 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
             return [field, 'is', 'null'];
         case '$ne:null':
             return [field, 'not.is', 'null'];
+        case '$eq:null:text':
+            return `or(${field}.is.null,${field}.eq."")`;
+        case '$ne:null:text':
+            return `and(${field}.not.is.null,${field}.neq."")`;
         case '$in':
             return [field, 'in', `(${value})`];
         case '$notIn':
@@ -45,7 +49,9 @@ export function generateFilter(config) {
     if (!config.link || !config.conditions || config.if === false) return '';
     const conditions = config.conditions
         .map(condition => {
-            return condition.link ? generateFilter(condition) : convertCondition(condition).join('.');
+            if (condition.link) return generateFilter(condition);
+            const converted = convertCondition(condition);
+            return typeof converted === 'string' ? converted : converted.join('.');
         })
         .filter(condition => condition);
 
@@ -59,4 +65,18 @@ export function generateFilter(config) {
 function escape(value) {
     // weird but it's how back slash match
     return value.replaceAll('\\', '\\\\\\\\').replaceAll('"', '\\"');
+}
+
+function isValuelessOperator(operator) {
+    return typeof operator === 'string' && operator.includes(':null');
+}
+
+function isEmptyValue(value) {
+    return (
+        value === undefined ||
+        value === null ||
+        value === '' ||
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === 'object' && JSON.stringify(value) === '{}')
+    );
 }
