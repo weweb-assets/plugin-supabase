@@ -328,6 +328,7 @@ export default {
         // this.instance.removeAllChannels();
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
+            if (this.instance.getChannels().some(c => c.subTopic === 'ww:public:' + tableName)) continue;
             this.instance
                 .channel('ww:public:' + tableName)
                 .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
@@ -839,6 +840,8 @@ export default {
         self = false,
         presence = false,
     }) {
+        // realtime-js throws when adding postgres_changes/presence listeners to an already joined channel
+        if (this.instance.getChannels().some(c => c.subTopic === channel)) return;
         const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
         _channel.on(
             type,
@@ -871,13 +874,12 @@ export default {
         }
         _channel.subscribe();
     },
-    unsubscribeFromChannel({ channel }) {
+    async unsubscribeFromChannel({ channel }) {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
-        this.instance.removeChannel(_channel);
+        await this.instance.removeChannel(_channel);
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
-        debugger;
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
