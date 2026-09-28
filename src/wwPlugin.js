@@ -66,7 +66,7 @@ export default {
             if (migrated) {
                 settings = migrated;
                 // Save migrated settings back
-                await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+                await wwLib.wwPluginHelper.updateSettings({
                     pluginId: this.id,
                     settings: migrated,
                 });
@@ -89,7 +89,7 @@ export default {
             window.localStorage.removeItem('supabase_oauth');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    (wwLib.wwWebsiteData.getInfo() || {}).id
                 }/supabase/connect`,
                 { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
@@ -129,7 +129,7 @@ export default {
     async syncSettings(settings) {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+                (wwLib.wwWebsiteData.getInfo() || {}).id
             }/supabase/sync`,
             { source: 'supabase', settings }
         );
@@ -138,7 +138,7 @@ export default {
     async install(driver = 'core') {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+                (wwLib.wwWebsiteData.getInfo() || {}).id
             }/supabase/install`,
             { driver }
         );
@@ -234,7 +234,7 @@ export default {
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    (wwLib.wwWebsiteData.getInfo() || {}).id
                 }/supabase${path}`,
                 data,
                 params: {
@@ -253,7 +253,7 @@ export default {
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                        (wwLib.wwWebsiteData.getInfo() || {}).id
                     }/supabase/refresh`
                 );
                 return await this.requestAPI({ method, path, data, params, signal }, false);
@@ -760,7 +760,7 @@ export default {
         return data;
     },
     onSubscribe(payload) {
-        const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
+        const collections = Object.values(wwLib.wwCollection.getCollections()).filter(
             collection =>
                 collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
                 collection.config.table === payload.table
@@ -775,7 +775,7 @@ export default {
                         collection.config.primaryData
                     );
                     if (itemIndex !== -1) continue;
-                    wwLib.$store.dispatch('data/setCollection', {
+                    wwLib.wwCollection.setCollection({
                         ...collection,
                         total: collection.total + 1,
                         data: [...(Array.isArray(collection.data) ? collection.data : []), payload.new],
@@ -792,7 +792,7 @@ export default {
                     if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, data });
+                    wwLib.wwCollection.setCollection({ ...collection, data });
                 }
                 return;
             case 'UPSERT':
@@ -807,7 +807,7 @@ export default {
                     isInsert
                         ? data.push(payload.new)
                         : data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
-                    wwLib.$store.dispatch('data/setCollection', {
+                    wwLib.wwCollection.setCollection({
                         ...collection,
                         total: collection.total + (isInsert ? 1 : 0),
                         data,
@@ -824,7 +824,7 @@ export default {
                     if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1);
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
+                    wwLib.wwCollection.setCollection({ ...collection, total: collection.total - 1, data });
                 }
                 return;
         }
