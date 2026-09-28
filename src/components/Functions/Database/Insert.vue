@@ -131,10 +131,12 @@
 </template>
 
 <script>
+import booleanDefaults from './booleanDefaults.js';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 
 export default {
+    mixins: [booleanDefaults],
     components: { Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
@@ -149,6 +151,11 @@ export default {
         };
     },
     computed: {
+        booleanFields() {
+            return {
+                data: this.mode === 'single' ? this.tablePropertiesFiltered : [],
+            };
+        },
         table() {
             return this.args.table;
         },

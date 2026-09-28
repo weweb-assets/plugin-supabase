@@ -79,11 +79,13 @@
 </template>
 
 <script>
+import booleanDefaults from './booleanDefaults.js';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 import QueryFilters from '../../Utils/QueryFilters.vue';
 
 export default {
+    mixins: [booleanDefaults],
     components: { Expandable, QueryModifiers, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
@@ -98,6 +100,11 @@ export default {
         };
     },
     computed: {
+        booleanFields() {
+            return {
+                primaryData: this.mode === 'single' ? this.primaryProperties : [],
+            };
+        },
         table() {
             return this.args.table;
         },
