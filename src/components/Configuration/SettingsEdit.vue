@@ -212,7 +212,7 @@ export default {
             if (mode === 'create') {
                 this.organizations = await this.fetchOrganizations();
                 this.newProject = {
-                    name: 'WeWeb - ' + wwLib.$store.getters['websiteData/getDesignInfo'].name,
+                    name: 'WeWeb - ' + (wwLib.wwWebsiteData.info || {}).name,
                     region: 'us-east-1',
                     organizationId: this.organizations[0]?.id,
                     dbPass: wwLib.wwUtils.getUid(),
