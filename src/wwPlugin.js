@@ -89,7 +89,7 @@ export default {
             window.localStorage.removeItem('supabase_oauth');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    (wwLib.wwWebsiteData.getInfo() || {}).id
+                    (wwLib.wwWebsiteData.info || {}).id
                 }/supabase/connect`,
                 { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
@@ -129,7 +129,7 @@ export default {
     async syncSettings(settings) {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                (wwLib.wwWebsiteData.getInfo() || {}).id
+                (wwLib.wwWebsiteData.info || {}).id
             }/supabase/sync`,
             { source: 'supabase', settings }
         );
@@ -138,7 +138,7 @@ export default {
     async install(driver = 'core') {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                (wwLib.wwWebsiteData.getInfo() || {}).id
+                (wwLib.wwWebsiteData.info || {}).id
             }/supabase/install`,
             { driver }
         );
@@ -234,7 +234,7 @@ export default {
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    (wwLib.wwWebsiteData.getInfo() || {}).id
+                    (wwLib.wwWebsiteData.info || {}).id
                 }/supabase${path}`,
                 data,
                 params: {
@@ -253,7 +253,7 @@ export default {
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        (wwLib.wwWebsiteData.getInfo() || {}).id
+                        (wwLib.wwWebsiteData.info || {}).id
                     }/supabase/refresh`
                 );
                 return await this.requestAPI({ method, path, data, params, signal }, false);
@@ -760,7 +760,7 @@ export default {
         return data;
     },
     onSubscribe(payload) {
-        const collections = Object.values(wwLib.wwCollection.getCollections()).filter(
+        const collections = Object.values(wwLib.wwCollection.collectionsById).filter(
             collection =>
                 collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
                 collection.config.table === payload.table
