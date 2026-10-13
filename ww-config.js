@@ -78,6 +78,8 @@ export default {
                     { label: 'Is exactly', value: '$eq', acceptedTypes: ['array', 'object'] },
                     { label: 'Is empty', value: '$eq:null:text', acceptedTypes: ['string'] },
                     { label: 'Is not empty', value: '$ne:null:text', acceptedTypes: ['string'] },
+                    { label: 'Is null', value: '$eq:null', acceptedTypes: ['string'] },
+                    { label: 'Is not null', value: '$ne:null', acceptedTypes: ['string'] },
                     { label: 'Is empty', value: '$eq:null', acceptedTypes: ['number', 'array', 'object'] },
                     {
                         label: 'Is not empty',

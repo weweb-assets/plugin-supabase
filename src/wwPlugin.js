@@ -47,6 +47,10 @@ const maskForLog = value => {
     return `${str.slice(0, 4)}...${str.slice(-4)}`;
 };
 
+// invalid_text_representation (uuid, enum, number...) and invalid_datetime_format (date, timestamp)
+const TEXT_CAST_ERROR_CODES = ['22P02', '22007'];
+const textAsNullCollections = new Set();
+
 export default {
     instance: null,
     channels: {},
@@ -291,24 +295,35 @@ export default {
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
                         : collection.config.dataFieldsAdvanced;
-                let query = this.instance
-                    .from(collection.config.table)
-                    .select(fields || undefined, { count: collection.limit ? 'exact' : null });
-                const filter = generateFilter(collection.filter);
+                const runQuery = filter => {
+                    const query = this.instance
+                        .from(collection.config.table)
+                        .select(fields || undefined, { count: collection.limit ? 'exact' : null });
 
-                if (filter) query.or(filter);
+                    if (filter) query.or(filter);
 
-                if (collection.limit) {
-                    query.range(collection.offset, collection.offset + collection.limit - 1);
+                    if (collection.limit) {
+                        query.range(collection.offset, collection.offset + collection.limit - 1);
+                    }
+
+                    for (const sort of collection.sort) {
+                        const sortColumn = Array.isArray(sort.field) ? sort.field[0] : sort.field || sort.key;
+                        if (!sortColumn) continue;
+                        query.order(sortColumn, { ascending: sort.direction === 'ASC' });
+                    }
+                    return query;
+                };
+
+                const textFilter = generateFilter(collection.filter);
+                const nullFilter = generateFilter(collection.filter, { textAsNull: true });
+                const useNullFilter = textAsNullCollections.has(collection.id);
+                let { data, error, count } = await runQuery(useNullFilter ? nullFilter : textFilter);
+                // Field types come from the data, so a uuid, date or enum column can get the text Is (not) empty,
+                // whose "" Postgres can't cast: fall back to the null-only check for this collection.
+                if (!useNullFilter && textFilter !== nullFilter && TEXT_CAST_ERROR_CODES.includes(error?.code)) {
+                    textAsNullCollections.add(collection.id);
+                    ({ data, error, count } = await runQuery(nullFilter));
                 }
-
-                for (const sort of collection.sort) {
-                    const sortColumn = Array.isArray(sort.field) ? sort.field[0] : sort.field || sort.key;
-                    if (!sortColumn) continue;
-                    query.order(sortColumn, { ascending: sort.direction === 'ASC' });
-                }
-
-                const { data, error, count } = await query;
                 return { data, error, total: count ?? data?.length };
             } catch (err) {
                 return {

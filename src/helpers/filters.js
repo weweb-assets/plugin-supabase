@@ -1,5 +1,5 @@
-export function convertCondition({ field, operator, value, isEmptyIgnored }) {
-    if (isEmptyIgnored && !isValuelessOperator(operator) && isEmptyValue(value)) return [];
+export function convertCondition({ field, operator, value, isEmptyIgnored }, { textAsNull = false } = {}) {
+    if (isEmptyIgnored && !value) return [];
     switch (operator) {
         case '$eq':
             return [field, 'eq', typeof value === 'string' ? `"${escape(value)}"` : value];
@@ -26,9 +26,9 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
         case '$ne:null':
             return [field, 'not.is', 'null'];
         case '$eq:null:text':
-            return `or(${field}.is.null,${field}.eq."")`;
+            return textAsNull ? [field, 'is', 'null'] : `or(${field}.is.null,${field}.eq."")`;
         case '$ne:null:text':
-            return `and(${field}.not.is.null,${field}.neq."")`;
+            return textAsNull ? [field, 'not.is', 'null'] : `and(${field}.not.is.null,${field}.neq."")`;
         case '$in':
             return [field, 'in', `(${value})`];
         case '$notIn':
@@ -44,13 +44,13 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     }
 }
 
-export function generateFilter(config) {
+export function generateFilter(config, options) {
     if (!config) return '';
     if (!config.link || !config.conditions || config.if === false) return '';
     const conditions = config.conditions
         .map(condition => {
-            if (condition.link) return generateFilter(condition);
-            const converted = convertCondition(condition);
+            if (condition.link) return generateFilter(condition, options);
+            const converted = convertCondition(condition, options);
             return typeof converted === 'string' ? converted : converted.join('.');
         })
         .filter(condition => condition);
@@ -65,18 +65,4 @@ export function generateFilter(config) {
 function escape(value) {
     // weird but it's how back slash match
     return value.replaceAll('\\', '\\\\\\\\').replaceAll('"', '\\"');
-}
-
-function isValuelessOperator(operator) {
-    return typeof operator === 'string' && operator.includes(':null');
-}
-
-function isEmptyValue(value) {
-    return (
-        value === undefined ||
-        value === null ||
-        value === '' ||
-        (Array.isArray(value) && value.length === 0) ||
-        (typeof value === 'object' && JSON.stringify(value) === '{}')
-    );
 }
