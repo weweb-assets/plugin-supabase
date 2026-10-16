@@ -205,3 +205,21 @@ test('boolean primary key does not offer a Null choice', async t => {
         ['__ww_supabase_unset__', true, false]
     );
 });
+
+for (const name of ['Insert', 'Upsert']) {
+    test(name + ': boolean primary-key fields carry metadata and reject an explicit null', async t => {
+        definitions.BooleanKey = {
+            properties: { key: { type: 'boolean', description: '<pk/>' }, optional: { type: 'boolean' } },
+        };
+        const { args, form, app } = await mountForm(name, { table: 'BooleanKey', data: {} });
+        t.after(() => app.unmount());
+        const field = form.value.tableProperties.find(field => field.name === 'key');
+        assert.equal(field.isPrimary, true);
+        form.value.setData({ key: null, optional: null });
+        await nextTick();
+        assert.deepEqual(args.value.data, { optional: null });
+        form.value.setData({ key: false });
+        await nextTick();
+        assert.deepEqual(args.value.data, { key: false });
+    });
+}

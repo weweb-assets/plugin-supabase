@@ -221,6 +221,8 @@ export default {
             if (!this.definitions[this.table]) return [];
             return Object.keys(this.definitions[this.table].properties).map(propertyName => ({
                 name: propertyName,
+                isPrimary:
+                    this.definitions[this.table].properties[propertyName].description?.includes('<pk/>') || false,
                 type: this.plugin.types[this.definitions[this.table].properties[propertyName].type] || 'object',
                 required:
                     this.definitions[this.table].required &&
@@ -273,7 +275,7 @@ export default {
                     if (
                         !data[field.name] &&
                         data[field.name] !== false &&
-                        !(field.type === 'onoff' && data[field.name] === null)
+                        !(field.type === 'onoff' && !field.isPrimary && data[field.name] === null)
                     )
                         delete data[field.name];
                 }
