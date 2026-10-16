@@ -72,16 +72,12 @@
                 placeholder="All fields"
                 @update:modelValue="setDataFields"
             />
-            <wwEditorInputRow
+            <DatabaseField
                 v-for="property of tablePropertiesFiltered"
                 :key="property.name"
-                :label="property.name"
-                :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
-                :type="property.type"
-                :required="property.required"
+                :property="property"
                 :model-value="data[property.name]"
                 @update:modelValue="setData({ ...data, [property.name]: $event })"
-                bindable
             />
         </template>
     </template>
@@ -131,13 +127,12 @@
 </template>
 
 <script>
-import booleanDefaults from './booleanDefaults.js';
+import DatabaseField from './DatabaseField.vue';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 
 export default {
-    mixins: [booleanDefaults],
-    components: { Expandable, QueryModifiers },
+    components: { DatabaseField, Expandable, QueryModifiers },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -151,11 +146,6 @@ export default {
         };
     },
     computed: {
-        booleanFields() {
-            return {
-                data: this.mode === 'single' ? this.tablePropertiesFiltered : [],
-            };
-        },
         table() {
             return this.args.table;
         },
@@ -244,7 +234,12 @@ export default {
                     }
                 }
                 for (const field of this.tablePropertiesFiltered) {
-                    if (!data[field.name] && data[field.name] !== false) delete data[field.name];
+                    if (
+                        !data[field.name] &&
+                        data[field.name] !== false &&
+                        !(field.type === 'onoff' && data[field.name] === null)
+                    )
+                        delete data[field.name];
                 }
             }
             this.$emit('update:args', { ...this.args, data });

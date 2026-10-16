@@ -32,16 +32,12 @@
             @update:modelValue="setArgs({ filters: $event })"
         />
         <div v-else class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
-            <wwEditorInputRow
+            <DatabaseField
                 v-for="property of primaryProperties"
                 :key="property.name"
-                :label="property.name"
-                placeholder="Enter a value"
-                :type="property.type"
-                :required="property.required"
+                :property="property"
                 :model-value="primaryData[property.name]"
                 @update:modelValue="setPrimaryData({ ...primaryData, [property.name]: $event })"
-                bindable
             />
         </div>
     </template>
@@ -79,14 +75,13 @@
 </template>
 
 <script>
-import booleanDefaults from './booleanDefaults.js';
+import DatabaseField from './DatabaseField.vue';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 import QueryFilters from '../../Utils/QueryFilters.vue';
 
 export default {
-    mixins: [booleanDefaults],
-    components: { Expandable, QueryModifiers, QueryFilters },
+    components: { DatabaseField, Expandable, QueryModifiers, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -100,11 +95,6 @@ export default {
         };
     },
     computed: {
-        booleanFields() {
-            return {
-                primaryData: this.mode === 'single' ? this.primaryProperties : [],
-            };
-        },
         table() {
             return this.args.table;
         },
@@ -179,7 +169,12 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
+                if (
+                    !primaryData[field.name] &&
+                    primaryData[field.name] !== false &&
+                    !(field.type === 'onoff' && primaryData[field.name] === null)
+                )
+                    delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },

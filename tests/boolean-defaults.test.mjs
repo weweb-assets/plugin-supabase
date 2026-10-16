@@ -63,22 +63,22 @@ async function mountForm(name, initialArgs = {}) {
 }
 
 for (const name of ['Insert', 'Update', 'Upsert']) {
-    test(`${name}: selecting a table saves the initially displayed Off values`, async t => {
+    test(`${name}: selecting a table leaves booleans omitted`, async t => {
         const { args, form, app } = await mountForm(name);
         t.after(() => app.unmount());
         form.value.setTable('QA');
         await nextTick();
-        assert.deepEqual(args.value.data, { boolean: false, other: false });
+        assert.deepEqual(args.value.data, {});
     });
 }
 
 for (const name of ['Insert', 'Update', 'Upsert']) {
-    test(`${name}: opening a saved action initializes only missing visible values`, async t => {
+    test(`${name}: opening a saved action never writes missing visible values`, async t => {
         const binding = { __wwtype: 'f', code: 'variables.flag' };
         for (const value of [true, false, null, binding]) {
             const { args, app } = await mountForm(name, { table: 'QA', data: { boolean: value } });
             t.after(() => app.unmount());
-            assert.deepEqual(args.value.data, { boolean: value, other: false });
+            assert.deepEqual(args.value.data, { boolean: value });
         }
         const { args, form, app } = await mountForm(name, {
             table: 'QA',
@@ -90,7 +90,7 @@ for (const name of ['Insert', 'Update', 'Upsert']) {
         form.value.setDataFields(['boolean']);
         await nextTick();
         await nextTick();
-        assert.deepEqual(args.value.data, { boolean: false });
+        assert.deepEqual(args.value.data, {});
         form.value.setDataFields(['id']);
         await nextTick();
         await nextTick();
@@ -100,29 +100,29 @@ for (const name of ['Insert', 'Update', 'Upsert']) {
     test(`${name}: toggles, bindings and unrelated edits preserve false`, async t => {
         const { args, form, app } = await mountForm(name, { table: 'QA', data: {} });
         t.after(() => app.unmount());
-        for (const value of [true, false, { __wwtype: 'f', code: 'false' }]) {
+        for (const value of [true, false, null, { __wwtype: 'f', code: 'false' }, undefined]) {
             form.value.setData({ ...args.value.data, boolean: value });
             await nextTick();
-            assert.deepEqual(args.value.data, { boolean: value, other: false });
+            assert.deepEqual(args.value.data, value === undefined ? {} : { boolean: value });
         }
     });
 }
 
 for (const name of ['Insert', 'Upsert']) {
-    test(`${name}: bulk rows and bindings are untouched; returning to single initializes Off`, async t => {
+    test(`${name}: bulk rows and bindings are untouched; single mode keeps missing fields omitted`, async t => {
         for (const data of [[], [{ boolean: true }], { __wwtype: 'f', code: 'variables.rows' }]) {
             const { args, form, app } = await mountForm(name, { table: 'QA', mode: 'multiple', data });
             t.after(() => app.unmount());
             assert.deepEqual(args.value.data, data);
             form.value.setArgs({ mode: 'single', dataFields: [], data: {} });
             await nextTick();
-            assert.deepEqual(args.value.data, { boolean: false, other: false });
+            assert.deepEqual(args.value.data, {});
         }
     });
 }
 
 for (const name of ['Update', 'Delete']) {
-    test(`${name}: boolean primary keys default only when the primary-key inputs are visible`, async t => {
+    test(`${name}: boolean primary keys remain omitted until explicitly chosen`, async t => {
         definitions.BooleanKey = {
             properties: { key: { type: 'boolean', description: '<pk/>' }, boolean: { type: 'boolean' } },
         };
@@ -130,12 +130,51 @@ for (const name of ['Update', 'Delete']) {
         t.after(() => app.unmount());
         form.value.setTable('BooleanKey');
         await nextTick();
-        assert.deepEqual(args.value.primaryData, { key: false });
-        if (name === 'Update') assert.deepEqual(args.value.data, { boolean: false });
+        assert.deepEqual(args.value.primaryData, {});
+        if (name === 'Update') assert.deepEqual(args.value.data, {});
 
         form.value.setArgs({ mode: 'multiple', primaryData: {}, data: {} });
         await nextTick();
         assert.deepEqual(args.value.primaryData, {});
-        if (name === 'Update') assert.deepEqual(args.value.data, { key: false, boolean: false });
+        if (name === 'Update') assert.deepEqual(args.value.data, {});
     });
 }
+
+for (const name of ['Insert', 'Upsert', 'Update']) {
+    test(name + ': clearing a boolean leaves it omitted and keeps partial writes partial', async t => {
+        const { args, form, app } = await mountForm(name, { table: 'QA', data: { boolean: true } });
+        t.after(() => app.unmount());
+        form.value.setData({ boolean: undefined });
+        await nextTick();
+        assert.deepEqual(args.value.data, {});
+        form.value.setData({ boolean: null });
+        await nextTick();
+        assert.deepEqual(args.value.data, { boolean: null });
+    });
+}
+
+test('boolean field represents omitted, false, null and bindings without mount writes', async t => {
+    const component = await loadForm('DatabaseField');
+    for (const value of [undefined, false, true, null, { __wwtype: 'f', code: 'false' }]) {
+        const ref = shallowRef();
+        const emitted = [];
+        const app = renderer.createApp({
+            render: () =>
+                h(component, {
+                    ref,
+                    property: { name: 'flag', type: 'onoff' },
+                    modelValue: value,
+                    'onUpdate:modelValue': v => emitted.push(v),
+                }),
+        });
+        app.mount({});
+        t.after(() => app.unmount());
+        await nextTick();
+        assert.deepEqual(emitted, []);
+        if (value !== undefined) assert.deepEqual(ref.value.inputValue, value);
+        ref.value.setValue(false);
+        ref.value.setValue(null);
+        ref.value.setValue(ref.value.booleanChoices[0].value);
+        assert.deepEqual(emitted, [false, null, undefined]);
+    }
+});
