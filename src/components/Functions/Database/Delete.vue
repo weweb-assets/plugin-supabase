@@ -32,16 +32,12 @@
             @update:modelValue="setArgs({ filters: $event })"
         />
         <div v-else class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
-            <wwEditorInputRow
+            <DatabaseField
                 v-for="property of primaryProperties"
                 :key="property.name"
-                :label="property.name"
-                placeholder="Enter a value"
-                :type="property.type"
-                :required="property.required"
+                :property="property"
                 :model-value="primaryData[property.name]"
                 @update:modelValue="setPrimaryData({ ...primaryData, [property.name]: $event })"
-                bindable
             />
         </div>
     </template>
@@ -79,12 +75,13 @@
 </template>
 
 <script>
+import DatabaseField from './DatabaseField.vue';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 import QueryFilters from '../../Utils/QueryFilters.vue';
 
 export default {
-    components: { Expandable, QueryModifiers, QueryFilters },
+    components: { DatabaseField, Expandable, QueryModifiers, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -172,7 +169,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (!primaryData[field.name]) delete primaryData[field.name];
+                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
