@@ -12,5 +12,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      # Unit tests use Vue directly; the legacy CLI node-sass install is not needed.
+      - run: npm ci --ignore-scripts
       - run: npm test
