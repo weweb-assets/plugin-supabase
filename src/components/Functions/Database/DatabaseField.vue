@@ -30,7 +30,7 @@ export default {
                 { label: 'Not set', value: UNSET },
                 { label: 'On', value: true },
                 { label: 'Off', value: false },
-                { label: 'Null', value: null },
+                ...(this.property.isPrimary ? [] : [{ label: 'Null', value: null }]),
             ];
         },
     },

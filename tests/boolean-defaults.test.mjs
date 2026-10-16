@@ -178,3 +178,30 @@ test('boolean field represents omitted, false, null and bindings without mount w
         assert.deepEqual(emitted, [false, null, undefined]);
     }
 });
+
+for (const name of ['Update', 'Delete']) {
+    test(name + ': boolean primary key requires an explicit non-null value', async t => {
+        definitions.BooleanKey = { properties: { key: { type: 'boolean', description: '<pk/>' } } };
+        const { args, form, app } = await mountForm(name, { table: 'BooleanKey', primaryData: {} });
+        t.after(() => app.unmount());
+        for (const value of [false, true, { __wwtype: 'f', code: 'false' }, null, undefined]) {
+            form.value.setPrimaryData({ key: value });
+            await nextTick();
+            assert.deepEqual(args.value.primaryData, value == null ? {} : { key: value });
+        }
+    });
+}
+
+test('boolean primary key does not offer a Null choice', async t => {
+    const component = await loadForm('DatabaseField');
+    const ref = shallowRef();
+    const app = renderer.createApp({
+        render: () => h(component, { ref, property: { name: 'key', type: 'onoff', isPrimary: true } }),
+    });
+    app.mount({});
+    t.after(() => app.unmount());
+    assert.deepEqual(
+        ref.value.booleanChoices.map(choice => choice.value),
+        ['__ww_supabase_unset__', true, false]
+    );
+});

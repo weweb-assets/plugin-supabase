@@ -169,12 +169,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (
-                    !primaryData[field.name] &&
-                    primaryData[field.name] !== false &&
-                    !(field.type === 'onoff' && primaryData[field.name] === null)
-                )
-                    delete primaryData[field.name];
+                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
