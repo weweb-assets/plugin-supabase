@@ -1,4 +1,4 @@
-export function convertCondition({ field, operator, value, isEmptyIgnored }, { textAsNull = false } = {}) {
+export function convertCondition({ field, operator, value, isEmptyIgnored }) {
     if (isEmptyIgnored && !value) return [];
     switch (operator) {
         case '$eq':
@@ -26,9 +26,9 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }, { t
         case '$ne:null':
             return [field, 'not.is', 'null'];
         case '$eq:null:text':
-            return textAsNull ? [field, 'is', 'null'] : `or(${field}.is.null,${field}.eq."")`;
+            return `or(${field}.is.null,${field}.eq."")`;
         case '$ne:null:text':
-            return textAsNull ? [field, 'not.is', 'null'] : `and(${field}.not.is.null,${field}.neq."")`;
+            return `and(${field}.not.is.null,${field}.neq."")`;
         case '$in':
             return [field, 'in', `(${value})`];
         case '$notIn':
@@ -44,13 +44,13 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }, { t
     }
 }
 
-export function generateFilter(config, options) {
+export function generateFilter(config) {
     if (!config) return '';
     if (!config.link || !config.conditions || config.if === false) return '';
     const conditions = config.conditions
         .map(condition => {
-            if (condition.link) return generateFilter(condition, options);
-            const converted = convertCondition(condition, options);
+            if (condition.link) return generateFilter(condition);
+            const converted = convertCondition(condition);
             return typeof converted === 'string' ? converted : converted.join('.');
         })
         .filter(condition => condition);
