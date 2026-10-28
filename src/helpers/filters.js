@@ -25,6 +25,10 @@ export function convertCondition({ field, operator, value, isEmptyIgnored }) {
             return [field, 'is', 'null'];
         case '$ne:null':
             return [field, 'not.is', 'null'];
+        case '$eq:null:text':
+            return `or(${field}.is.null,${field}.eq."")`;
+        case '$ne:null:text':
+            return `and(${field}.not.is.null,${field}.neq."")`;
         case '$in':
             return [field, 'in', `(${value})`];
         case '$notIn':
@@ -45,7 +49,9 @@ export function generateFilter(config) {
     if (!config.link || !config.conditions || config.if === false) return '';
     const conditions = config.conditions
         .map(condition => {
-            return condition.link ? generateFilter(condition) : convertCondition(condition).join('.');
+            if (condition.link) return generateFilter(condition);
+            const converted = convertCondition(condition);
+            return typeof converted === 'string' ? converted : converted.join('.');
         })
         .filter(condition => condition);
 
