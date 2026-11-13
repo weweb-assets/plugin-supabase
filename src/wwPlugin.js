@@ -62,18 +62,18 @@ export default {
         // Migrate legacy configuration to multi-environment format if needed
         if (!settings.publicData?.environments) {
             const migrated = await this.migrateToMultiEnvironment(settings);
-            
+
             if (migrated) {
                 settings = migrated;
                 // Save migrated settings back
-                await wwLib.$store.dispatch('websiteData/updatePluginSettings', {
+                await wwLib.wwPluginHelper.updateSettings({
                     pluginId: this.id,
-                    settings: migrated
+                    settings: migrated,
                 });
             }
         }
         /* wwEditor:end */
-        
+
         // Get configuration for current environment
         let config = getCurrentSupabaseSettings('supabase');
         let runtimeProjectUrl = resolveRuntimeProjectUrl(config);
@@ -89,7 +89,7 @@ export default {
             window.localStorage.removeItem('supabase_oauth');
             await wwAxios.post(
                 `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    (wwLib.wwWebsiteData.info || {}).id
                 }/supabase/connect`,
                 { code, redirectUri: wwLib.wwApiRequests._getPluginsUrl() + '/supabase/redirect' }
             );
@@ -123,10 +123,13 @@ export default {
             dbFunctions: this.projectInfo?.schema?.functions?.map(func => func.name),
         };
     },
+    getCurrentSupabaseSettings(pluginName = 'supabase') {
+        return getCurrentSupabaseSettings(pluginName);
+    },
     async syncSettings(settings) {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+                (wwLib.wwWebsiteData.info || {}).id
             }/supabase/sync`,
             { source: 'supabase', settings }
         );
@@ -135,7 +138,7 @@ export default {
     async install(driver = 'core') {
         await wwAxios.post(
             `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                wwLib.$store.getters['websiteData/getDesignInfo'].id
+                (wwLib.wwWebsiteData.info || {}).id
             }/supabase/install`,
             { driver }
         );
@@ -146,7 +149,7 @@ export default {
         if (!settings.publicData?.projectUrl) {
             return null;
         }
-        
+
         // Simple migration to multi-environment format
         const migrated = {
             ...settings,
@@ -156,9 +159,9 @@ export default {
                     production: {
                         projectUrl: settings.publicData.projectUrl,
                         apiKey: settings.publicData.apiKey,
-                        customDomain: settings.publicData.customDomain
-                    }
-                }
+                        customDomain: settings.publicData.customDomain,
+                    },
+                },
             },
             privateData: {
                 ...settings.privateData,
@@ -167,16 +170,16 @@ export default {
                         connectionMode: settings.privateData?.connectionMode || 'custom',
                         apiKey: settings.privateData?.apiKey,
                         databasePassword: settings.privateData?.databasePassword,
-                        connectionString: settings.privateData?.connectionString
-                    }
-                }
-            }
+                        connectionString: settings.privateData?.connectionString,
+                    },
+                },
+            },
         };
-        
+
         return migrated;
     },
     /* wwEditor:end */
-    
+
     async fetchProjectInfo(configOverride = null) {
         const config = configOverride || getCurrentSupabaseSettings('supabase');
         const projectUrl = config?.projectUrl;
@@ -200,11 +203,11 @@ export default {
     },
     async onSave(settings) {
         await this.syncSettings(settings);
-        
+
         // Get config for current environment
         const config = getCurrentSupabaseSettings('supabase');
         if (!config.projectUrl) return;
-        
+
         const runtimeProjectUrl = resolveRuntimeProjectUrl(config);
 
         if (config.accessToken && config.projectUrl) {
@@ -216,35 +219,44 @@ export default {
             // supabaseAuth will call syncInstance
             const authConfig = getCurrentSupabaseSettings('supabaseAuth');
             const authRuntimeUrl = resolveRuntimeProjectUrl(authConfig);
-            await wwLib.wwPlugins.supabaseAuth.load(
-                authRuntimeUrl,
-                authConfig.publicApiKey,
-                authConfig.privateApiKey
-            );
+            await wwLib.wwPlugins.supabaseAuth.load(authRuntimeUrl, authConfig.publicApiKey, authConfig.privateApiKey);
         } else {
             await this.load(runtimeProjectUrl, config.publicApiKey);
             this.subscribeTables(settings.publicData.realtimeTables || {});
         }
     },
-    async requestAPI({ method, path, data, params }, retry = true) {
+    async requestAPI({ method, path, data, params, signal }, retry = true) {
         try {
+            // Get current environment and send it explicitly
+            const config = getCurrentSupabaseSettings('supabase');
+            const currentEnv = config.environment; // 'editor', 'staging', or 'production'
+
             return await wwAxios({
                 method,
                 url: `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                    wwLib.$store.getters['websiteData/getDesignInfo'].id
+                    (wwLib.wwWebsiteData.info || {}).id
                 }/supabase${path}`,
                 data,
-                params,
+                params: {
+                    ...params,
+                    wwEnv: currentEnv, // Send environment explicitly
+                },
+                signal, // Support AbortController signal
             });
         } catch (error) {
+            // Don't retry if request was aborted
+            if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+                throw error;
+            }
+
             const isOauthToken = wwLib.wwPlugins.supabase.settings.privateData.accessToken?.startsWith('sbp_oauth');
             if (retry && [401, 403].includes(error.response?.status) && isOauthToken) {
                 const { data } = await wwAxios.post(
                     `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
-                        wwLib.$store.getters['websiteData/getDesignInfo'].id
+                        (wwLib.wwWebsiteData.info || {}).id
                     }/supabase/refresh`
                 );
-                return await this.requestAPI({ method, path, data, params }, false);
+                return await this.requestAPI({ method, path, data, params, signal }, false);
             }
             wwLib.wwNotification.open({ text: 'Error while requesting the supabase project.', color: 'red' });
             throw error;
@@ -274,7 +286,7 @@ export default {
                         await this.load(runtimeProjectUrl, config.publicApiKey);
                     }
                 }
-                
+
                 const fields =
                     collection.config.fieldsMode === 'guided'
                         ? (collection.config.dataFields || []).join(', ')
@@ -291,7 +303,9 @@ export default {
                 }
 
                 for (const sort of collection.sort) {
-                    query.order(sort.key, { ascending: sort.direction === 'ASC' });
+                    const sortColumn = Array.isArray(sort.field) ? sort.field[0] : sort.field || sort.key;
+                    if (!sortColumn) continue;
+                    query.order(sortColumn, { ascending: sort.direction === 'ASC' });
                 }
 
                 const { data, error, count } = await query;
@@ -314,6 +328,7 @@ export default {
         // this.instance.removeAllChannels();
         for (const tableName of Object.keys(realtimeTables)) {
             if (!realtimeTables[tableName]) continue;
+            if (this.instance.getChannels().some(c => c.subTopic === 'ww:public:' + tableName)) continue;
             this.instance
                 .channel('ww:public:' + tableName)
                 .on('postgres_changes', { event: '*', schema: 'public', table: tableName }, this.onSubscribe)
@@ -354,23 +369,36 @@ export default {
             baseProjectRef: config.baseProjectRef,
             branch: config.branch,
             branchSlug: config.branchSlug,
-            hasApiKey: !!config.publicApiKey,
-            apiKeyPreview: maskForLog(config.publicApiKey),
+            hasPrivateApiKey: !!config.privateApiKey,
+            apiKeyPreview: maskForLog(config.privateApiKey),
         };
-        if (!runtimeProjectUrl || !config.publicApiKey) {
+        if (!runtimeProjectUrl || !config.privateApiKey) {
+            if (config.publicApiKey && !config.privateApiKey) {
+                if (window.userflow) window.userflow.start('ed437bfc-3661-4604-86e5-b8baf5367da8');
+            }
             console.warn('[Supabase plugin] fetchDoc skipped', {
-                reason: 'Missing projectUrl or publicApiKey',
+                reason: 'Missing projectUrl or privateApiKey',
                 ...logContext,
             });
             return;
         }
 
         try {
-            const doc = await getDoc(runtimeProjectUrl, config.publicApiKey, {
-                branchSlug: config.branchSlug,
-            });
-            this.doc = doc;
-            const rowCount = Array.isArray(doc) ? doc.length : undefined;
+            try {
+                const doc = await getDoc(runtimeProjectUrl, config.privateApiKey, {
+                    branchSlug: config.branchSlug,
+                });
+                this.doc = doc;
+            } catch (error) {
+                if (config.publicApiKey) {
+                    const doc = await getDoc(runtimeProjectUrl, config.publicApiKey, {
+                        branchSlug: config.branchSlug,
+                    });
+                    this.doc = doc;
+                } else {
+                    throw error;
+                }
+            }
         } catch (error) {
             console.warn('[Supabase plugin] fetchDoc failed', {
                 projectUrl: runtimeProjectUrl,
@@ -733,7 +761,7 @@ export default {
         return data;
     },
     onSubscribe(payload) {
-        const collections = Object.values(wwLib.$store.getters['data/getCollections']).filter(
+        const collections = Object.values(wwLib.wwCollection.collectionsById).filter(
             collection =>
                 collection.pluginId === 'f9ef41c3-1c53-4857-855b-f2f6a40b7186' &&
                 collection.config.table === payload.table
@@ -748,7 +776,7 @@ export default {
                         collection.config.primaryData
                     );
                     if (itemIndex !== -1) continue;
-                    wwLib.$store.dispatch('data/setCollection', {
+                    wwLib.wwCollection.setCollection({
                         ...collection,
                         total: collection.total + 1,
                         data: [...(Array.isArray(collection.data) ? collection.data : []), payload.new],
@@ -765,7 +793,7 @@ export default {
                     if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, data });
+                    wwLib.wwCollection.setCollection({ ...collection, data });
                 }
                 return;
             case 'UPSERT':
@@ -780,7 +808,7 @@ export default {
                     isInsert
                         ? data.push(payload.new)
                         : data.splice(itemIndex, 1, { ...data[itemIndex], ...payload.new });
-                    wwLib.$store.dispatch('data/setCollection', {
+                    wwLib.wwCollection.setCollection({
                         ...collection,
                         total: collection.total + (isInsert ? 1 : 0),
                         data,
@@ -797,7 +825,7 @@ export default {
                     if (itemIndex === -1) continue;
                     const data = [...(Array.isArray(collection.data) ? collection.data : [])];
                     data.splice(itemIndex, 1);
-                    wwLib.$store.dispatch('data/setCollection', { ...collection, total: collection.total - 1, data });
+                    wwLib.wwCollection.setCollection({ ...collection, total: collection.total - 1, data });
                 }
                 return;
         }
@@ -812,6 +840,8 @@ export default {
         self = false,
         presence = false,
     }) {
+        // realtime-js throws when adding postgres_changes/presence listeners to an already joined channel
+        if (this.instance.getChannels().some(c => c.subTopic === channel)) return;
         const _channel = this.instance.channel(channel, { config: { broadcast: { self } } });
         _channel.on(
             type,
@@ -844,13 +874,12 @@ export default {
         }
         _channel.subscribe();
     },
-    unsubscribeFromChannel({ channel }) {
+    async unsubscribeFromChannel({ channel }) {
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before unsubscribing.');
-        this.instance.removeChannel(_channel);
+        await this.instance.removeChannel(_channel);
     },
     sendMessageToChannel({ channel, type = 'broadcast', event, payload }) {
-        debugger;
         const _channel = this.instance.getChannels().find(c => c.subTopic === channel);
         if (!_channel) throw new Error('Channel not found, please subscribe to the channel before sending a message.');
         _channel.send({ type, event, payload });
@@ -895,10 +924,10 @@ const applyModifiers = (query, { select, order, limit, range, single, maybeSingl
             select.mode === 'minimal'
                 ? ''
                 : select.mode === 'guided'
-                ? select?.fields.length
-                    ? select.fields.join(', ')
-                    : '*'
-                : select?.fieldsAdvanced
+                  ? select?.fields.length
+                      ? select.fields.join(', ')
+                      : '*'
+                  : select?.fieldsAdvanced
         );
     }
 
