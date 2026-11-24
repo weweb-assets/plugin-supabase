@@ -128,14 +128,18 @@ export default {
     },
     async syncSettings(settings) {
         await wwAxios.post(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${(wwLib.wwWebsiteData.info || {}).id}/supabase/sync`,
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                (wwLib.wwWebsiteData.info || {}).id
+            }/supabase/sync`,
             { source: 'supabase', settings }
         );
     },
     // driver: core, roles
     async install(driver = 'core') {
         await wwAxios.post(
-            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${(wwLib.wwWebsiteData.info || {}).id}/supabase/install`,
+            `${wwLib.wwApiRequests._getPluginsUrl()}/designs/${
+                (wwLib.wwWebsiteData.info || {}).id
+            }/supabase/install`,
             { driver }
         );
     },
@@ -906,6 +910,7 @@ export default {
     types: {
         integer: 'number',
         string: 'query',
+        boolean: 'onoff',
     },
 };
 

@@ -32,16 +32,12 @@
             @update:modelValue="setArgs({ filters: $event })"
         />
         <div v-else class="flex flex-col ww-box mb-2 pt-2 pl-2 pr-2 pb-0" style="box-shadow: unset">
-            <wwEditorInputRow
+            <DatabaseField
                 v-for="property of primaryProperties"
                 :key="property.name"
-                :label="property.name"
-                placeholder="Enter a value"
-                :type="property.type"
-                :required="property.required"
+                :property="property"
                 :model-value="primaryData[property.name]"
                 @update:modelValue="setPrimaryData({ ...primaryData, [property.name]: $event })"
-                bindable
             />
         </div>
         <wwEditorInputRow
@@ -54,16 +50,12 @@
             placeholder="All fields"
             @update:modelValue="setDataFields"
         />
-        <wwEditorInputRow
+        <DatabaseField
             v-for="property of tablePropertiesFiltered"
             :key="property.name"
-            :label="property.name"
-            :placeholder="`${property.default ? `Default: ${property.default}` : 'Enter a value '}`"
-            :type="property.type"
-            :required="property.required"
+            :property="property"
             :model-value="data[property.name]"
             @update:modelValue="setData({ ...data, [property.name]: $event })"
-            bindable
         />
     </template>
     <Expandable :active="isAdvancedOpen" @toggle="isAdvancedOpen = !isAdvancedOpen">
@@ -100,12 +92,13 @@
 </template>
 
 <script>
+import DatabaseField from './DatabaseField.vue';
 import Expandable from '../../Utils/Expandable.vue';
 import QueryModifiers from '../../Utils/QueryModifiers.vue';
 import QueryFilters from '../../Utils/QueryFilters.vue';
 
 export default {
-    components: { Expandable, QueryModifiers, QueryFilters },
+    components: { DatabaseField, Expandable, QueryModifiers, QueryFilters },
     props: {
         plugin: { type: Object, required: true },
         args: { type: Object, default: () => {} },
@@ -213,7 +206,7 @@ export default {
                 }
             }
             for (const field of this.primaryProperties) {
-                if (!primaryData[field.name]) delete primaryData[field.name];
+                if (!primaryData[field.name] && primaryData[field.name] !== false) delete primaryData[field.name];
             }
             this.$emit('update:args', { ...this.args, primaryData });
         },
@@ -228,7 +221,8 @@ export default {
                 }
             }
             for (const field of this.tablePropertiesFiltered) {
-                if (!data[field.name] && data[field.name] !== null) delete data[field.name]; // TODO LOGIC ISSUE HERE
+                if (!data[field.name] && data[field.name] !== null && data[field.name] !== false)
+                    delete data[field.name]; // TODO LOGIC ISSUE HERE
             }
             this.$emit('update:args', { ...this.args, data });
         },
