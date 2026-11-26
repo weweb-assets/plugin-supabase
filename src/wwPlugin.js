@@ -40,7 +40,6 @@ import {
     executeStreamingInvocation,
 } from './helpers/edgeFunction.js';
 
-
 export default {
     instance: null,
     channels: {},
@@ -346,7 +345,9 @@ export default {
             /* wwEditor:start */
             if (wwLib.editor?.isolatedCanvas) {
                 const config = getCurrentSupabaseSettings('supabase');
-                options = { auth: await wwLib.editor.supabasePreviewAuth(projectUrl, apiKey, config.resolvedEnvironment) };
+                options = {
+                    auth: await wwLib.editor.supabasePreviewAuth(projectUrl, apiKey, config.resolvedEnvironment),
+                };
             }
             /* wwEditor:end */
             this.instance =

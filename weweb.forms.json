@@ -331,504 +331,7 @@
             }
           },
           {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countCountOnly",
-            "label": "Return count only",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "countOnly"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
+            "includeFields": "queryOptions"
           }
         ]
       }
@@ -863,716 +366,7 @@
             "group": "options"
           },
           {
-            "key": "returnRows",
-            "label": "Return rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "select"
-            ],
-            "enableObject": {
-              "mode": "minimal"
-            },
-            "displayDefault": true,
-            "updates": [
-              {
-                "equals": false,
-                "field": "count",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "order",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "limit",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "range",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "single",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "maybeSingle",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "csv",
-                "value": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnMode",
-            "label": "Returned fields",
-            "type": "choice",
-            "choices": [
-              {
-                "label": "Minimal",
-                "value": "minimal"
-              },
-              {
-                "label": "Guided",
-                "value": "guided"
-              },
-              {
-                "label": "Advanced",
-                "value": "advanced"
-              }
-            ],
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "mode"
-            ],
-            "displayDefault": "guided",
-            "visibleWhen": {
-              "field": "returnRows",
-              "truthy": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "returnFields",
-            "label": "Columns",
-            "type": "choice",
-            "multiple": true,
-            "columnsFrom": "table",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fields"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "guided"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnProjection",
-            "label": "Projection",
-            "type": "text",
-            "placeholder": "column, linkedColumn(column)",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fieldsAdvanced"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "advanced"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "autoSync",
-            "label": "Auto update linked collections",
-            "type": "boolean",
-            "displayDefault": true,
-            "syncWithTable": "table",
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "csv",
-                "truthy": true
-              }
-            ],
-            "group": "options"
+            "includeFields": "mutationOptions"
           }
         ]
       }
@@ -1600,885 +394,10 @@
             }
           },
           {
-            "key": "filters",
-            "label": "Filters",
-            "type": "list",
-            "item": {
-              "type": "record",
-              "fields": [
-                {
-                  "key": "fn",
-                  "label": "Condition",
-                  "type": "choice",
-                  "choices": [
-                    {
-                      "label": "Column is equal to a value",
-                      "value": "eq"
-                    },
-                    {
-                      "label": "Column is not equal to a value",
-                      "value": "neq"
-                    },
-                    {
-                      "label": "Column is greater than a value",
-                      "value": "gt"
-                    },
-                    {
-                      "label": "Column is greater than or equal to a value",
-                      "value": "gte"
-                    },
-                    {
-                      "label": "Column is less than a value",
-                      "value": "lt"
-                    },
-                    {
-                      "label": "Column is less than or equal to a value",
-                      "value": "lte"
-                    },
-                    {
-                      "label": "Column matches a pattern",
-                      "value": "like"
-                    },
-                    {
-                      "label": "Column matches a case-insensitive pattern",
-                      "value": "ilike"
-                    },
-                    {
-                      "label": "Column is a value",
-                      "value": "is"
-                    },
-                    {
-                      "label": "Column is in an array",
-                      "value": "in"
-                    },
-                    {
-                      "label": "Column contains every element in a value",
-                      "value": "contains"
-                    },
-                    {
-                      "label": "Contained by value",
-                      "value": "containedBy"
-                    },
-                    {
-                      "label": "Greater than a range",
-                      "value": "rangeGt"
-                    },
-                    {
-                      "label": "Greater than or equal to a range",
-                      "value": "rangeGte"
-                    },
-                    {
-                      "label": "Less than a range",
-                      "value": "rangeLt"
-                    },
-                    {
-                      "label": "Less than or equal to a range",
-                      "value": "rangeLte"
-                    },
-                    {
-                      "label": "Mutually exclusive to a range",
-                      "value": "rangeAdjacent"
-                    },
-                    {
-                      "label": "With a common element",
-                      "value": "overlaps"
-                    },
-                    {
-                      "label": "Match a string",
-                      "value": "textSearch"
-                    },
-                    {
-                      "label": "Match an associated value",
-                      "value": "match"
-                    },
-                    {
-                      "label": "Don't match the filter",
-                      "value": "not"
-                    },
-                    {
-                      "label": "Match at least one filter",
-                      "value": "or"
-                    },
-                    {
-                      "label": "Match the filter",
-                      "value": "filter"
-                    }
-                  ],
-                  "initial": "eq"
-                },
-                {
-                  "key": "column",
-                  "label": "Column",
-                  "type": "text",
-                  "bindable": true,
-                  "initial": null,
-                  "hiddenWhen": [
-                    {
-                      "field": "fn",
-                      "oneOf": [
-                        "or",
-                        "match"
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "key": "operator",
-                  "label": "Operator",
-                  "type": "text",
-                  "bindable": true,
-                  "visibleWhen": {
-                    "field": "fn",
-                    "oneOf": [
-                      "filter",
-                      "not"
-                    ]
-                  },
-                  "placeholder": "is"
-                },
-                {
-                  "key": "value",
-                  "label": "Value",
-                  "type": "text",
-                  "bindable": true,
-                  "initialPreset": "emptyFormula"
-                },
-                {
-                  "key": "options",
-                  "label": "Options",
-                  "type": "json",
-                  "bindable": true,
-                  "visibleWhen": {
-                    "field": "fn",
-                    "oneOf": [
-                      "textSearch"
-                    ]
-                  }
-                },
-                {
-                  "key": "isEnabled",
-                  "label": "Enabled",
-                  "type": "boolean",
-                  "initial": true
-                }
-              ]
-            },
-            "visibleWhen": {
-              "field": "mode",
-              "equals": "multiple"
-            }
+            "includeFields": "filteredRows"
           },
           {
-            "key": "returnRows",
-            "label": "Return rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "select"
-            ],
-            "enableObject": {
-              "mode": "minimal"
-            },
-            "displayDefault": true,
-            "updates": [
-              {
-                "equals": false,
-                "field": "count",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "order",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "limit",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "range",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "single",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "maybeSingle",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "csv",
-                "value": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnMode",
-            "label": "Returned fields",
-            "type": "choice",
-            "choices": [
-              {
-                "label": "Minimal",
-                "value": "minimal"
-              },
-              {
-                "label": "Guided",
-                "value": "guided"
-              },
-              {
-                "label": "Advanced",
-                "value": "advanced"
-              }
-            ],
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "mode"
-            ],
-            "displayDefault": "guided",
-            "visibleWhen": {
-              "field": "returnRows",
-              "truthy": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "returnFields",
-            "label": "Columns",
-            "type": "choice",
-            "multiple": true,
-            "columnsFrom": "table",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fields"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "guided"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnProjection",
-            "label": "Projection",
-            "type": "text",
-            "placeholder": "column, linkedColumn(column)",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fieldsAdvanced"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "advanced"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "autoSync",
-            "label": "Auto update linked collections",
-            "type": "boolean",
-            "displayDefault": true,
-            "syncWithTable": "table",
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "csv",
-                "truthy": true
-              }
-            ],
-            "group": "options"
+            "includeFields": "mutationOptions"
           }
         ]
       }
@@ -2521,716 +440,7 @@
             "group": "options"
           },
           {
-            "key": "returnRows",
-            "label": "Return rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "select"
-            ],
-            "enableObject": {
-              "mode": "minimal"
-            },
-            "displayDefault": true,
-            "updates": [
-              {
-                "equals": false,
-                "field": "count",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "order",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "limit",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "range",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "single",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "maybeSingle",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "csv",
-                "value": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnMode",
-            "label": "Returned fields",
-            "type": "choice",
-            "choices": [
-              {
-                "label": "Minimal",
-                "value": "minimal"
-              },
-              {
-                "label": "Guided",
-                "value": "guided"
-              },
-              {
-                "label": "Advanced",
-                "value": "advanced"
-              }
-            ],
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "mode"
-            ],
-            "displayDefault": "guided",
-            "visibleWhen": {
-              "field": "returnRows",
-              "truthy": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "returnFields",
-            "label": "Columns",
-            "type": "choice",
-            "multiple": true,
-            "columnsFrom": "table",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fields"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "guided"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnProjection",
-            "label": "Projection",
-            "type": "text",
-            "placeholder": "column, linkedColumn(column)",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fieldsAdvanced"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "advanced"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "autoSync",
-            "label": "Auto update linked collections",
-            "type": "boolean",
-            "displayDefault": true,
-            "syncWithTable": "table",
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "csv",
-                "truthy": true
-              }
-            ],
-            "group": "options"
+            "includeFields": "mutationOptions"
           }
         ]
       }
@@ -3258,885 +468,10 @@
             }
           },
           {
-            "key": "filters",
-            "label": "Filters",
-            "type": "list",
-            "item": {
-              "type": "record",
-              "fields": [
-                {
-                  "key": "fn",
-                  "label": "Condition",
-                  "type": "choice",
-                  "choices": [
-                    {
-                      "label": "Column is equal to a value",
-                      "value": "eq"
-                    },
-                    {
-                      "label": "Column is not equal to a value",
-                      "value": "neq"
-                    },
-                    {
-                      "label": "Column is greater than a value",
-                      "value": "gt"
-                    },
-                    {
-                      "label": "Column is greater than or equal to a value",
-                      "value": "gte"
-                    },
-                    {
-                      "label": "Column is less than a value",
-                      "value": "lt"
-                    },
-                    {
-                      "label": "Column is less than or equal to a value",
-                      "value": "lte"
-                    },
-                    {
-                      "label": "Column matches a pattern",
-                      "value": "like"
-                    },
-                    {
-                      "label": "Column matches a case-insensitive pattern",
-                      "value": "ilike"
-                    },
-                    {
-                      "label": "Column is a value",
-                      "value": "is"
-                    },
-                    {
-                      "label": "Column is in an array",
-                      "value": "in"
-                    },
-                    {
-                      "label": "Column contains every element in a value",
-                      "value": "contains"
-                    },
-                    {
-                      "label": "Contained by value",
-                      "value": "containedBy"
-                    },
-                    {
-                      "label": "Greater than a range",
-                      "value": "rangeGt"
-                    },
-                    {
-                      "label": "Greater than or equal to a range",
-                      "value": "rangeGte"
-                    },
-                    {
-                      "label": "Less than a range",
-                      "value": "rangeLt"
-                    },
-                    {
-                      "label": "Less than or equal to a range",
-                      "value": "rangeLte"
-                    },
-                    {
-                      "label": "Mutually exclusive to a range",
-                      "value": "rangeAdjacent"
-                    },
-                    {
-                      "label": "With a common element",
-                      "value": "overlaps"
-                    },
-                    {
-                      "label": "Match a string",
-                      "value": "textSearch"
-                    },
-                    {
-                      "label": "Match an associated value",
-                      "value": "match"
-                    },
-                    {
-                      "label": "Don't match the filter",
-                      "value": "not"
-                    },
-                    {
-                      "label": "Match at least one filter",
-                      "value": "or"
-                    },
-                    {
-                      "label": "Match the filter",
-                      "value": "filter"
-                    }
-                  ],
-                  "initial": "eq"
-                },
-                {
-                  "key": "column",
-                  "label": "Column",
-                  "type": "text",
-                  "bindable": true,
-                  "initial": null,
-                  "hiddenWhen": [
-                    {
-                      "field": "fn",
-                      "oneOf": [
-                        "or",
-                        "match"
-                      ]
-                    }
-                  ]
-                },
-                {
-                  "key": "operator",
-                  "label": "Operator",
-                  "type": "text",
-                  "bindable": true,
-                  "visibleWhen": {
-                    "field": "fn",
-                    "oneOf": [
-                      "filter",
-                      "not"
-                    ]
-                  },
-                  "placeholder": "is"
-                },
-                {
-                  "key": "value",
-                  "label": "Value",
-                  "type": "text",
-                  "bindable": true,
-                  "initialPreset": "emptyFormula"
-                },
-                {
-                  "key": "options",
-                  "label": "Options",
-                  "type": "json",
-                  "bindable": true,
-                  "visibleWhen": {
-                    "field": "fn",
-                    "oneOf": [
-                      "textSearch"
-                    ]
-                  }
-                },
-                {
-                  "key": "isEnabled",
-                  "label": "Enabled",
-                  "type": "boolean",
-                  "initial": true
-                }
-              ]
-            },
-            "visibleWhen": {
-              "field": "mode",
-              "equals": "multiple"
-            }
+            "includeFields": "filteredRows"
           },
           {
-            "key": "returnRows",
-            "label": "Return rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "select"
-            ],
-            "enableObject": {
-              "mode": "minimal"
-            },
-            "displayDefault": true,
-            "updates": [
-              {
-                "equals": false,
-                "field": "count",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "order",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "limit",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "range",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "single",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "maybeSingle",
-                "value": false
-              },
-              {
-                "equals": false,
-                "field": "csv",
-                "value": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnMode",
-            "label": "Returned fields",
-            "type": "choice",
-            "choices": [
-              {
-                "label": "Minimal",
-                "value": "minimal"
-              },
-              {
-                "label": "Guided",
-                "value": "guided"
-              },
-              {
-                "label": "Advanced",
-                "value": "advanced"
-              }
-            ],
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "mode"
-            ],
-            "displayDefault": "guided",
-            "visibleWhen": {
-              "field": "returnRows",
-              "truthy": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "returnFields",
-            "label": "Columns",
-            "type": "choice",
-            "multiple": true,
-            "columnsFrom": "table",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fields"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "guided"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "returnProjection",
-            "label": "Projection",
-            "type": "text",
-            "placeholder": "column, linkedColumn(column)",
-            "argumentPath": [
-              "modifiers",
-              "select",
-              "fieldsAdvanced"
-            ],
-            "conditions": [
-              {
-                "field": "returnRows",
-                "truthy": true
-              },
-              {
-                "field": "returnMode",
-                "equals": "advanced"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "autoSync",
-            "label": "Auto update linked collections",
-            "type": "boolean",
-            "displayDefault": true,
-            "syncWithTable": "table",
-            "disabledWhenAny": [
-              {
-                "field": "returnRows",
-                "equals": false
-              },
-              {
-                "field": "csv",
-                "truthy": true
-              }
-            ],
-            "group": "options"
+            "includeFields": "mutationOptions"
           }
         ]
       }
@@ -5314,504 +1649,7 @@
             "allowObject": true
           },
           {
-            "key": "count",
-            "label": "Count results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count"
-            ],
-            "enableObject": {
-              "mode": "exact"
-            },
-            "group": "options"
-          },
-          {
-            "key": "countMode",
-            "label": "Mode",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "mode"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "Exact",
-                "value": "exact"
-              },
-              {
-                "label": "Planned",
-                "value": "planned"
-              },
-              {
-                "label": "Estimated",
-                "value": "estimated"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "countCountOnly",
-            "label": "Return count only",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "count",
-              "countOnly"
-            ],
-            "visibleWhen": {
-              "field": "count",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "order",
-            "label": "Order results",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order"
-            ],
-            "enableObject": {
-              "ascending": true
-            },
-            "group": "options"
-          },
-          {
-            "key": "orderColumn",
-            "label": "Column",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "column"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "placeholder": "column or linkedColumn(column)",
-            "group": "options"
-          },
-          {
-            "key": "orderAscending",
-            "label": "Ascending",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "ascending"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "orderForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "orderNullsFirst",
-            "label": "Nulls first",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "order",
-              "nullsFirst"
-            ],
-            "visibleWhen": {
-              "field": "order",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "limit",
-            "label": "Limit rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "limit"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "limitCount",
-            "label": "Count",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "count"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "group": "options"
-          },
-          {
-            "key": "limitForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "limit",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "limit",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "range",
-            "label": "Range of rows",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "range"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "rangeFrom",
-            "label": "From",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "from"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the start index (ex: 0)",
-            "group": "options"
-          },
-          {
-            "key": "rangeTo",
-            "label": "To",
-            "type": "number",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "to"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "required": true,
-            "placeholder": "Enter the end index (ex: 5)",
-            "group": "options"
-          },
-          {
-            "key": "rangeForeignTable",
-            "label": "Foreign table",
-            "type": "text",
-            "argumentPath": [
-              "modifiers",
-              "range",
-              "foreignTable"
-            ],
-            "visibleWhen": {
-              "field": "range",
-              "truthy": true
-            },
-            "bindable": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              }
-            ],
-            "placeholder": "Enter a foreign table name",
-            "group": "options"
-          },
-          {
-            "key": "single",
-            "label": "Return one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "single"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "maybeSingle",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "maybeSingle",
-            "label": "Return at most one row",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "maybeSingle"
-            ],
-            "enableObject": true,
-            "disabledWhenAny": [
-              {
-                "field": "single",
-                "truthy": true
-              },
-              {
-                "field": "limit",
-                "truthy": true
-              },
-              {
-                "field": "range",
-                "truthy": true
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "csv",
-            "label": "Return CSV",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "csv"
-            ],
-            "enableObject": true,
-            "group": "options"
-          },
-          {
-            "key": "explain",
-            "label": "Explain query",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain"
-            ],
-            "enableObject": {
-              "format": "text"
-            },
-            "group": "options"
-          },
-          {
-            "key": "explainAnalyze",
-            "label": "Analyze",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "analyze"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainBuffers",
-            "label": "Buffers",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "buffers"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainFormat",
-            "label": "Format",
-            "type": "choice",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "format"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "required": true,
-            "choices": [
-              {
-                "label": "text",
-                "value": "text"
-              },
-              {
-                "label": "json",
-                "value": "json"
-              }
-            ],
-            "group": "options"
-          },
-          {
-            "key": "explainSettings",
-            "label": "Settings",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "settings"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainVerbose",
-            "label": "Verbose",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "verbose"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
-          },
-          {
-            "key": "explainWal",
-            "label": "Wal",
-            "type": "boolean",
-            "argumentPath": [
-              "modifiers",
-              "explain",
-              "wal"
-            ],
-            "visibleWhen": {
-              "field": "explain",
-              "truthy": true
-            },
-            "bindable": true,
-            "group": "options"
+            "includeFields": "queryOptions"
           }
         ]
       },
@@ -6152,6 +1990,1395 @@
         "field": "table",
         "label": "Table",
         "empty": "-"
+      }
+    ]
+  },
+  "fieldSets": {
+    "queryOptions": [
+      {
+        "key": "count",
+        "label": "Count results",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "count"
+        ],
+        "enableObject": {
+          "mode": "exact"
+        },
+        "group": "options"
+      },
+      {
+        "key": "countMode",
+        "label": "Mode",
+        "type": "choice",
+        "argumentPath": [
+          "modifiers",
+          "count",
+          "mode"
+        ],
+        "visibleWhen": {
+          "field": "count",
+          "truthy": true
+        },
+        "bindable": true,
+        "required": true,
+        "choices": [
+          {
+            "label": "Exact",
+            "value": "exact"
+          },
+          {
+            "label": "Planned",
+            "value": "planned"
+          },
+          {
+            "label": "Estimated",
+            "value": "estimated"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "countCountOnly",
+        "label": "Return count only",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "count",
+          "countOnly"
+        ],
+        "visibleWhen": {
+          "field": "count",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "order",
+        "label": "Order results",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order"
+        ],
+        "enableObject": {
+          "ascending": true
+        },
+        "group": "options"
+      },
+      {
+        "key": "orderColumn",
+        "label": "Column",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "column"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "required": true,
+        "placeholder": "column or linkedColumn(column)",
+        "group": "options"
+      },
+      {
+        "key": "orderAscending",
+        "label": "Ascending",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "ascending"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "orderForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "orderNullsFirst",
+        "label": "Nulls first",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "nullsFirst"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "limit",
+        "label": "Limit rows",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "limit"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "limitCount",
+        "label": "Count",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "limit",
+          "count"
+        ],
+        "visibleWhen": {
+          "field": "limit",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "group": "options"
+      },
+      {
+        "key": "limitForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "limit",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "limit",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "range",
+        "label": "Range of rows",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "range"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "rangeFrom",
+        "label": "From",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "from"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "placeholder": "Enter the start index (ex: 0)",
+        "group": "options"
+      },
+      {
+        "key": "rangeTo",
+        "label": "To",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "to"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "placeholder": "Enter the end index (ex: 5)",
+        "group": "options"
+      },
+      {
+        "key": "rangeForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "single",
+        "label": "Return one row",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "single"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          },
+          {
+            "field": "limit",
+            "truthy": true
+          },
+          {
+            "field": "range",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "maybeSingle",
+        "label": "Return at most one row",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "maybeSingle"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "limit",
+            "truthy": true
+          },
+          {
+            "field": "range",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "csv",
+        "label": "Return CSV",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "csv"
+        ],
+        "enableObject": true,
+        "group": "options"
+      },
+      {
+        "key": "explain",
+        "label": "Explain query",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain"
+        ],
+        "enableObject": {
+          "format": "text"
+        },
+        "group": "options"
+      },
+      {
+        "key": "explainAnalyze",
+        "label": "Analyze",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "analyze"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainBuffers",
+        "label": "Buffers",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "buffers"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainFormat",
+        "label": "Format",
+        "type": "choice",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "format"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "required": true,
+        "choices": [
+          {
+            "label": "text",
+            "value": "text"
+          },
+          {
+            "label": "json",
+            "value": "json"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "explainSettings",
+        "label": "Settings",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "settings"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainVerbose",
+        "label": "Verbose",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "verbose"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainWal",
+        "label": "Wal",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "wal"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      }
+    ],
+    "mutationOptions": [
+      {
+        "key": "returnRows",
+        "label": "Return rows",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "select"
+        ],
+        "enableObject": {
+          "mode": "minimal"
+        },
+        "displayDefault": true,
+        "updates": [
+          {
+            "equals": false,
+            "field": "count",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "order",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "limit",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "range",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "single",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "maybeSingle",
+            "value": false
+          },
+          {
+            "equals": false,
+            "field": "csv",
+            "value": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "returnMode",
+        "label": "Returned fields",
+        "type": "choice",
+        "choices": [
+          {
+            "label": "Minimal",
+            "value": "minimal"
+          },
+          {
+            "label": "Guided",
+            "value": "guided"
+          },
+          {
+            "label": "Advanced",
+            "value": "advanced"
+          }
+        ],
+        "argumentPath": [
+          "modifiers",
+          "select",
+          "mode"
+        ],
+        "displayDefault": "guided",
+        "visibleWhen": {
+          "field": "returnRows",
+          "truthy": true
+        },
+        "group": "options"
+      },
+      {
+        "key": "returnFields",
+        "label": "Columns",
+        "type": "choice",
+        "multiple": true,
+        "columnsFrom": "table",
+        "argumentPath": [
+          "modifiers",
+          "select",
+          "fields"
+        ],
+        "conditions": [
+          {
+            "field": "returnRows",
+            "truthy": true
+          },
+          {
+            "field": "returnMode",
+            "equals": "guided"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "returnProjection",
+        "label": "Projection",
+        "type": "text",
+        "placeholder": "column, linkedColumn(column)",
+        "argumentPath": [
+          "modifiers",
+          "select",
+          "fieldsAdvanced"
+        ],
+        "conditions": [
+          {
+            "field": "returnRows",
+            "truthy": true
+          },
+          {
+            "field": "returnMode",
+            "equals": "advanced"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "count",
+        "label": "Count results",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "count"
+        ],
+        "enableObject": {
+          "mode": "exact"
+        },
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "countMode",
+        "label": "Mode",
+        "type": "choice",
+        "argumentPath": [
+          "modifiers",
+          "count",
+          "mode"
+        ],
+        "visibleWhen": {
+          "field": "count",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "required": true,
+        "choices": [
+          {
+            "label": "Exact",
+            "value": "exact"
+          },
+          {
+            "label": "Planned",
+            "value": "planned"
+          },
+          {
+            "label": "Estimated",
+            "value": "estimated"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "order",
+        "label": "Order results",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order"
+        ],
+        "enableObject": {
+          "ascending": true
+        },
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "orderColumn",
+        "label": "Column",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "column"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "required": true,
+        "placeholder": "column or linkedColumn(column)",
+        "group": "options"
+      },
+      {
+        "key": "orderAscending",
+        "label": "Ascending",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "ascending"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "orderForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "orderNullsFirst",
+        "label": "Nulls first",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "order",
+          "nullsFirst"
+        ],
+        "visibleWhen": {
+          "field": "order",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "limit",
+        "label": "Limit rows",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "limit"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "limitCount",
+        "label": "Count",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "limit",
+          "count"
+        ],
+        "visibleWhen": {
+          "field": "limit",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "group": "options"
+      },
+      {
+        "key": "limitForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "limit",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "limit",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "range",
+        "label": "Range of rows",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "range"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "rangeFrom",
+        "label": "From",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "from"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "placeholder": "Enter the start index (ex: 0)",
+        "group": "options"
+      },
+      {
+        "key": "rangeTo",
+        "label": "To",
+        "type": "number",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "to"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "required": true,
+        "placeholder": "Enter the end index (ex: 5)",
+        "group": "options"
+      },
+      {
+        "key": "rangeForeignTable",
+        "label": "Foreign table",
+        "type": "text",
+        "argumentPath": [
+          "modifiers",
+          "range",
+          "foreignTable"
+        ],
+        "visibleWhen": {
+          "field": "range",
+          "truthy": true
+        },
+        "bindable": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          }
+        ],
+        "placeholder": "Enter a foreign table name",
+        "group": "options"
+      },
+      {
+        "key": "single",
+        "label": "Return one row",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "single"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "maybeSingle",
+            "truthy": true
+          },
+          {
+            "field": "limit",
+            "truthy": true
+          },
+          {
+            "field": "range",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "maybeSingle",
+        "label": "Return at most one row",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "maybeSingle"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "single",
+            "truthy": true
+          },
+          {
+            "field": "limit",
+            "truthy": true
+          },
+          {
+            "field": "range",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "csv",
+        "label": "Return CSV",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "csv"
+        ],
+        "enableObject": true,
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "explain",
+        "label": "Explain query",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain"
+        ],
+        "enableObject": {
+          "format": "text"
+        },
+        "group": "options"
+      },
+      {
+        "key": "explainAnalyze",
+        "label": "Analyze",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "analyze"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainBuffers",
+        "label": "Buffers",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "buffers"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainFormat",
+        "label": "Format",
+        "type": "choice",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "format"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "required": true,
+        "choices": [
+          {
+            "label": "text",
+            "value": "text"
+          },
+          {
+            "label": "json",
+            "value": "json"
+          }
+        ],
+        "group": "options"
+      },
+      {
+        "key": "explainSettings",
+        "label": "Settings",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "settings"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainVerbose",
+        "label": "Verbose",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "verbose"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "explainWal",
+        "label": "Wal",
+        "type": "boolean",
+        "argumentPath": [
+          "modifiers",
+          "explain",
+          "wal"
+        ],
+        "visibleWhen": {
+          "field": "explain",
+          "truthy": true
+        },
+        "bindable": true,
+        "group": "options"
+      },
+      {
+        "key": "autoSync",
+        "label": "Auto update linked collections",
+        "type": "boolean",
+        "displayDefault": true,
+        "syncWithTable": "table",
+        "disabledWhenAny": [
+          {
+            "field": "returnRows",
+            "equals": false
+          },
+          {
+            "field": "csv",
+            "truthy": true
+          }
+        ],
+        "group": "options"
+      }
+    ],
+    "filteredRows": [
+      {
+        "key": "filters",
+        "label": "Filters",
+        "type": "list",
+        "item": {
+          "type": "record",
+          "fields": [
+            {
+              "key": "fn",
+              "label": "Condition",
+              "type": "choice",
+              "choices": [
+                {
+                  "label": "Column is equal to a value",
+                  "value": "eq"
+                },
+                {
+                  "label": "Column is not equal to a value",
+                  "value": "neq"
+                },
+                {
+                  "label": "Column is greater than a value",
+                  "value": "gt"
+                },
+                {
+                  "label": "Column is greater than or equal to a value",
+                  "value": "gte"
+                },
+                {
+                  "label": "Column is less than a value",
+                  "value": "lt"
+                },
+                {
+                  "label": "Column is less than or equal to a value",
+                  "value": "lte"
+                },
+                {
+                  "label": "Column matches a pattern",
+                  "value": "like"
+                },
+                {
+                  "label": "Column matches a case-insensitive pattern",
+                  "value": "ilike"
+                },
+                {
+                  "label": "Column is a value",
+                  "value": "is"
+                },
+                {
+                  "label": "Column is in an array",
+                  "value": "in"
+                },
+                {
+                  "label": "Column contains every element in a value",
+                  "value": "contains"
+                },
+                {
+                  "label": "Contained by value",
+                  "value": "containedBy"
+                },
+                {
+                  "label": "Greater than a range",
+                  "value": "rangeGt"
+                },
+                {
+                  "label": "Greater than or equal to a range",
+                  "value": "rangeGte"
+                },
+                {
+                  "label": "Less than a range",
+                  "value": "rangeLt"
+                },
+                {
+                  "label": "Less than or equal to a range",
+                  "value": "rangeLte"
+                },
+                {
+                  "label": "Mutually exclusive to a range",
+                  "value": "rangeAdjacent"
+                },
+                {
+                  "label": "With a common element",
+                  "value": "overlaps"
+                },
+                {
+                  "label": "Match a string",
+                  "value": "textSearch"
+                },
+                {
+                  "label": "Match an associated value",
+                  "value": "match"
+                },
+                {
+                  "label": "Don't match the filter",
+                  "value": "not"
+                },
+                {
+                  "label": "Match at least one filter",
+                  "value": "or"
+                },
+                {
+                  "label": "Match the filter",
+                  "value": "filter"
+                }
+              ],
+              "initial": "eq"
+            },
+            {
+              "key": "column",
+              "label": "Column",
+              "type": "text",
+              "bindable": true,
+              "initial": null,
+              "hiddenWhen": [
+                {
+                  "field": "fn",
+                  "oneOf": [
+                    "or",
+                    "match"
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "operator",
+              "label": "Operator",
+              "type": "text",
+              "bindable": true,
+              "visibleWhen": {
+                "field": "fn",
+                "oneOf": [
+                  "filter",
+                  "not"
+                ]
+              },
+              "placeholder": "is"
+            },
+            {
+              "key": "value",
+              "label": "Value",
+              "type": "text",
+              "bindable": true,
+              "initialPreset": "emptyFormula"
+            },
+            {
+              "key": "options",
+              "label": "Options",
+              "type": "json",
+              "bindable": true,
+              "visibleWhen": {
+                "field": "fn",
+                "oneOf": [
+                  "textSearch"
+                ]
+              }
+            },
+            {
+              "key": "isEnabled",
+              "label": "Enabled",
+              "type": "boolean",
+              "initial": true
+            }
+          ]
+        },
+        "visibleWhen": {
+          "field": "mode",
+          "equals": "multiple"
+        }
       }
     ]
   }
