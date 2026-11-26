@@ -20,7 +20,6 @@ for (const privateApiKey of ['sb_secret_fixture', 'legacy-jwt', null]) {
         const plugin = vm.runInNewContext(`${helper}\n({${method}})`, {
             getCurrentSupabaseSettings: () => config,
             resolveRuntimeProjectUrl: value => value.projectUrl,
-            maskForLog: () => '[redacted]',
             console: { warn() {} },
             window: {},
             axios: {
