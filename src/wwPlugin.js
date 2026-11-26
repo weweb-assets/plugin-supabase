@@ -383,6 +383,12 @@ export default {
             return;
         }
 
+        if (config.privateApiKey.startsWith('sb_secret_')) {
+            const { data } = await this.requestAPI({ method: 'GET', path: '/legacy/supabase/schema' });
+            this.doc = data.data;
+            return;
+        }
+
         try {
             try {
                 const doc = await getDoc(runtimeProjectUrl, config.privateApiKey, {
