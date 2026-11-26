@@ -40,13 +40,6 @@ import {
     executeStreamingInvocation,
 } from './helpers/edgeFunction.js';
 
-const maskForLog = value => {
-    if (!value) return null;
-    const str = String(value);
-    if (str.length <= 8) return str;
-    return `${str.slice(0, 4)}...${str.slice(-4)}`;
-};
-
 export default {
     instance: null,
     channels: {},
@@ -59,6 +52,14 @@ export default {
     \================================================================================================*/
     async _onLoad(settings) {
         /* wwEditor:start */
+        if (wwLib.editor?.isolatedCanvas) {
+            // The project client reads the same public environment configuration as
+            // the published app. Installing and reconnecting belong to management.
+            const config = getCurrentSupabaseSettings('supabase');
+            await this.load(resolveRuntimeProjectUrl(config), config.publicApiKey);
+            this.subscribeTables(settings.publicData.realtimeTables || {});
+            return;
+        }
         // Migrate legacy configuration to multi-environment format if needed
         if (!settings.publicData?.environments) {
             const migrated = await this.migrateToMultiEnvironment(settings);
@@ -110,6 +111,10 @@ export default {
         this.subscribeTables(settings.publicData.realtimeTables || {});
     },
     /* wwEditor:start */
+    onPreviewSettingsChanged() {
+        // Recreate the public SDK, its channels and the shared Auth client together.
+        window.location.reload();
+    },
     _getCopilotContext() {
         return {
             tables: this.projectInfo?.schema?.tables?.map(table => ({
@@ -143,7 +148,6 @@ export default {
             { driver }
         );
     },
-    /* wwEditor:start */
     async migrateToMultiEnvironment(settings) {
         // Skip if no legacy config to migrate
         if (!settings.publicData?.projectUrl) {
@@ -178,7 +182,6 @@ export default {
 
         return migrated;
     },
-    /* wwEditor:end */
 
     async fetchProjectInfo(configOverride = null) {
         const config = configOverride || getCurrentSupabaseSettings('supabase');
@@ -338,14 +341,23 @@ export default {
     async load(projectUrl, apiKey) {
         if (!projectUrl || !apiKey) return;
         try {
+            let options;
+            /* wwEditor:start */
+            if (wwLib.editor?.isolatedCanvas) {
+                const config = getCurrentSupabaseSettings('supabase');
+                options = {
+                    auth: await wwLib.editor.supabasePreviewAuth(projectUrl, apiKey, config.resolvedEnvironment),
+                };
+            }
+            /* wwEditor:end */
             this.instance =
                 wwLib.wwPlugins.supabaseAuth && wwLib.wwPlugins.supabaseAuth.publicInstance
                     ? wwLib.wwPlugins.supabaseAuth.publicInstance
-                    : createClient(projectUrl, apiKey);
+                    : createClient(projectUrl, apiKey, options);
 
             if (!this.instance) throw new Error('Invalid Supabase configuration.');
             /* wwEditor:start */
-            await this.fetchDoc();
+            if (!wwLib.editor?.isolatedCanvas) await this.fetchDoc();
             /* wwEditor:end */
         } catch (err) {
             this.instance = null;
@@ -370,7 +382,6 @@ export default {
             branch: config.branch,
             branchSlug: config.branchSlug,
             hasPrivateApiKey: !!config.privateApiKey,
-            apiKeyPreview: maskForLog(config.privateApiKey),
         };
         if (!runtimeProjectUrl || !config.privateApiKey) {
             if (config.publicApiKey && !config.privateApiKey) {
@@ -896,7 +907,7 @@ export default {
         _channel.track(state);
     },
     performAutoSync(table, type, data) {
-        if (!data || this.settings.publicData.realtimeTables[table]) return;
+        if (!data || this.settings.publicData.realtimeTables?.[table]) return;
         if (typeof data === 'string') return; // csv case
         const rows = Array.isArray(data) ? data : [data];
         for (const row of rows) {
@@ -931,7 +942,7 @@ const applyModifiers = (query, { select, order, limit, range, single, maybeSingl
             select.mode === 'minimal'
                 ? ''
                 : select.mode === 'guided'
-                  ? select?.fields.length
+                  ? select.fields?.length
                       ? select.fields.join(', ')
                       : '*'
                   : select?.fieldsAdvanced
