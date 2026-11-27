@@ -730,7 +730,7 @@ export default {
                     cfg.baseProjectRef ||
                     cfg.projectUrl?.replace('https://', '').replace('.supabase.co', '');
                 const ref = baseRef;
-                const paramsBaseRef = cfg.baseProjectRef || overrideRef || '';
+                const paramsBaseRef = cfg.baseProjectRef || overrideRef || baseRef;
                 if (!ref || !this.hasOAuthToken()) return;
                 const config = getCurrentSupabaseSettings('supabase');
                 const { data } = await wwAxios({
